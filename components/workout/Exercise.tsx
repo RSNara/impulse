@@ -1,4 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useRef } from 'react';
+import {
+  Animated,
+  PanResponder,
+  StyleSheet,
+  Text,
+  View,
+  useAnimatedValue,
+} from 'react-native';
 import IUIButton from '../iui/IUIButton';
 import IUICheckbox from '../iui/IUICheckbox';
 import { IUINumericTextInput } from '../iui/IUITextInput';
@@ -118,6 +126,14 @@ export default function ExerciseTable<T extends ExerciseType>(
     );
   }
 
+  function removeSet(set: Set<T>) {
+    props.setSets(
+      props.sets.filter((otherSet) => {
+        return otherSet != set;
+      })
+    );
+  }
+
   return (
     <View style={{ marginBottom: 30 }}>
       <View style={styles.row}>
@@ -130,7 +146,8 @@ export default function ExerciseTable<T extends ExerciseType>(
         <ExerciseTableRow
           key={i}
           set={set}
-          updateSet={(partial) => updateSet(set, partial)}
+          updateSet={(update) => updateSet(set, update)}
+          onDismiss={() => removeSet(set)}
         />
       ))}
       <IUIButton
@@ -182,12 +199,62 @@ function ExerciseTableHeader({ type }: { type: ExerciseType }) {
 function ExerciseTableRow<T extends ExerciseType>({
   set,
   updateSet,
+  onDismiss,
 }: {
   set: Set<T>;
   updateSet: (partial: Partial<Set<T>>) => void;
+  onDismiss: () => void;
 }) {
+  const translateX = useAnimatedValue(0);
+  const triggerPanDx = 10;
+  const triggerDismissDx = 150;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        gestureState.dx > triggerPanDx,
+      onPanResponderMove: Animated.event([null, { dx: translateX }], {
+        useNativeDriver: false,
+      }),
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx > triggerDismissDx) {
+          // Dismiss the item
+          Animated.timing(translateX, {
+            toValue: 500,
+            duration: 200,
+            useNativeDriver: false,
+          }).start(() => {
+            onDismiss && onDismiss();
+          });
+        } else {
+          // Snap back to original position
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: false,
+          }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        // SAME reset logic as above
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: false,
+        }).start();
+      },
+    })
+  ).current;
+
+  const backgroundColor = translateX.interpolate({
+    inputRange: [0, triggerDismissDx],
+    outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 0, 0, 0.5)'], // More red left and right, neutral in center
+    extrapolate: 'clamp',
+  });
+
   return (
-    <View style={styles.row}>
+    <Animated.View
+      style={[styles.row, { transform: [{ translateX }], backgroundColor }]}
+      {...panResponder.panHandlers}
+    >
       <View style={rowStyles.setNum}>
         <SetIndicator indicator={set.indicator} />
       </View>
@@ -226,7 +293,7 @@ function ExerciseTableRow<T extends ExerciseType>({
           }}
         ></IUICheckbox>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
