@@ -16,7 +16,7 @@ type SetUnion = LoadedSet | RepsSet | TimeSet;
 
 type LoadedSet = {
   type: 'loaded';
-  indicator: 'w' | number;
+  num: 'w' | number;
   done: boolean;
   previous?: {
     mass: number;
@@ -24,26 +24,29 @@ type LoadedSet = {
   };
   mass: number | null;
   reps: number | null;
+  id: number;
 };
 
 type RepsSet = {
   type: 'reps';
-  indicator: 'w' | number;
+  num: 'w' | number;
   done: boolean;
   previous?: {
     reps: number;
   };
   reps: number | null;
+  id: number;
 };
 
 type TimeSet = {
   type: 'time';
-  indicator: 'w' | number;
+  num: 'w' | number;
   done: boolean;
   previous?: {
     time: number;
   };
   time: number | null;
+  id: number;
 };
 
 export type Set<T extends ExerciseType> = {
@@ -52,14 +55,20 @@ export type Set<T extends ExerciseType> = {
   time: TimeSet;
 }[T];
 
-function createSet<T extends ExerciseType>(type: T): Set<T> {
+let setId = 0;
+
+export function createSet<T extends ExerciseType>(
+  type: T,
+  num: 'w' | number
+): Set<T> {
   if (type == 'time') {
     return {
       type: 'time',
       time: null,
       previous: undefined,
       done: false,
-      indicator: 'w',
+      num,
+      id: setId++,
     } as Set<T>;
   }
 
@@ -70,7 +79,8 @@ function createSet<T extends ExerciseType>(type: T): Set<T> {
       reps: null,
       previous: undefined,
       done: false,
-      indicator: 'w',
+      num,
+      id: setId++,
     } as Set<T>;
   }
 
@@ -79,7 +89,8 @@ function createSet<T extends ExerciseType>(type: T): Set<T> {
     reps: null,
     previous: undefined,
     done: false,
-    indicator: 'w',
+    num,
+    id: setId++,
   } as Set<T>;
 }
 
@@ -116,20 +127,23 @@ export type ExerciseTableProps<T extends ExerciseType> = {
   setSets: (sets: ReadonlyArray<Set<T>>) => void;
 };
 
-export default function ExerciseTable<T extends ExerciseType>(
-  props: ExerciseTableProps<T>
-) {
+export default function ExerciseTable<T extends ExerciseType>({
+  name,
+  type,
+  sets,
+  setSets,
+}: ExerciseTableProps<T>) {
   function updateSet(set: Set<T>, update: Partial<Set<T>>) {
-    props.setSets(
-      props.sets.map((otherSet) => {
+    setSets(
+      sets.map((otherSet) => {
         return set == otherSet ? { ...set, ...update } : otherSet;
       })
     );
   }
 
   function removeSet(set: Set<T>) {
-    props.setSets(
-      props.sets.filter((otherSet) => {
+    setSets(
+      sets.filter((otherSet) => {
         return otherSet != set;
       })
     );
@@ -139,22 +153,24 @@ export default function ExerciseTable<T extends ExerciseType>(
     <View style={{ marginBottom: 30 }}>
       <View style={styles.row}>
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 0.9)' }}>
-          {props.name}
+          {name}
         </Text>
       </View>
-      <ExerciseTableHeader type={props.type} />
-      {props.sets.map((set, i) => (
-        <ExerciseTableRow
-          key={i}
-          set={set}
-          updateSet={(update) => updateSet(set, update)}
-          onDismiss={() => removeSet(set)}
-        />
-      ))}
+      <ExerciseTableHeader type={type} />
+      {sets.map((set) => {
+        return (
+          <ExerciseTableRow
+            key={set.id}
+            set={set}
+            updateSet={(update) => updateSet(set, update)}
+            onDismiss={() => removeSet(set)}
+          />
+        );
+      })}
       <IUIButton
         style={{ marginHorizontal: 10, marginVertical: 5 }}
         onPress={() => {
-          props.setSets(props.sets.concat(createSet(props.type)));
+          setSets(sets.concat(createSet(type, sets.length + 1)));
         }}
       >
         + Add Set
@@ -206,7 +222,11 @@ function ExerciseTableHeader({ type }: { type: ExerciseType }) {
   );
 
   function Title({ children }: { children?: string }) {
-    return <Text style={{ fontWeight: 'bold' }}>{children}</Text>;
+    return (
+      <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>
+        {children}
+      </Text>
+    );
   }
 }
 
@@ -220,35 +240,40 @@ function ExerciseTableRow<T extends ExerciseType>({
   onDismiss: () => void;
 }) {
   const translateX = useAnimatedValue(0);
-  const triggerPanDx = useRef(15);
-  const triggerDismissDx = useRef(30);
-  const finalTranslateX = useRef(500);
+  const triggerPanDxRef = useRef(15);
+  const triggerDismissDxRef = useRef(30);
+  const finalTranslateXRef = useRef(500);
+  const onDismissRef = useRef(onDismiss);
+
+  useEffect(() => {
+    onDismissRef.current = onDismiss;
+  }, [onDismiss]);
 
   const [rowWidth, setRowWidth] = useState(0);
   useEffect(() => {
     if (rowWidth > 0) {
-      triggerDismissDx.current = rowWidth * 0.4;
-      finalTranslateX.current = rowWidth;
+      triggerDismissDxRef.current = rowWidth * 0.4;
+      finalTranslateXRef.current = rowWidth;
     }
   }, [rowWidth]);
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) =>
-        gestureState.dx > triggerPanDx.current,
+        gestureState.dx > triggerPanDxRef.current,
       onPanResponderMove: Animated.event([null, { dx: translateX }], {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > triggerDismissDx.current) {
+        if (gestureState.dx > triggerDismissDxRef.current) {
           // Dismiss the item
           Vibration.vibrate();
           Animated.timing(translateX, {
-            toValue: finalTranslateX.current,
+            toValue: finalTranslateXRef.current,
             duration: 200,
             useNativeDriver: false,
           }).start(() => {
-            onDismiss && onDismiss();
+            onDismissRef.current();
           });
         } else {
           // Snap back to original position
@@ -269,7 +294,7 @@ function ExerciseTableRow<T extends ExerciseType>({
   ).current;
 
   const swipeColor = translateX.interpolate({
-    inputRange: [0, triggerPanDx.current, triggerDismissDx.current],
+    inputRange: [0, triggerPanDxRef.current, triggerDismissDxRef.current],
     outputRange: [
       'rgba(255, 0, 0, 0)',
       'rgba(255, 0, 0, 0.1)',
@@ -292,23 +317,19 @@ function ExerciseTableRow<T extends ExerciseType>({
   );
 
   useEffect(() => {
-    if (canFinishSet && set.done) {
-      Animated.timing(colorValue, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-    } else {
+    if (!canFinishSet && set.done) {
       Animated.spring(colorValue, {
         toValue: 0,
         useNativeDriver: false,
       }).start(() => {
-        updateSet({
-          done: false,
-        } as Partial<Set<T>>);
+        if (set.done) {
+          updateSet({
+            done: false,
+          } as Partial<Set<T>>);
+        }
       });
     }
-  }, [set.done, canFinishSet]);
+  }, [set, canFinishSet]);
 
   return (
     <Animated.View
@@ -344,10 +365,10 @@ function ExerciseTableRow<T extends ExerciseType>({
         }}
       >
         <View style={rowStyles.setNum}>
-          <SetIndicator indicator={set.indicator} />
+          <SetNum num={set.num} />
         </View>
         <View style={rowStyles.previous}>
-          <SetPreviousPerformance set={set} />
+          <SetPreviousPerf set={set} />
         </View>
         <View style={rowStyles.dataContainer}>
           {(set.type == 'time' || set.type == 'reps') && (
@@ -386,6 +407,19 @@ function ExerciseTableRow<T extends ExerciseType>({
               updateSet({
                 done: checked,
               } as Partial<Set<T>>);
+
+              if (checked) {
+                Animated.timing(colorValue, {
+                  toValue: 1,
+                  duration: 200,
+                  useNativeDriver: false,
+                }).start();
+              } else {
+                Animated.spring(colorValue, {
+                  toValue: 0,
+                  useNativeDriver: false,
+                }).start();
+              }
             }}
           ></IUICheckbox>
         </View>
@@ -394,7 +428,7 @@ function ExerciseTableRow<T extends ExerciseType>({
   );
 }
 
-function SetIndicator({ indicator }: { indicator: SetUnion['indicator'] }) {
+function SetNum({ num }: { num: SetUnion['num'] }) {
   return (
     <View
       style={{
@@ -404,12 +438,12 @@ function SetIndicator({ indicator }: { indicator: SetUnion['indicator'] }) {
         padding: 5,
       }}
     >
-      <Text style={{ fontWeight: 'bold' }}>{indicator}</Text>
+      <Text style={{ fontWeight: 'bold' }}>{num}</Text>
     </View>
   );
 }
 
-function SetPreviousPerformance({ set }: { set: SetUnion }) {
+function SetPreviousPerf({ set }: { set: SetUnion }) {
   return (
     <View
       style={{

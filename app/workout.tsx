@@ -1,7 +1,7 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIModal from '@/components/iui/IUIModal';
 import type { Exercise } from '@/components/workout/Exercise';
-import ExerciseTable from '@/components/workout/Exercise';
+import ExerciseTable, { createSet } from '@/components/workout/Exercise';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
@@ -15,39 +15,17 @@ export default function WorkoutLog() {
     {
       name: 'Bench Press',
       type: 'loaded',
-      sets: [
-        {
-          type: 'loaded',
-          indicator: 'w',
-          mass: 1,
-          reps: null,
-          done: false,
-        },
-      ],
+      sets: [createSet('loaded', 'w')],
     },
     {
       name: 'Sprints',
       type: 'time',
-      sets: [
-        {
-          type: 'time',
-          indicator: 'w',
-          time: null,
-          done: false,
-        },
-      ],
+      sets: [createSet('time', 'w')],
     },
     {
       name: 'Skin the cat',
       type: 'reps',
-      sets: [
-        {
-          type: 'reps',
-          indicator: 'w',
-          reps: null,
-          done: false,
-        },
-      ],
+      sets: [createSet('reps', 'w')],
     },
   ]);
 
