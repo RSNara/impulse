@@ -173,7 +173,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   );
 
   return (
-    <View style={{ marginBottom: 30 }}>
+    <View style={{ marginBottom: 20 }}>
       <View style={[styles.row, { justifyContent: 'space-between' }]}>
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 0.9)' }}>
           {name}
@@ -185,7 +185,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
       <ExerciseLogTableHeader type={type} />
       {$rows}
       <IUIButton
-        style={{ marginHorizontal: 10, marginVertical: 5 }}
+        style={{ marginHorizontal: 10, marginTop: 10 }}
         onPress={() => {
           setSets(sets.concat(createSetLog(type, false)));
         }}

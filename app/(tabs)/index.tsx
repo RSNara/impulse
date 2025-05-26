@@ -133,16 +133,16 @@ export default function WorkoutScreen() {
             );
           }
         })}
-        <IUIButton
-          style={{ marginHorizontal: 10, marginVertical: 5 }}
-          type="positive"
-          onPress={() => {
-            setShowAddExerciseModal(true);
-          }}
-        >
-          + Add Exercise
-        </IUIButton>
       </ScrollView>
+      <IUIButton
+        style={{ marginHorizontal: 10, marginVertical: 20 }}
+        type="positive"
+        onPress={() => {
+          setShowAddExerciseModal(true);
+        }}
+      >
+        + Add Exercise
+      </IUIButton>
       <FinishWorkoutModal
         visible={showFinishWorkoutModal}
         onRequestClose={() => setShowFinishWorkoutModal(false)}
