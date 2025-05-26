@@ -22,6 +22,7 @@ export default function IUIModal({
           flex: 1,
           justifyContent: 'center',
           padding: 20,
+          paddingVertical: 100,
           backgroundColor: 'rgba(0,0,0,0.5)',
         }}
       >

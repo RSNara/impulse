@@ -1,46 +1,74 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
-import type { ExerciseLog } from '@/components/workout/ExerciseLogTable';
-import ExerciseLogTable, {
-  createSetLog,
+import type {
+  ExerciseLog,
+  SetLog,
 } from '@/components/workout/ExerciseLogTable';
+import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
+import type { AnyExercise, Exercise } from '@/data/exercises';
+import Exercises from '@/data/exercises';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
+
+function assertNever(x: never): never {
+  throw new Error('Unexpected value: ' + x);
+}
+
+function createExerciseLog<T extends 'loaded' | 'reps' | 'time'>(
+  exercise: Exercise<T>
+): ExerciseLog<T> {
+  if (exercise.type == 'loaded') {
+    return {
+      name: exercise.name,
+      type: exercise.type,
+      sets: [] as SetLog<'loaded'>[],
+    } as ExerciseLog<'loaded'> as ExerciseLog<T>;
+  }
+
+  if (exercise.type == 'reps') {
+    return {
+      name: exercise.name,
+      type: exercise.type,
+      sets: [] as SetLog<'reps'>[],
+    } as ExerciseLog<'reps'> as ExerciseLog<T>;
+  }
+
+  if (exercise.type == 'time') {
+    return {
+      name: exercise.name,
+      type: exercise.type,
+      sets: [] as SetLog<'time'>[],
+    } as ExerciseLog<'time'> as ExerciseLog<T>;
+  }
+
+  assertNever(exercise);
+}
 
 export default function WorkoutScreen() {
-  const [showModal, setShowModal] = useState(false);
+  const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
+  const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
   const workoutName = 'HI C&S';
-  const [exercises, setExercises] = useState<
+  const [exerciseLogs, setExerciseLogs] = useState<
     (ExerciseLog<'loaded'> | ExerciseLog<'reps'> | ExerciseLog<'time'>)[]
-  >([
-    {
-      name: 'Bench Press',
-      type: 'loaded',
-      sets: [createSetLog('loaded', true)],
-    },
-    {
-      name: 'Sprints',
-      type: 'time',
-      sets: [createSetLog('time', true)],
-    },
-    {
-      name: 'Skin the cat',
-      type: 'reps',
-      sets: [createSetLog('reps', true)],
-    },
-  ]);
+  >([]);
+
+  function addExercise<T extends 'loaded' | 'reps' | 'time'>(
+    exercise: Exercise<T>
+  ) {
+    setExerciseLogs([...exerciseLogs, createExerciseLog(exercise)]);
+  }
 
   function updateExerciseLog<T extends 'loaded' | 'reps' | 'time'>(
-    exercise: ExerciseLog<T>,
+    exerciseLog: ExerciseLog<T>,
     update: Partial<ExerciseLog<T>>
   ) {
-    setExercises(
-      exercises.map((otherExercise) => {
-        return exercise == otherExercise
-          ? { ...exercise, ...update }
-          : otherExercise;
+    setExerciseLogs(
+      exerciseLogs.map((otherExerciseLog) => {
+        return exerciseLog == otherExerciseLog
+          ? { ...exerciseLog, ...update }
+          : otherExerciseLog;
       })
     );
   }
@@ -49,54 +77,72 @@ export default function WorkoutScreen() {
     <IUIContainer>
       <WorkoutHeaderBar
         title={workoutName}
-        onFinish={() => setShowModal(true)}
+        onFinish={() => setShowFinishWorkoutModal(true)}
       />
       <ScrollView>
-        {exercises.map((exercise, i) => {
-          if (exercise.type == 'loaded') {
+        {exerciseLogs.map((exerciseLog, i) => {
+          if (exerciseLog.type == 'loaded') {
             return (
               <ExerciseLogTable
-                key={exercise.name}
-                name={exercise.name}
-                type={exercise.type}
-                sets={exercise.sets}
+                key={exerciseLog.name}
+                name={exerciseLog.name}
+                type={exerciseLog.type}
+                sets={exerciseLog.sets}
                 setSets={(sets) => {
-                  updateExerciseLog(exercise, { sets });
+                  updateExerciseLog(exerciseLog, { sets });
                 }}
               />
             );
           }
-          if (exercise.type == 'reps') {
+          if (exerciseLog.type == 'reps') {
             return (
               <ExerciseLogTable
-                key={exercise.name}
-                name={exercise.name}
-                type={exercise.type}
-                sets={exercise.sets}
+                key={exerciseLog.name}
+                name={exerciseLog.name}
+                type={exerciseLog.type}
+                sets={exerciseLog.sets}
                 setSets={(sets) => {
-                  updateExerciseLog(exercise, { sets });
+                  updateExerciseLog(exerciseLog, { sets });
                 }}
               />
             );
           }
-          if (exercise.type == 'time') {
+          if (exerciseLog.type == 'time') {
             return (
               <ExerciseLogTable
-                key={exercise.name}
-                name={exercise.name}
-                type={exercise.type}
-                sets={exercise.sets}
+                key={exerciseLog.name}
+                name={exerciseLog.name}
+                type={exerciseLog.type}
+                sets={exerciseLog.sets}
                 setSets={(sets) => {
-                  updateExerciseLog(exercise, { sets });
+                  updateExerciseLog(exerciseLog, { sets });
                 }}
               />
             );
           }
         })}
+        <IUIButton
+          style={{ marginHorizontal: 10, marginVertical: 5 }}
+          type={'positive'}
+          onPress={() => {
+            setShowAddExerciseModal(true);
+          }}
+        >
+          + Add Exercise
+        </IUIButton>
       </ScrollView>
-      <WorkoutFinishModal
-        visible={showModal}
-        onRequestClose={() => setShowModal(false)}
+      <FinishWorkoutModal
+        visible={showFinishWorkoutModal}
+        onRequestClose={() => setShowFinishWorkoutModal(false)}
+      />
+      <AddExerciseModal
+        visible={showAddExerciseModal}
+        onRequestClose={(exercise) => {
+          if (exercise) {
+            addExercise(exercise);
+            setShowAddExerciseModal(false);
+          }
+        }}
       />
     </IUIContainer>
   );
@@ -128,7 +174,7 @@ function WorkoutHeaderBar({
   );
 }
 
-function WorkoutFinishModal({
+function FinishWorkoutModal({
   visible,
   onRequestClose,
 }: {
@@ -162,6 +208,47 @@ function WorkoutFinishModal({
       >
         Cancel Workout
       </IUIButton>
+    </IUIModal>
+  );
+}
+
+function AddExerciseModal({
+  visible,
+  onRequestClose,
+}: {
+  visible: boolean;
+  onRequestClose: (exercise?: AnyExercise | null) => void;
+}) {
+  const router = useRouter();
+  return (
+    <IUIModal visible={visible} onRequestClose={() => onRequestClose(null)}>
+      <View style={{ alignItems: 'center', paddingBottom: 20 }}>
+        <Text style={{ fontWeight: 'bold' }}>Add Exercise?</Text>
+      </View>
+      <FlatList<AnyExercise>
+        data={Exercises.slice(0, 10)}
+        keyExtractor={(info) => info.name.replaceAll(' ', '-')}
+        renderItem={(info) => {
+          const exercise = info.item;
+          return (
+            <Pressable
+              style={{ padding: 10 }}
+              onPress={() => {
+                onRequestClose(exercise);
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text style={{ fontWeight: 'bold' }}>{exercise.name}</Text>
+              </View>
+            </Pressable>
+          );
+        }}
+      />
     </IUIModal>
   );
 }

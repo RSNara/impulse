@@ -8,7 +8,7 @@ export default function IUIButton({
   style,
 }: {
   children: string;
-  type?: 'neutral' | 'positive' | 'negative';
+  type?: 'neutral' | 'positive' | 'done' | 'negative';
   onPress: () => void;
   style?: ViewStyle;
 }) {
