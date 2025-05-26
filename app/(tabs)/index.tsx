@@ -6,7 +6,7 @@ import type {
   SetLog,
 } from '@/components/workout/ExerciseLogTable';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
-import type { AnyExercise, Exercise } from '@/data/exercises';
+import type { AnyExercise, Exercise, ExerciseType } from '@/data/exercises';
 import Exercises from '@/data/exercises';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -16,7 +16,7 @@ function assertNever(x: never): never {
   throw new Error('Unexpected value: ' + x);
 }
 
-function createExerciseLog<T extends 'loaded' | 'reps' | 'time'>(
+function createExerciseLog<T extends ExerciseType>(
   exercise: Exercise<T>
 ): ExerciseLog<T> {
   if (exercise.type == 'loaded') {
@@ -54,13 +54,22 @@ export default function WorkoutScreen() {
     (ExerciseLog<'loaded'> | ExerciseLog<'reps'> | ExerciseLog<'time'>)[]
   >([]);
 
-  function addExercise<T extends 'loaded' | 'reps' | 'time'>(
-    exercise: Exercise<T>
-  ) {
+  function addExercise(exercise: AnyExercise) {
     setExerciseLogs([...exerciseLogs, createExerciseLog(exercise)]);
   }
 
-  function updateExerciseLog<T extends 'loaded' | 'reps' | 'time'>(
+  function removeExerciseLog(
+    exerciseLog:
+      | ExerciseLog<'loaded'>
+      | ExerciseLog<'reps'>
+      | ExerciseLog<'time'>
+  ) {
+    setExerciseLogs(
+      exerciseLogs.filter((otherExerciseLog) => exerciseLog != otherExerciseLog)
+    );
+  }
+
+  function updateExerciseLog<T extends ExerciseType>(
     exerciseLog: ExerciseLog<T>,
     update: Partial<ExerciseLog<T>>
   ) {
@@ -88,6 +97,7 @@ export default function WorkoutScreen() {
                 name={exerciseLog.name}
                 type={exerciseLog.type}
                 sets={exerciseLog.sets}
+                onRemove={() => removeExerciseLog(exerciseLog)}
                 setSets={(sets) => {
                   updateExerciseLog(exerciseLog, { sets });
                 }}
@@ -101,6 +111,7 @@ export default function WorkoutScreen() {
                 name={exerciseLog.name}
                 type={exerciseLog.type}
                 sets={exerciseLog.sets}
+                onRemove={() => removeExerciseLog(exerciseLog)}
                 setSets={(sets) => {
                   updateExerciseLog(exerciseLog, { sets });
                 }}
@@ -114,6 +125,7 @@ export default function WorkoutScreen() {
                 name={exerciseLog.name}
                 type={exerciseLog.type}
                 sets={exerciseLog.sets}
+                onRemove={() => removeExerciseLog(exerciseLog)}
                 setSets={(sets) => {
                   updateExerciseLog(exerciseLog, { sets });
                 }}
@@ -123,7 +135,7 @@ export default function WorkoutScreen() {
         })}
         <IUIButton
           style={{ marginHorizontal: 10, marginVertical: 5 }}
-          type={'positive'}
+          type="positive"
           onPress={() => {
             setShowAddExerciseModal(true);
           }}
@@ -167,7 +179,7 @@ function WorkoutHeaderBar({
       <View>
         <Text style={{ fontWeight: 'bold' }}>{title}</Text>
       </View>
-      <IUIButton type="positive" onPress={onFinish}>
+      <IUIButton type="done" onPress={onFinish}>
         Finish
       </IUIButton>
     </View>
@@ -191,7 +203,7 @@ function FinishWorkoutModal({
         <Text style={{ fontWeight: 'bold' }}>Finished Workout?</Text>
       </View>
       <IUIButton
-        type="positive"
+        type="done"
         onPress={() => {
           router.back();
         }}

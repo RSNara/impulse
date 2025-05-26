@@ -1,4 +1,4 @@
-type ExerciseType = 'loaded' | 'reps' | 'time';
+export type ExerciseType = 'loaded' | 'reps' | 'time';
 
 type LoadedExercise = {
   name: string;

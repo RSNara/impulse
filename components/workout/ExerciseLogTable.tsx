@@ -125,6 +125,7 @@ export type ExerciseLogTableProps<T extends ExerciseType> = {
   type: T;
   sets: ReadonlyArray<SetLog<T>>;
   setSets: (sets: ReadonlyArray<SetLog<T>>) => void;
+  onRemove: () => void;
 };
 
 export default function ExerciseLogTable<T extends ExerciseType>({
@@ -132,6 +133,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   type,
   sets,
   setSets,
+  onRemove,
 }: ExerciseLogTableProps<T>) {
   function updateSet(set: SetLog<T>, update: Partial<SetLog<T>>) {
     setSets(
@@ -172,10 +174,13 @@ export default function ExerciseLogTable<T extends ExerciseType>({
 
   return (
     <View style={{ marginBottom: 30 }}>
-      <View style={styles.row}>
+      <View style={[styles.row, { justifyContent: 'space-between' }]}>
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 0.9)' }}>
           {name}
         </Text>
+        <IUIButton type="negative" onPress={onRemove}>
+          Remove
+        </IUIButton>
       </View>
       <ExerciseLogTableHeader type={type} />
       {$rows}
@@ -482,6 +487,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 10,
     paddingVertical: 5,
+    alignItems: 'center',
   },
 });
 

@@ -32,10 +32,15 @@ export default function IUIButton({
   );
 
   function getColors() {
-    if (type == 'positive') {
+    if (type == 'done') {
       return {
         color: 'white',
         backgroundColor: 'green',
+      };
+    } else if (type == 'positive') {
+      return {
+        color: 'rgba(0, 127, 255, 1)',
+        backgroundColor: 'rgba(0, 127, 255, 0.1)',
       };
     } else if (type == 'negative') {
       return {
