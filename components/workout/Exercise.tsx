@@ -16,7 +16,7 @@ type SetUnion = LoadedSet | RepsSet | TimeSet;
 
 type LoadedSet = {
   type: 'loaded';
-  num: 'w' | number;
+  warmup: boolean;
   done: boolean;
   previous?: {
     mass: number;
@@ -29,7 +29,7 @@ type LoadedSet = {
 
 type RepsSet = {
   type: 'reps';
-  num: 'w' | number;
+  warmup: boolean;
   done: boolean;
   previous?: {
     reps: number;
@@ -40,7 +40,7 @@ type RepsSet = {
 
 type TimeSet = {
   type: 'time';
-  num: 'w' | number;
+  warmup: boolean;
   done: boolean;
   previous?: {
     time: number;
@@ -59,7 +59,7 @@ let setId = 0;
 
 export function createSet<T extends ExerciseType>(
   type: T,
-  num: 'w' | number
+  warmup: boolean
 ): Set<T> {
   if (type == 'time') {
     return {
@@ -67,7 +67,7 @@ export function createSet<T extends ExerciseType>(
       time: null,
       previous: undefined,
       done: false,
-      num,
+      warmup,
       id: setId++,
     } as Set<T>;
   }
@@ -79,7 +79,7 @@ export function createSet<T extends ExerciseType>(
       reps: null,
       previous: undefined,
       done: false,
-      num,
+      warmup,
       id: setId++,
     } as Set<T>;
   }
@@ -89,7 +89,7 @@ export function createSet<T extends ExerciseType>(
     reps: null,
     previous: undefined,
     done: false,
-    num,
+    warmup,
     id: setId++,
   } as Set<T>;
 }
@@ -149,6 +149,27 @@ export default function ExerciseTable<T extends ExerciseType>({
     );
   }
 
+  type RowAccumulator = { rows: React.ReactNode[]; num: number };
+  const { rows: $rows } = sets.reduce(
+    (acc: RowAccumulator, set: Set<T>) => {
+      const num = !set.warmup ? acc.num + 1 : acc.num;
+      return {
+        num,
+        rows: [
+          ...acc.rows,
+          <ExerciseTableRow
+            key={set.id}
+            set={set}
+            num={num}
+            updateSet={(update) => updateSet(set, update)}
+            onDismiss={() => removeSet(set)}
+          />,
+        ],
+      };
+    },
+    { rows: [], num: 0 }
+  );
+
   return (
     <View style={{ marginBottom: 30 }}>
       <View style={styles.row}>
@@ -157,20 +178,11 @@ export default function ExerciseTable<T extends ExerciseType>({
         </Text>
       </View>
       <ExerciseTableHeader type={type} />
-      {sets.map((set) => {
-        return (
-          <ExerciseTableRow
-            key={set.id}
-            set={set}
-            updateSet={(update) => updateSet(set, update)}
-            onDismiss={() => removeSet(set)}
-          />
-        );
-      })}
+      {$rows}
       <IUIButton
         style={{ marginHorizontal: 10, marginVertical: 5 }}
         onPress={() => {
-          setSets(sets.concat(createSet(type, sets.length + 1)));
+          setSets(sets.concat(createSet(type, false)));
         }}
       >
         + Add Set
@@ -232,10 +244,12 @@ function ExerciseTableHeader({ type }: { type: ExerciseType }) {
 
 function ExerciseTableRow<T extends ExerciseType>({
   set,
+  num,
   updateSet,
   onDismiss,
 }: {
   set: Set<T>;
+  num: number;
   updateSet: (partial: Partial<Set<T>>) => void;
   onDismiss: () => void;
 }) {
@@ -365,7 +379,7 @@ function ExerciseTableRow<T extends ExerciseType>({
         }}
       >
         <View style={rowStyles.setNum}>
-          <SetNum num={set.num} />
+          <SetIndicator set={set} num={num} />
         </View>
         <View style={rowStyles.previous}>
           <SetPreviousPerf set={set} />
@@ -428,7 +442,7 @@ function ExerciseTableRow<T extends ExerciseType>({
   );
 }
 
-function SetNum({ num }: { num: SetUnion['num'] }) {
+function SetIndicator({ set, num }: { set: SetUnion; num: number }) {
   return (
     <View
       style={{
@@ -438,7 +452,7 @@ function SetNum({ num }: { num: SetUnion['num'] }) {
         padding: 5,
       }}
     >
-      <Text style={{ fontWeight: 'bold' }}>{num}</Text>
+      <Text style={{ fontWeight: 'bold' }}>{set.warmup ? 'w' : num}</Text>
     </View>
   );
 }

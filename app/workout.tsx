@@ -15,17 +15,17 @@ export default function WorkoutLog() {
     {
       name: 'Bench Press',
       type: 'loaded',
-      sets: [createSet('loaded', 'w')],
+      sets: [createSet('loaded', true)],
     },
     {
       name: 'Sprints',
       type: 'time',
-      sets: [createSet('time', 'w')],
+      sets: [createSet('time', true)],
     },
     {
       name: 'Skin the cat',
       type: 'reps',
-      sets: [createSet('reps', 'w')],
+      sets: [createSet('reps', true)],
     },
   ]);
 
