@@ -12,9 +12,9 @@ import IUIButton from '../iui/IUIButton';
 import IUICheckbox from '../iui/IUICheckbox';
 import { IUINumericTextInput } from '../iui/IUITextInput';
 
-type SetUnion = LoadedSet | RepsSet | TimeSet;
+type AnySetLog = LoadedSetLog | RepsSetLog | TimeSetLog;
 
-type LoadedSet = {
+type LoadedSetLog = {
   type: 'loaded';
   warmup: boolean;
   done: boolean;
@@ -27,7 +27,7 @@ type LoadedSet = {
   id: number;
 };
 
-type RepsSet = {
+type RepsSetLog = {
   type: 'reps';
   warmup: boolean;
   done: boolean;
@@ -38,7 +38,7 @@ type RepsSet = {
   id: number;
 };
 
-type TimeSet = {
+type TimeSetLog = {
   type: 'time';
   warmup: boolean;
   done: boolean;
@@ -49,18 +49,18 @@ type TimeSet = {
   id: number;
 };
 
-export type Set<T extends ExerciseType> = {
-  loaded: LoadedSet;
-  reps: RepsSet;
-  time: TimeSet;
+export type SetLog<T extends ExerciseType> = {
+  loaded: LoadedSetLog;
+  reps: RepsSetLog;
+  time: TimeSetLog;
 }[T];
 
 let setId = 0;
 
-export function createSet<T extends ExerciseType>(
+export function createSetLog<T extends ExerciseType>(
   type: T,
   warmup: boolean
-): Set<T> {
+): SetLog<T> {
   if (type == 'time') {
     return {
       type: 'time',
@@ -69,7 +69,7 @@ export function createSet<T extends ExerciseType>(
       done: false,
       warmup,
       id: setId++,
-    } as Set<T>;
+    } as SetLog<T>;
   }
 
   if (type == 'loaded') {
@@ -81,7 +81,7 @@ export function createSet<T extends ExerciseType>(
       done: false,
       warmup,
       id: setId++,
-    } as Set<T>;
+    } as SetLog<T>;
   }
 
   return {
@@ -91,49 +91,49 @@ export function createSet<T extends ExerciseType>(
     done: false,
     warmup,
     id: setId++,
-  } as Set<T>;
+  } as SetLog<T>;
 }
 
 type ExerciseType = 'loaded' | 'reps' | 'time';
 
-type LoadedExercise = {
+type LoadedExerciseLog = {
   name: string;
   type: 'loaded';
-  sets: ReadonlyArray<Set<'loaded'>>;
+  sets: ReadonlyArray<SetLog<'loaded'>>;
 };
 
-type RepsExercise = {
+type RepsExerciseLog = {
   name: string;
   type: 'reps';
-  sets: ReadonlyArray<Set<'reps'>>;
+  sets: ReadonlyArray<SetLog<'reps'>>;
 };
 
-type TimeExercise = {
+type TimeExerciseLog = {
   name: string;
   type: 'time';
-  sets: ReadonlyArray<Set<'time'>>;
+  sets: ReadonlyArray<SetLog<'time'>>;
 };
 
-export type Exercise<T extends ExerciseType> = {
-  loaded: LoadedExercise;
-  reps: RepsExercise;
-  time: TimeExercise;
+export type ExerciseLog<T extends ExerciseType> = {
+  loaded: LoadedExerciseLog;
+  reps: RepsExerciseLog;
+  time: TimeExerciseLog;
 }[T];
 
-export type ExerciseTableProps<T extends ExerciseType> = {
+export type ExerciseLogTableProps<T extends ExerciseType> = {
   name: string;
   type: T;
-  sets: ReadonlyArray<Set<T>>;
-  setSets: (sets: ReadonlyArray<Set<T>>) => void;
+  sets: ReadonlyArray<SetLog<T>>;
+  setSets: (sets: ReadonlyArray<SetLog<T>>) => void;
 };
 
-export default function ExerciseTable<T extends ExerciseType>({
+export default function ExerciseLogTable<T extends ExerciseType>({
   name,
   type,
   sets,
   setSets,
-}: ExerciseTableProps<T>) {
-  function updateSet(set: Set<T>, update: Partial<Set<T>>) {
+}: ExerciseLogTableProps<T>) {
+  function updateSet(set: SetLog<T>, update: Partial<SetLog<T>>) {
     setSets(
       sets.map((otherSet) => {
         return set == otherSet ? { ...set, ...update } : otherSet;
@@ -141,7 +141,7 @@ export default function ExerciseTable<T extends ExerciseType>({
     );
   }
 
-  function removeSet(set: Set<T>) {
+  function removeSet(set: SetLog<T>) {
     setSets(
       sets.filter((otherSet) => {
         return otherSet != set;
@@ -151,13 +151,13 @@ export default function ExerciseTable<T extends ExerciseType>({
 
   type RowAccumulator = { rows: React.ReactNode[]; num: number };
   const { rows: $rows } = sets.reduce(
-    (acc: RowAccumulator, set: Set<T>) => {
+    (acc: RowAccumulator, set: SetLog<T>) => {
       const num = !set.warmup ? acc.num + 1 : acc.num;
       return {
         num,
         rows: [
           ...acc.rows,
-          <ExerciseTableRow
+          <ExerciseLogTableRow
             key={set.id}
             set={set}
             num={num}
@@ -177,12 +177,12 @@ export default function ExerciseTable<T extends ExerciseType>({
           {name}
         </Text>
       </View>
-      <ExerciseTableHeader type={type} />
+      <ExerciseLogTableHeader type={type} />
       {$rows}
       <IUIButton
         style={{ marginHorizontal: 10, marginVertical: 5 }}
         onPress={() => {
-          setSets(sets.concat(createSet(type, false)));
+          setSets(sets.concat(createSetLog(type, false)));
         }}
       >
         + Add Set
@@ -191,7 +191,7 @@ export default function ExerciseTable<T extends ExerciseType>({
   );
 }
 
-function ExerciseTableHeader({ type }: { type: ExerciseType }) {
+function ExerciseLogTableHeader({ type }: { type: ExerciseType }) {
   return (
     <View style={styles.row}>
       <View style={headingStyles.setNum}>
@@ -242,15 +242,15 @@ function ExerciseTableHeader({ type }: { type: ExerciseType }) {
   }
 }
 
-function ExerciseTableRow<T extends ExerciseType>({
+function ExerciseLogTableRow<T extends ExerciseType>({
   set,
   num,
   updateSet,
   onDismiss,
 }: {
-  set: Set<T>;
+  set: SetLog<T>;
   num: number;
-  updateSet: (partial: Partial<Set<T>>) => void;
+  updateSet: (partial: Partial<SetLog<T>>) => void;
   onDismiss: () => void;
 }) {
   const translateX = useAnimatedValue(0);
@@ -339,7 +339,7 @@ function ExerciseTableRow<T extends ExerciseType>({
         if (set.done) {
           updateSet({
             done: false,
-          } as Partial<Set<T>>);
+          } as Partial<SetLog<T>>);
         }
       });
     }
@@ -392,7 +392,7 @@ function ExerciseTableRow<T extends ExerciseType>({
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={set.time}
-                onChange={(time) => updateSet({ time } as Set<T>)}
+                onChange={(time) => updateSet({ time } as SetLog<T>)}
               />
             </View>
           ) : null}
@@ -400,7 +400,7 @@ function ExerciseTableRow<T extends ExerciseType>({
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={set.mass}
-                onChange={(mass) => updateSet({ mass } as Set<T>)}
+                onChange={(mass) => updateSet({ mass } as SetLog<T>)}
               />
             </View>
           ) : null}
@@ -408,7 +408,7 @@ function ExerciseTableRow<T extends ExerciseType>({
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={set.reps}
-                onChange={(reps) => updateSet({ reps } as Set<T>)}
+                onChange={(reps) => updateSet({ reps } as SetLog<T>)}
               />
             </View>
           ) : null}
@@ -420,7 +420,7 @@ function ExerciseTableRow<T extends ExerciseType>({
             setChecked={(checked) => {
               updateSet({
                 done: checked,
-              } as Partial<Set<T>>);
+              } as Partial<SetLog<T>>);
 
               if (checked) {
                 Animated.timing(colorValue, {
@@ -442,7 +442,7 @@ function ExerciseTableRow<T extends ExerciseType>({
   );
 }
 
-function SetIndicator({ set, num }: { set: SetUnion; num: number }) {
+function SetIndicator({ set, num }: { set: AnySetLog; num: number }) {
   return (
     <View
       style={{
@@ -457,7 +457,7 @@ function SetIndicator({ set, num }: { set: SetUnion; num: number }) {
   );
 }
 
-function SetPreviousPerf({ set }: { set: SetUnion }) {
+function SetPreviousPerf({ set }: { set: AnySetLog }) {
   return (
     <View
       style={{

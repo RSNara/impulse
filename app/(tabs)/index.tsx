@@ -1,37 +1,40 @@
 import IUIButton from '@/components/iui/IUIButton';
+import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
-import type { Exercise } from '@/components/workout/Exercise';
-import ExerciseTable, { createSet } from '@/components/workout/Exercise';
+import type { ExerciseLog } from '@/components/workout/ExerciseLogTable';
+import ExerciseLogTable, {
+  createSetLog,
+} from '@/components/workout/ExerciseLogTable';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
 export default function WorkoutLog() {
   const [showModal, setShowModal] = useState(false);
   const workoutName = 'HI C&S';
   const [exercises, setExercises] = useState<
-    (Exercise<'loaded'> | Exercise<'reps'> | Exercise<'time'>)[]
+    (ExerciseLog<'loaded'> | ExerciseLog<'reps'> | ExerciseLog<'time'>)[]
   >([
     {
       name: 'Bench Press',
       type: 'loaded',
-      sets: [createSet('loaded', true)],
+      sets: [createSetLog('loaded', true)],
     },
     {
       name: 'Sprints',
       type: 'time',
-      sets: [createSet('time', true)],
+      sets: [createSetLog('time', true)],
     },
     {
       name: 'Skin the cat',
       type: 'reps',
-      sets: [createSet('reps', true)],
+      sets: [createSetLog('reps', true)],
     },
   ]);
 
-  function updateExercise<T extends 'loaded' | 'reps' | 'time'>(
-    exercise: Exercise<T>,
-    update: Partial<Exercise<T>>
+  function updateExerciseLog<T extends 'loaded' | 'reps' | 'time'>(
+    exercise: ExerciseLog<T>,
+    update: Partial<ExerciseLog<T>>
   ) {
     setExercises(
       exercises.map((otherExercise) => {
@@ -43,65 +46,59 @@ export default function WorkoutLog() {
   }
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-      }}
-    >
-      <View>
-        <WorkoutHeaderBar
-          title={workoutName}
-          onFinish={() => setShowModal(true)}
-        />
-        <ScrollView>
-          {exercises.map((exercise, i) => {
-            if (exercise.type == 'loaded') {
-              return (
-                <ExerciseTable
-                  key={exercise.name}
-                  name={exercise.name}
-                  type={exercise.type}
-                  sets={exercise.sets}
-                  setSets={(sets) => {
-                    updateExercise(exercise, { sets });
-                  }}
-                />
-              );
-            }
-            if (exercise.type == 'reps') {
-              return (
-                <ExerciseTable
-                  key={exercise.name}
-                  name={exercise.name}
-                  type={exercise.type}
-                  sets={exercise.sets}
-                  setSets={(sets) => {
-                    updateExercise(exercise, { sets });
-                  }}
-                />
-              );
-            }
-            if (exercise.type == 'time') {
-              return (
-                <ExerciseTable
-                  key={exercise.name}
-                  name={exercise.name}
-                  type={exercise.type}
-                  sets={exercise.sets}
-                  setSets={(sets) => {
-                    updateExercise(exercise, { sets });
-                  }}
-                />
-              );
-            }
-          })}
-        </ScrollView>
-      </View>
+    <IUIContainer>
+      <WorkoutHeaderBar
+        title={workoutName}
+        onFinish={() => setShowModal(true)}
+      />
+      <ScrollView>
+        {exercises.map((exercise, i) => {
+          if (exercise.type == 'loaded') {
+            return (
+              <ExerciseLogTable
+                key={exercise.name}
+                name={exercise.name}
+                type={exercise.type}
+                sets={exercise.sets}
+                setSets={(sets) => {
+                  updateExerciseLog(exercise, { sets });
+                }}
+              />
+            );
+          }
+          if (exercise.type == 'reps') {
+            return (
+              <ExerciseLogTable
+                key={exercise.name}
+                name={exercise.name}
+                type={exercise.type}
+                sets={exercise.sets}
+                setSets={(sets) => {
+                  updateExerciseLog(exercise, { sets });
+                }}
+              />
+            );
+          }
+          if (exercise.type == 'time') {
+            return (
+              <ExerciseLogTable
+                key={exercise.name}
+                name={exercise.name}
+                type={exercise.type}
+                sets={exercise.sets}
+                setSets={(sets) => {
+                  updateExerciseLog(exercise, { sets });
+                }}
+              />
+            );
+          }
+        })}
+      </ScrollView>
       <WOFinishModal
         visible={showModal}
         onRequestClose={() => setShowModal(false)}
       />
-    </SafeAreaView>
+    </IUIContainer>
   );
 }
 
