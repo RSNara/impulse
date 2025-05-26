@@ -70,7 +70,7 @@ export default function WorkoutLog() {
         flex: 1,
       }}
     >
-      <View style={{ padding: 10 }}>
+      <View>
         <WorkoutHeaderBar
           title={workoutName}
           onFinish={() => setShowModal(true)}
@@ -140,7 +140,7 @@ function WorkoutHeaderBar({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
+        padding: 10,
       }}
     >
       <View>

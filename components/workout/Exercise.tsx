@@ -1,9 +1,10 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   PanResponder,
   StyleSheet,
   Text,
+  Vibration,
   View,
   useAnimatedValue,
 } from 'react-native';
@@ -151,6 +152,7 @@ export default function ExerciseTable<T extends ExerciseType>(
         />
       ))}
       <IUIButton
+        style={{ marginHorizontal: 10, marginVertical: 5 }}
         onPress={() => {
           props.setSets(props.sets.concat(createSet(props.type)));
         }}
@@ -206,21 +208,31 @@ function ExerciseTableRow<T extends ExerciseType>({
   onDismiss: () => void;
 }) {
   const translateX = useAnimatedValue(0);
-  const triggerPanDx = 10;
-  const triggerDismissDx = 150;
+  const triggerPanDx = useRef(15);
+  const triggerDismissDx = useRef(30);
+  const finalTranslateX = useRef(500);
+
+  const [rowWidth, setRowWidth] = useState(0);
+  useEffect(() => {
+    if (rowWidth > 0) {
+      triggerDismissDx.current = rowWidth * 0.4;
+      finalTranslateX.current = rowWidth;
+    }
+  }, [rowWidth]);
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) =>
-        gestureState.dx > triggerPanDx,
+        gestureState.dx > triggerPanDx.current,
       onPanResponderMove: Animated.event([null, { dx: translateX }], {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > triggerDismissDx) {
+        if (gestureState.dx > triggerDismissDx.current) {
           // Dismiss the item
+          Vibration.vibrate();
           Animated.timing(translateX, {
-            toValue: 500,
+            toValue: finalTranslateX.current,
             duration: 200,
             useNativeDriver: false,
           }).start(() => {
@@ -244,55 +256,107 @@ function ExerciseTableRow<T extends ExerciseType>({
     })
   ).current;
 
-  const backgroundColor = translateX.interpolate({
-    inputRange: [0, triggerDismissDx],
-    outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 0, 0, 0.5)'], // More red left and right, neutral in center
+  const swipeColor = translateX.interpolate({
+    inputRange: [0, triggerPanDx.current, triggerDismissDx.current],
+    outputRange: [
+      'rgba(255, 0, 0, 0)',
+      'rgba(255, 0, 0, 0.1)',
+      'rgba(255, 0, 0, 0.75)',
+    ], // More red left and right, neutral in center
+    extrapolate: 'clamp',
+  });
+
+  const colorValue = useAnimatedValue(0);
+  const backgroundColor = colorValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['rgba(0, 255, 0, 0)', 'rgba(0, 255, 0, 0.125)'],
     extrapolate: 'clamp',
   });
 
   return (
     <Animated.View
-      style={[styles.row, { transform: [{ translateX }], backgroundColor }]}
+      style={[{ flexDirection: 'row', transform: [{ translateX }] }]}
       {...panResponder.panHandlers}
+      onLayout={(event) => {
+        const { width } = event.nativeEvent.layout;
+        setRowWidth(width);
+      }}
     >
-      <View style={rowStyles.setNum}>
-        <SetIndicator indicator={set.indicator} />
-      </View>
-      <View style={rowStyles.previous}>
-        <SetPreviousPerformance set={set} />
-      </View>
-      {set.type === 'time' ? (
-        <View style={rowStyles.data}>
-          <IUINumericTextInput
-            value={set.time}
-            onChange={(time) => updateSet({ time } as Set<T>)}
-          />
+      <Animated.View
+        style={{
+          position: 'absolute',
+          left: -rowWidth,
+          top: 0,
+          width: rowWidth,
+          bottom: 0,
+          backgroundColor: swipeColor,
+          flexDirection: 'row-reverse',
+          alignItems: 'center',
+          paddingRight: 15,
+        }}
+      >
+        <Text style={{ fontWeight: 'bold', color: 'white' }}>Delete</Text>
+      </Animated.View>
+      <Animated.View
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          paddingHorizontal: 10,
+          paddingVertical: 5,
+          backgroundColor,
+        }}
+      >
+        <View style={rowStyles.setNum}>
+          <SetIndicator indicator={set.indicator} />
         </View>
-      ) : null}
-      {set.type === 'loaded' ? (
-        <View style={rowStyles.data}>
-          <IUINumericTextInput
-            value={set.mass}
-            onChange={(mass) => updateSet({ mass } as Set<T>)}
-          />
+        <View style={rowStyles.previous}>
+          <SetPreviousPerformance set={set} />
         </View>
-      ) : null}
-      {set.type == 'loaded' || set.type == 'reps' ? (
-        <View style={rowStyles.data}>
-          <IUINumericTextInput
-            value={set.reps}
-            onChange={(reps) => updateSet({ reps } as Set<T>)}
-          />
+        {set.type === 'time' ? (
+          <View style={rowStyles.data}>
+            <IUINumericTextInput
+              value={set.time}
+              onChange={(time) => updateSet({ time } as Set<T>)}
+            />
+          </View>
+        ) : null}
+        {set.type === 'loaded' ? (
+          <View style={rowStyles.data}>
+            <IUINumericTextInput
+              value={set.mass}
+              onChange={(mass) => updateSet({ mass } as Set<T>)}
+            />
+          </View>
+        ) : null}
+        {set.type == 'loaded' || set.type == 'reps' ? (
+          <View style={rowStyles.data}>
+            <IUINumericTextInput
+              value={set.reps}
+              onChange={(reps) => updateSet({ reps } as Set<T>)}
+            />
+          </View>
+        ) : null}
+        <View style={rowStyles.done}>
+          <IUICheckbox
+            checked={set.done}
+            setChecked={(checked) => {
+              updateSet({ done: checked } as Partial<Set<T>>);
+              if (checked) {
+                Animated.timing(colorValue, {
+                  toValue: 1,
+                  duration: 200,
+                  useNativeDriver: false,
+                }).start();
+              } else {
+                Animated.spring(colorValue, {
+                  toValue: 0,
+                  useNativeDriver: false,
+                }).start();
+              }
+            }}
+          ></IUICheckbox>
         </View>
-      ) : null}
-      <View style={rowStyles.done}>
-        <IUICheckbox
-          checked={set.done}
-          setChecked={(checked) => {
-            updateSet({ done: checked } as Partial<Set<T>>);
-          }}
-        ></IUICheckbox>
-      </View>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -333,7 +397,11 @@ function SetPreviousPerformance({ set }: { set: SetUnion }) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', marginBottom: 10 },
+  row: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
 });
 
 const headingStyles = StyleSheet.create({
