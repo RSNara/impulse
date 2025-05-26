@@ -1,15 +1,22 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, ViewStyle } from 'react-native';
 
 export default function Checkbox({
   checked,
   setChecked,
+  disabled = false,
+  style = {},
 }: {
   checked: boolean;
+  disabled?: boolean;
   setChecked: (checked: boolean) => void;
+  style?: ViewStyle;
 }) {
   return (
     <Pressable
       onPress={() => {
+        if (disabled) {
+          return;
+        }
         setChecked(!checked);
       }}
     >
@@ -19,12 +26,22 @@ export default function Checkbox({
           padding: 5,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: checked ? 'green' : 'rgba(0, 0, 0, 0.1)',
+          backgroundColor: disabled
+            ? 'rgba(0, 0, 0, 0.025)'
+            : checked
+            ? 'green'
+            : 'rgba(0, 0, 0, 0.1)',
+          ...style,
         }}
       >
         <Text
           style={{
-            color: checked ? 'white' : 'black',
+            fontWeight: 'bold',
+            color: disabled
+              ? 'rgba(0, 0, 0, 0.25)'
+              : checked
+              ? 'white'
+              : 'black',
           }}
         >
           {'✓'}

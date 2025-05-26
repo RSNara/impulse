@@ -15,7 +15,7 @@ export function IUINumericTextInput<T>({
         padding: 5,
         marginEnd: 5,
       }}
-      value={value ? String(value) : ''}
+      value={value != null ? String(value) : ''}
       inputMode="numeric"
       textAlign="center"
       onChangeText={(change) => {

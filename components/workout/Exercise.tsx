@@ -172,28 +172,40 @@ function ExerciseTableHeader({ type }: { type: ExerciseType }) {
       <View style={headingStyles.previous}>
         <Title>Previous</Title>
       </View>
-      {type == 'time' && (
-        <View style={headingStyles.data}>
-          <Title>Time</Title>
-        </View>
-      )}
-      {type == 'loaded' && (
-        <View style={headingStyles.data}>
-          <Title>Mass</Title>
-        </View>
-      )}
-      {(type == 'loaded' || type == 'reps') && (
-        <View style={headingStyles.data}>
-          <Title>Reps</Title>
-        </View>
-      )}
+      <View style={headingStyles.dataContainer}>
+        {(type == 'time' || type == 'reps') && (
+          <View style={headingStyles.data}>
+            <Title />
+          </View>
+        )}
+        {type == 'time' && (
+          <View style={headingStyles.data}>
+            <Title>Time</Title>
+          </View>
+        )}
+        {type == 'loaded' && (
+          <View style={headingStyles.data}>
+            <Title>Mass</Title>
+          </View>
+        )}
+        {(type == 'loaded' || type == 'reps') && (
+          <View style={headingStyles.data}>
+            <Title>Reps</Title>
+          </View>
+        )}
+      </View>
+
       <View style={{ flex: 1 }}>
-        <IUICheckbox checked={false} setChecked={(checked) => {}}></IUICheckbox>
+        <IUICheckbox
+          style={{ backgroundColor: 'transparent' }}
+          checked={false}
+          setChecked={(checked) => {}}
+        ></IUICheckbox>
       </View>
     </View>
   );
 
-  function Title({ children }: { children: string }) {
+  function Title({ children }: { children?: string }) {
     return <Text style={{ fontWeight: 'bold' }}>{children}</Text>;
   }
 }
@@ -273,6 +285,31 @@ function ExerciseTableRow<T extends ExerciseType>({
     extrapolate: 'clamp',
   });
 
+  const canFinishSet = !(
+    (set.type === 'time' && set.time == null) ||
+    (set.type == 'loaded' && (set.reps == null || set.mass == null)) ||
+    (set.type == 'reps' && set.reps == null)
+  );
+
+  useEffect(() => {
+    if (canFinishSet && set.done) {
+      Animated.timing(colorValue, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.spring(colorValue, {
+        toValue: 0,
+        useNativeDriver: false,
+      }).start(() => {
+        updateSet({
+          done: false,
+        } as Partial<Set<T>>);
+      });
+    }
+  }, [set.done, canFinishSet]);
+
   return (
     <Animated.View
       style={[{ flexDirection: 'row', transform: [{ translateX }] }]}
@@ -312,47 +349,43 @@ function ExerciseTableRow<T extends ExerciseType>({
         <View style={rowStyles.previous}>
           <SetPreviousPerformance set={set} />
         </View>
-        {set.type === 'time' ? (
-          <View style={rowStyles.data}>
-            <IUINumericTextInput
-              value={set.time}
-              onChange={(time) => updateSet({ time } as Set<T>)}
-            />
-          </View>
-        ) : null}
-        {set.type === 'loaded' ? (
-          <View style={rowStyles.data}>
-            <IUINumericTextInput
-              value={set.mass}
-              onChange={(mass) => updateSet({ mass } as Set<T>)}
-            />
-          </View>
-        ) : null}
-        {set.type == 'loaded' || set.type == 'reps' ? (
-          <View style={rowStyles.data}>
-            <IUINumericTextInput
-              value={set.reps}
-              onChange={(reps) => updateSet({ reps } as Set<T>)}
-            />
-          </View>
-        ) : null}
+        <View style={rowStyles.dataContainer}>
+          {(set.type == 'time' || set.type == 'reps') && (
+            <View style={rowStyles.data} />
+          )}
+          {set.type === 'time' ? (
+            <View style={rowStyles.data}>
+              <IUINumericTextInput
+                value={set.time}
+                onChange={(time) => updateSet({ time } as Set<T>)}
+              />
+            </View>
+          ) : null}
+          {set.type === 'loaded' ? (
+            <View style={rowStyles.data}>
+              <IUINumericTextInput
+                value={set.mass}
+                onChange={(mass) => updateSet({ mass } as Set<T>)}
+              />
+            </View>
+          ) : null}
+          {set.type == 'loaded' || set.type == 'reps' ? (
+            <View style={rowStyles.data}>
+              <IUINumericTextInput
+                value={set.reps}
+                onChange={(reps) => updateSet({ reps } as Set<T>)}
+              />
+            </View>
+          ) : null}
+        </View>
         <View style={rowStyles.done}>
           <IUICheckbox
             checked={set.done}
+            disabled={!canFinishSet}
             setChecked={(checked) => {
-              updateSet({ done: checked } as Partial<Set<T>>);
-              if (checked) {
-                Animated.timing(colorValue, {
-                  toValue: 1,
-                  duration: 200,
-                  useNativeDriver: false,
-                }).start();
-              } else {
-                Animated.spring(colorValue, {
-                  toValue: 0,
-                  useNativeDriver: false,
-                }).start();
-              }
+              updateSet({
+                done: checked,
+              } as Partial<Set<T>>);
             }}
           ></IUICheckbox>
         </View>
@@ -407,12 +440,16 @@ const styles = StyleSheet.create({
 const headingStyles = StyleSheet.create({
   setNum: { flex: 1, justifyContent: 'center' },
   previous: {
-    flex: 6,
+    flex: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  dataContainer: {
+    flex: 5,
+    flexDirection: 'row',
+  },
   data: {
-    flex: 4,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -428,11 +465,15 @@ const rowStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   previous: {
-    flex: 6,
+    flex: 5,
     justifyContent: 'center',
   },
+  dataContainer: {
+    flex: 5,
+    flexDirection: 'row',
+  },
   data: {
-    flex: 4,
+    flex: 1,
     justifyContent: 'center',
   },
   done: {
