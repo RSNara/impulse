@@ -2,17 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   PanResponder,
-  Text,
   useAnimatedValue,
   Vibration,
+  ViewStyle,
 } from 'react-native';
 
 export default function IUIDismissable({
   onDismiss,
   children,
+  style,
 }: {
   onDismiss: () => void;
   children: React.ReactNode;
+  style: ViewStyle;
 }) {
   const translateX = useAnimatedValue(0);
   const triggerPanDxRef = useRef(15);
@@ -34,8 +36,9 @@ export default function IUIDismissable({
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        gestureState.dx > triggerPanDxRef.current,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return gestureState.dx > triggerPanDxRef.current;
+      },
       onPanResponderMove: Animated.event([null, { dx: translateX }], {
         useNativeDriver: false,
       }),
@@ -78,9 +81,14 @@ export default function IUIDismissable({
     extrapolate: 'clamp',
   });
 
+  const deleteColor = translateX.interpolate({
+    inputRange: [0, triggerPanDxRef.current],
+    outputRange: ['transparent', 'rgba(255, 255, 255, 1)'],
+  });
+
   return (
     <Animated.View
-      style={[{ flexDirection: 'row', transform: [{ translateX }] }]}
+      style={[{ transform: [{ translateX }] }, style]}
       {...panResponder.panHandlers}
       onLayout={(event) => {
         const { width } = event.nativeEvent.layout;
@@ -100,7 +108,9 @@ export default function IUIDismissable({
           paddingRight: 15,
         }}
       >
-        <Text style={{ fontWeight: 'bold', color: 'white' }}>Delete</Text>
+        <Animated.Text style={{ fontWeight: 'bold', color: deleteColor }}>
+          Delete
+        </Animated.Text>
       </Animated.View>
       {children}
     </Animated.View>

@@ -172,14 +172,11 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   );
 
   return (
-    <View style={{ marginBottom: 20 }}>
+    <IUIDismissable style={{ marginBottom: 20 }} onDismiss={onRemove}>
       <View style={[styles.row, { justifyContent: 'space-between' }]}>
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 0.9)' }}>
           {name}
         </Text>
-        <IUIButton type="negative" onPress={onRemove}>
-          Remove
-        </IUIButton>
       </View>
       <ExerciseLogTableHeader type={type} />
       {$rows}
@@ -191,7 +188,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
       >
         + Add Set
       </IUIButton>
-    </View>
+    </IUIDismissable>
   );
 }
 
