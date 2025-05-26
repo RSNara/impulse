@@ -21,9 +21,12 @@ export type Exercise<T extends ExerciseType> = {
   time: TimeExercise;
 }[T];
 
-const Exercises: ReadonlyArray<
-  Exercise<'loaded'> | Exercise<'reps'> | Exercise<'time'>
-> = [
+export type AnyExercise =
+  | Exercise<'loaded'>
+  | Exercise<'reps'>
+  | Exercise<'time'>;
+
+const Exercises: AnyExercise[] = [
   // LOADED EXERCISES
   { name: 'Barbell Back Squat', type: 'loaded' },
   { name: 'Barbell Front Squat', type: 'loaded' },
@@ -143,3 +146,5 @@ const Exercises: ReadonlyArray<
   { name: 'Isometric Push-Up Hold', type: 'time' },
   { name: 'Isometric Lunge Hold', type: 'time' },
 ];
+
+export default Exercises;

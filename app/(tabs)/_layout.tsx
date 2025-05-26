@@ -1,5 +1,6 @@
+import IUIIcon from '@/components/iui/IUIIcon';
 import { Tabs } from 'expo-router';
-import { Platform, Text } from 'react-native';
+import { Platform } from 'react-native';
 
 export default function TabLayout() {
   return (
@@ -19,27 +20,23 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Workout',
-          tabBarIcon: ({ color }) => <Icon>💪</Icon>,
+          tabBarIcon: ({ color }) => <IUIIcon>💪</IUIIcon>,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: 'Past Logs',
-          tabBarIcon: ({ color }) => <Icon>📜</Icon>,
+          tabBarIcon: ({ color }) => <IUIIcon>📜</IUIIcon>,
         }}
       />
       <Tabs.Screen
         name="exercises"
         options={{
           title: 'Database',
-          tabBarIcon: ({ color }) => <Icon>🏋</Icon>,
+          tabBarIcon: ({ color }) => <IUIIcon>🏋</IUIIcon>,
         }}
       />
     </Tabs>
   );
-}
-
-function Icon({ children }: { children: string }) {
-  return <Text style={{ fontWeight: 'bold' }}>{children}</Text>;
 }

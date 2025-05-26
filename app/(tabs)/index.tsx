@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
-export default function WorkoutLog() {
+export default function WorkoutScreen() {
   const [showModal, setShowModal] = useState(false);
   const workoutName = 'HI C&S';
   const [exercises, setExercises] = useState<
@@ -94,7 +94,7 @@ export default function WorkoutLog() {
           }
         })}
       </ScrollView>
-      <WOFinishModal
+      <WorkoutFinishModal
         visible={showModal}
         onRequestClose={() => setShowModal(false)}
       />
@@ -128,7 +128,7 @@ function WorkoutHeaderBar({
   );
 }
 
-function WOFinishModal({
+function WorkoutFinishModal({
   visible,
   onRequestClose,
 }: {
