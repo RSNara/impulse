@@ -401,16 +401,9 @@ function ExerciseLogTableRow<T extends ExerciseType>({
 
 function SetIndicator({ set, num }: { set: AnySetLog; num: number }) {
   return (
-    <View
-      style={{
-        alignItems: 'center',
-        borderRadius: 5,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        padding: 5,
-      }}
-    >
-      <Text style={{ fontWeight: 'bold' }}>{set.warmup ? 'w' : num}</Text>
-    </View>
+    <IUIButton type="secondary" feeling="neutral" onPress={() => {}}>
+      {set.warmup ? 'w' : String(num)}
+    </IUIButton>
   );
 }
 

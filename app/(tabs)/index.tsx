@@ -273,7 +273,6 @@ function FinishWorkoutModal({
   visible: boolean;
   onRequestClose: (finished: boolean) => void;
 }) {
-  const router = useRouter();
   return (
     <IUIModal visible={visible} onRequestClose={() => onRequestClose(false)}>
       <View style={{ alignItems: 'center', padding: 20 }}>
@@ -282,15 +281,17 @@ function FinishWorkoutModal({
       <View style={{ alignItems: 'center', paddingBottom: 20 }}>
         <Text style={{ fontWeight: 'bold' }}>Finished Workout?</Text>
       </View>
-      <IUIButton
-        type="primary"
-        feeling="done"
-        onPress={() => {
-          onRequestClose(true);
-        }}
-      >
-        Finish Workout
-      </IUIButton>
+      <View style={{ marginBottom: 10 }}>
+        <IUIButton
+          type="primary"
+          feeling="done"
+          onPress={() => {
+            onRequestClose(true);
+          }}
+        >
+          Finish Workout
+        </IUIButton>
+      </View>
     </IUIModal>
   );
 }
