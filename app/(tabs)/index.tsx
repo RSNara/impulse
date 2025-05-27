@@ -9,13 +9,20 @@ import type { AnyExercise, ExerciseType } from '@/data/exercises';
 import Exercises from '@/data/exercises';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
   const [showClearWorkoutModal, setShowClearWorkoutModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
-  const workoutName = 'HI C&S';
+  const [workoutName, setWorkoutName] = useState('HI C&S');
   const [exerciseLogs, setExerciseLogs] = useState<
     (ExerciseLog<'loaded'> | ExerciseLog<'reps'> | ExerciseLog<'time'>)[]
   >([]);
@@ -60,6 +67,7 @@ export default function WorkoutScreen() {
     <IUIContainer>
       <WorkoutHeader
         name={workoutName}
+        setName={setWorkoutName}
         disableClear={exerciseLogs.length == 0}
         onClear={() => {
           setShowClearWorkoutModal(true);
@@ -162,12 +170,14 @@ export default function WorkoutScreen() {
 
 function WorkoutHeader({
   name,
+  setName,
   disableClear,
   onClear,
   disableFinish,
   onFinish,
 }: {
   name: string;
+  setName: (name: string) => void;
   disableClear: boolean;
   onClear: () => void;
   disableFinish: boolean;
@@ -183,7 +193,11 @@ function WorkoutHeader({
       }}
     >
       <View>
-        <Text style={{ fontWeight: 'bold' }}>{name}</Text>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          style={{ fontWeight: 'bold' }}
+        />
       </View>
       <View style={{ flexDirection: 'row' }}>
         <View style={{ marginRight: 5 }}>
