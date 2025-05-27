@@ -7,7 +7,6 @@ import {
   useAnimatedValue,
 } from 'react-native';
 import IUIButton from '../iui/IUIButton';
-import IUICheckbox from '../iui/IUICheckbox';
 import IUIDismissable from '../iui/IUIDismissable';
 import { IUINumericTextInput } from '../iui/IUITextInput';
 
@@ -232,11 +231,9 @@ function ExerciseLogTableHeader({ type }: { type: ExerciseType }) {
       </View>
 
       <View style={{ flex: 1 }}>
-        <IUICheckbox
-          style={{ backgroundColor: 'transparent' }}
-          checked={false}
-          setChecked={(checked) => {}}
-        ></IUICheckbox>
+        <IUIButton type="tertiary" feeling="neutral" onPress={() => {}}>
+          ✓
+        </IUIButton>
       </View>
     </View>
   );
@@ -276,16 +273,14 @@ function ExerciseLogTableRow<T extends ExerciseType>({
 
   useEffect(() => {
     if (!canFinishSet && set.done) {
+      updateSet({
+        done: false,
+      } as Partial<SetLog<T>>);
+
       Animated.spring(colorValue, {
         toValue: 0,
         useNativeDriver: false,
-      }).start(() => {
-        if (set.done) {
-          updateSet({
-            done: false,
-          } as Partial<SetLog<T>>);
-        }
-      });
+      }).start();
     }
   }, [set, canFinishSet]);
 
@@ -336,15 +331,17 @@ function ExerciseLogTableRow<T extends ExerciseType>({
           ) : null}
         </View>
         <View style={rowStyles.done}>
-          <IUICheckbox
-            checked={set.done}
+          <IUIButton
             disabled={!canFinishSet}
-            setChecked={(checked) => {
+            type={set.done ? 'primary' : 'secondary'}
+            feeling={set.done ? 'done' : 'neutral'}
+            onPress={() => {
+              const isDone = !set.done;
               updateSet({
-                done: checked,
+                done: isDone,
               } as Partial<SetLog<T>>);
 
-              if (checked) {
+              if (isDone) {
                 Animated.timing(colorValue, {
                   toValue: 1,
                   duration: 200,
@@ -357,12 +354,15 @@ function ExerciseLogTableRow<T extends ExerciseType>({
                 }).start();
               }
             }}
-          ></IUICheckbox>
+          >
+            ✓
+          </IUIButton>
         </View>
       </Animated.View>
     </IUIDismissable>
   );
 }
+2;
 
 function SetIndicator({ set, num }: { set: AnySetLog; num: number }) {
   return (

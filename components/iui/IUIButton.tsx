@@ -15,8 +15,6 @@ export default function IUIButton2({
 }) {
   const { color, backgroundColor } = getColors();
 
-  console.log({ color, backgroundColor });
-
   return (
     <Pressable
       onPress={() => {
