@@ -149,11 +149,12 @@ export default function WorkoutScreen() {
       />
       <AddExerciseModal
         visible={showAddExerciseModal}
+        alreadyPicked={new Set(exerciseLogs.map((log) => log.name))}
         onRequestClose={(exercise) => {
           if (exercise) {
             addExercise(exercise);
-            setShowAddExerciseModal(false);
           }
+          setShowAddExerciseModal(false);
         }}
       />
     </IUIContainer>
@@ -226,41 +227,85 @@ function FinishWorkoutModal({
 
 function AddExerciseModal({
   visible,
+  alreadyPicked,
   onRequestClose,
 }: {
   visible: boolean;
+  alreadyPicked: Set<string>;
   onRequestClose: (exercise?: AnyExercise | null) => void;
 }) {
-  const router = useRouter();
+  const [selectedExercise, setSelectedExercise] = useState<AnyExercise | null>(
+    null
+  );
   return (
     <IUIModal visible={visible} onRequestClose={() => onRequestClose(null)}>
-      <View style={{ alignItems: 'center', paddingBottom: 20 }}>
+      <View style={{ alignItems: 'center', paddingBottom: 10 }}>
         <Text style={{ fontWeight: 'bold' }}>Add Exercise?</Text>
       </View>
       <FlatList<AnyExercise>
-        data={Exercises.slice(0, 10)}
+        data={Exercises.filter((exercise) => !alreadyPicked.has(exercise.name))}
         keyExtractor={(info) => info.name.replaceAll(' ', '-')}
+        style={{ paddingBottom: 10 }}
         renderItem={(info) => {
           const exercise = info.item;
+          const isSelected = selectedExercise == exercise;
           return (
-            <Pressable
-              style={{ padding: 10 }}
+            <ExerciseRow
+              exercise={exercise}
+              isSelected={selectedExercise == exercise}
               onPress={() => {
-                onRequestClose(exercise);
+                setSelectedExercise(isSelected ? null : exercise);
               }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Text style={{ fontWeight: 'bold' }}>{exercise.name}</Text>
-              </View>
-            </Pressable>
+            />
           );
         }}
       />
+      <IUIButton
+        type="positive"
+        style={{ marginVertical: 10 }}
+        onPress={() => {
+          onRequestClose(selectedExercise);
+        }}
+      >
+        Add Exercise
+      </IUIButton>
     </IUIModal>
+  );
+}
+
+function ExerciseRow({
+  exercise,
+  isSelected,
+  onPress,
+}: {
+  exercise: AnyExercise;
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        borderColor: 'rgba(0, 127, 255, 0.05)',
+        borderRadius: 5,
+        ...(isSelected
+          ? {
+              borderWidth: 1,
+              borderBottomWidth: 3,
+              backgroundColor: 'rgba(0, 127, 255, 0.05)',
+              marginBottom: 4,
+            }
+          : {
+              borderWidth: 1,
+              marginBottom: 6,
+            }),
+      }}
+    >
+      <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
+        {exercise.name}
+      </Text>
+    </Pressable>
   );
 }
