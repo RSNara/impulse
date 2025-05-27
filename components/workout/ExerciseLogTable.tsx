@@ -172,7 +172,11 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   );
 
   return (
-    <IUIDismissable style={{ marginBottom: 20 }} onDismiss={onRemove}>
+    <IUIDismissable
+      style={{ marginBottom: 20 }}
+      onDismiss={onRemove}
+      towards="left"
+    >
       <View style={[styles.row, { justifyContent: 'space-between' }]}>
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 0.9)' }}>
           {name}
@@ -283,7 +287,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   }, [set, canFinishSet]);
 
   return (
-    <IUIDismissable onDismiss={onDismiss}>
+    <IUIDismissable onDismiss={onDismiss} towards="right">
       <Animated.View
         style={{
           flex: 1,

@@ -7,20 +7,29 @@ import {
   ViewStyle,
 } from 'react-native';
 
+let i = 0;
+
 export default function IUIDismissable({
   onDismiss,
   children,
   style,
+  towards = 'right',
 }: {
   onDismiss: () => void;
   children: React.ReactNode;
-  style: ViewStyle;
+  style?: ViewStyle;
+  towards?: 'left' | 'right';
 }) {
   const translateX = useAnimatedValue(0);
   const triggerPanDxRef = useRef(15);
   const triggerDismissDxRef = useRef(30);
   const finalTranslateXRef = useRef(500);
   const onDismissRef = useRef(onDismiss);
+  const towardsRef = useRef(towards);
+
+  useEffect(() => {
+    towardsRef.current = towards;
+  }, [towards]);
 
   useEffect(() => {
     onDismissRef.current = onDismiss;
@@ -37,17 +46,29 @@ export default function IUIDismissable({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dx > triggerPanDxRef.current;
+        return towardsRef.current == 'right'
+          ? gestureState.dx > triggerPanDxRef.current
+          : gestureState.dx < -triggerPanDxRef.current;
       },
       onPanResponderMove: Animated.event([null, { dx: translateX }], {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > triggerDismissDxRef.current) {
+        const shouldDismiss =
+          towardsRef.current == 'right'
+            ? gestureState.dx > triggerDismissDxRef.current
+            : gestureState.dx < -triggerDismissDxRef.current;
+
+        if (shouldDismiss) {
           // Dismiss the item
           Vibration.vibrate();
+          const toValue =
+            towardsRef.current == 'right'
+              ? finalTranslateXRef.current
+              : -finalTranslateXRef.current;
+
           Animated.timing(translateX, {
-            toValue: finalTranslateXRef.current,
+            toValue: toValue,
             duration: 200,
             useNativeDriver: false,
           }).start(() => {
@@ -71,20 +92,42 @@ export default function IUIDismissable({
     })
   ).current;
 
-  const swipeColor = translateX.interpolate({
-    inputRange: [0, triggerPanDxRef.current, triggerDismissDxRef.current],
-    outputRange: [
-      'rgba(255, 0, 0, 0)',
-      'rgba(255, 0, 0, 0.1)',
-      'rgba(255, 0, 0, 0.75)',
-    ], // More red left and right, neutral in center
+  const deleteBarBGColor = translateX.interpolate({
+    ...(towards == 'right'
+      ? {
+          inputRange: [0, triggerPanDxRef.current, triggerDismissDxRef.current],
+          outputRange: [
+            'rgba(255, 0, 0, 0)',
+            'rgba(255, 0, 0, 0.1)',
+            'rgba(255, 0, 0, 0.75)',
+          ],
+        }
+      : {
+          inputRange: [
+            -triggerDismissDxRef.current,
+            -triggerPanDxRef.current,
+            0,
+          ],
+          outputRange: [
+            'rgba(255, 0, 0, 0.75)',
+            'rgba(255, 0, 0, 0.1)',
+            'rgba(255, 0, 0, 0)',
+          ],
+        }),
     extrapolate: 'clamp',
   });
 
-  const deleteColor = translateX.interpolate({
-    inputRange: [0, triggerPanDxRef.current],
-    outputRange: ['transparent', 'rgba(255, 255, 255, 1)'],
-  });
+  const deleteBarColor = translateX.interpolate(
+    towards == 'right'
+      ? {
+          inputRange: [0, triggerPanDxRef.current],
+          outputRange: ['transparent', 'rgba(255, 255, 255, 1)'],
+        }
+      : {
+          inputRange: [-triggerPanDxRef.current, 0],
+          outputRange: ['rgba(255, 255, 255, 1)', 'transparent'],
+        }
+  );
 
   return (
     <Animated.View
@@ -98,17 +141,28 @@ export default function IUIDismissable({
       <Animated.View
         style={{
           position: 'absolute',
-          left: -rowWidth,
-          top: 0,
-          width: rowWidth,
-          bottom: 0,
-          backgroundColor: swipeColor,
-          flexDirection: 'row-reverse',
+          ...(towards == 'right'
+            ? {
+                top: 0,
+                bottom: 0,
+                left: -rowWidth,
+                width: rowWidth,
+                flexDirection: 'row-reverse',
+                paddingRight: 15,
+              }
+            : {
+                top: 0,
+                bottom: 0,
+                left: rowWidth,
+                width: rowWidth,
+                flexDirection: 'row',
+                paddingLeft: 15,
+              }),
+          backgroundColor: deleteBarBGColor,
           alignItems: 'center',
-          paddingRight: 15,
         }}
       >
-        <Animated.Text style={{ fontWeight: 'bold', color: deleteColor }}>
+        <Animated.Text style={{ fontWeight: 'bold', color: deleteBarColor }}>
           Delete
         </Animated.Text>
       </Animated.View>
