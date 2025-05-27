@@ -1,3 +1,4 @@
+import type { Exercise } from '@/data/exercises';
 import { useEffect } from 'react';
 import {
   Animated,
@@ -52,6 +53,40 @@ export type SetLog<T extends ExerciseType> = {
   reps: RepsSetLog;
   time: TimeSetLog;
 }[T];
+
+function assertNever(x: never): never {
+  throw new Error('Unexpected value: ' + x);
+}
+
+export function createExerciseLog<T extends ExerciseType>(
+  exercise: Exercise<T>
+): ExerciseLog<T> {
+  if (exercise.type == 'loaded') {
+    return {
+      name: exercise.name,
+      type: exercise.type,
+      sets: [createSetLog('loaded', false)],
+    } as ExerciseLog<'loaded'> as ExerciseLog<T>;
+  }
+
+  if (exercise.type == 'reps') {
+    return {
+      name: exercise.name,
+      type: exercise.type,
+      sets: [createSetLog('reps', false)],
+    } as ExerciseLog<'reps'> as ExerciseLog<T>;
+  }
+
+  if (exercise.type == 'time') {
+    return {
+      name: exercise.name,
+      type: exercise.type,
+      sets: [createSetLog('time', false)],
+    } as ExerciseLog<'time'> as ExerciseLog<T>;
+  }
+
+  assertNever(exercise);
+}
 
 let setId = 0;
 

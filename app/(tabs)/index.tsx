@@ -1,53 +1,19 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
-import type {
-  ExerciseLog,
-  SetLog,
+import type { ExerciseLog } from '@/components/workout/ExerciseLogTable';
+import ExerciseLogTable, {
+  createExerciseLog,
 } from '@/components/workout/ExerciseLogTable';
-import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
-import type { AnyExercise, Exercise, ExerciseType } from '@/data/exercises';
+import type { AnyExercise, ExerciseType } from '@/data/exercises';
 import Exercises from '@/data/exercises';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
 
-function assertNever(x: never): never {
-  throw new Error('Unexpected value: ' + x);
-}
-
-function createExerciseLog<T extends ExerciseType>(
-  exercise: Exercise<T>
-): ExerciseLog<T> {
-  if (exercise.type == 'loaded') {
-    return {
-      name: exercise.name,
-      type: exercise.type,
-      sets: [] as SetLog<'loaded'>[],
-    } as ExerciseLog<'loaded'> as ExerciseLog<T>;
-  }
-
-  if (exercise.type == 'reps') {
-    return {
-      name: exercise.name,
-      type: exercise.type,
-      sets: [] as SetLog<'reps'>[],
-    } as ExerciseLog<'reps'> as ExerciseLog<T>;
-  }
-
-  if (exercise.type == 'time') {
-    return {
-      name: exercise.name,
-      type: exercise.type,
-      sets: [] as SetLog<'time'>[],
-    } as ExerciseLog<'time'> as ExerciseLog<T>;
-  }
-
-  assertNever(exercise);
-}
-
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
+  const [showClearWorkoutModal, setShowClearWorkoutModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
   const workoutName = 'HI C&S';
   const [exerciseLogs, setExerciseLogs] = useState<
@@ -82,11 +48,26 @@ export default function WorkoutScreen() {
     );
   }
 
+  const canFinishWorkout =
+    exerciseLogs.length != 0 &&
+    exerciseLogs.every(
+      (exerciseLog) =>
+        exerciseLog.sets.length != 0 &&
+        exerciseLog.sets.every((set) => set.done)
+    );
+
   return (
     <IUIContainer>
-      <WorkoutHeaderBar
-        title={workoutName}
-        onFinish={() => setShowFinishWorkoutModal(true)}
+      <WorkoutHeader
+        name={workoutName}
+        disableClear={exerciseLogs.length == 0}
+        onClear={() => {
+          setShowClearWorkoutModal(true);
+        }}
+        disableFinish={!canFinishWorkout}
+        onFinish={() => {
+          setShowFinishWorkoutModal(true);
+        }}
       />
       <ScrollView>
         {exerciseLogs.map((exerciseLog, i) => {
@@ -146,9 +127,24 @@ export default function WorkoutScreen() {
         </IUIButton>
       </View>
 
+      <ClearWorkoutModal
+        visible={showClearWorkoutModal}
+        onRequestClose={(cleared) => {
+          setShowClearWorkoutModal(false);
+          if (cleared) {
+            setExerciseLogs([]);
+          }
+        }}
+      />
+
       <FinishWorkoutModal
         visible={showFinishWorkoutModal}
-        onRequestClose={() => setShowFinishWorkoutModal(false)}
+        onRequestClose={(finished) => {
+          setShowFinishWorkoutModal(false);
+          if (finished) {
+            // do stuff
+          }
+        }}
       />
       <AddExerciseModal
         visible={showAddExerciseModal}
@@ -164,11 +160,17 @@ export default function WorkoutScreen() {
   );
 }
 
-function WorkoutHeaderBar({
-  title,
+function WorkoutHeader({
+  name,
+  disableClear,
+  onClear,
+  disableFinish,
   onFinish,
 }: {
-  title: string;
+  name: string;
+  disableClear: boolean;
+  onClear: () => void;
+  disableFinish: boolean;
   onFinish: () => void;
 }) {
   return (
@@ -181,12 +183,61 @@ function WorkoutHeaderBar({
       }}
     >
       <View>
-        <Text style={{ fontWeight: 'bold' }}>{title}</Text>
+        <Text style={{ fontWeight: 'bold' }}>{name}</Text>
       </View>
-      <IUIButton type="primary" feeling="done" onPress={onFinish}>
-        Finish
-      </IUIButton>
+      <View style={{ flexDirection: 'row' }}>
+        <View style={{ marginRight: 5 }}>
+          <IUIButton
+            type="primary"
+            feeling="negative"
+            disabled={disableClear}
+            onPress={onClear}
+          >
+            Clear
+          </IUIButton>
+        </View>
+
+        <IUIButton
+          type="primary"
+          feeling="done"
+          disabled={disableFinish}
+          onPress={onFinish}
+        >
+          Finish
+        </IUIButton>
+      </View>
     </View>
+  );
+}
+
+function ClearWorkoutModal({
+  visible,
+  onRequestClose,
+}: {
+  visible: boolean;
+  onRequestClose: (cleared: boolean) => void;
+}) {
+  const router = useRouter();
+  return (
+    <IUIModal visible={visible} onRequestClose={() => onRequestClose(false)}>
+      <View style={{ alignItems: 'center', padding: 20 }}>
+        <Text style={{ fontWeight: 'bold' }}>✋</Text>
+      </View>
+      <View style={{ alignItems: 'center', paddingBottom: 20 }}>
+        <Text style={{ fontWeight: 'bold' }}>Clear Workout?</Text>
+      </View>
+      <View style={{ marginBottom: 10 }}>
+        <IUIButton
+          type="primary"
+          feeling="negative"
+          onPress={() => {
+            onRequestClose(true);
+          }}
+        >
+          Clear Workout
+        </IUIButton>
+      </View>
+    </IUIModal>
   );
 }
 
@@ -195,40 +246,26 @@ function FinishWorkoutModal({
   onRequestClose,
 }: {
   visible: boolean;
-  onRequestClose: () => void;
+  onRequestClose: (finished: boolean) => void;
 }) {
   const router = useRouter();
   return (
-    <IUIModal visible={visible} onRequestClose={onRequestClose}>
+    <IUIModal visible={visible} onRequestClose={() => onRequestClose(false)}>
       <View style={{ alignItems: 'center', padding: 20 }}>
         <Text style={{ fontWeight: 'bold' }}>🙌</Text>
       </View>
       <View style={{ alignItems: 'center', paddingBottom: 20 }}>
         <Text style={{ fontWeight: 'bold' }}>Finished Workout?</Text>
       </View>
-      <View style={{ marginBottom: 10 }}>
-        <IUIButton
-          type="primary"
-          feeling="done"
-          onPress={() => {
-            router.back();
-          }}
-        >
-          Finish Workout
-        </IUIButton>
-      </View>
-
-      <View style={{ marginBottom: 10 }}>
-        <IUIButton
-          type="secondary"
-          feeling="negative"
-          onPress={() => {
-            router.back();
-          }}
-        >
-          Finish Workout
-        </IUIButton>
-      </View>
+      <IUIButton
+        type="primary"
+        feeling="done"
+        onPress={() => {
+          onRequestClose(true);
+        }}
+      >
+        Finish Workout
+      </IUIButton>
     </IUIModal>
   );
 }

@@ -56,7 +56,7 @@ export default function IUIButton2({
 
     if (type == 'primary') {
       return {
-        color: `rgba(255, 255, 255, ${alphaScale})`,
+        color: `rgba(255, 255, 255, 1)`,
         backgroundColor: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
       };
     }
