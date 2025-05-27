@@ -18,11 +18,21 @@ import {
   View,
 } from 'react-native';
 
+function defaultWorkoutName() {
+  const today = new Date();
+  const weekday = today.toLocaleString('en-US', { weekday: 'short' }); // "Mon"
+  const month = today.toLocaleString('en-US', { month: 'short' }); // "May"
+  const day = today.getDate(); // 20
+  const year = today.getFullYear(); // 2025
+
+  return `${month} ${day}, ${year}`;
+}
+
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
-  const [showClearWorkoutModal, setShowClearWorkoutModal] = useState(false);
+  const [showResetWorkoutModal, setShowResetWorkoutModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
-  const [workoutName, setWorkoutName] = useState('HI C&S');
+  const [workoutName, setWorkoutName] = useState(defaultWorkoutName());
   const [exerciseLogs, setExerciseLogs] = useState<
     (ExerciseLog<'loaded'> | ExerciseLog<'reps'> | ExerciseLog<'time'>)[]
   >([]);
@@ -68,9 +78,9 @@ export default function WorkoutScreen() {
       <WorkoutHeader
         name={workoutName}
         setName={setWorkoutName}
-        disableClear={exerciseLogs.length == 0}
-        onClear={() => {
-          setShowClearWorkoutModal(true);
+        disableReset={exerciseLogs.length == 0}
+        onReset={() => {
+          setShowResetWorkoutModal(true);
         }}
         disableFinish={!canFinishWorkout}
         onFinish={() => {
@@ -135,10 +145,10 @@ export default function WorkoutScreen() {
         </IUIButton>
       </View>
 
-      <ClearWorkoutModal
-        visible={showClearWorkoutModal}
+      <ResetWorkoutModal
+        visible={showResetWorkoutModal}
         onRequestClose={(cleared) => {
-          setShowClearWorkoutModal(false);
+          setShowResetWorkoutModal(false);
           if (cleared) {
             setExerciseLogs([]);
           }
@@ -171,15 +181,15 @@ export default function WorkoutScreen() {
 function WorkoutHeader({
   name,
   setName,
-  disableClear,
-  onClear,
+  disableReset,
+  onReset,
   disableFinish,
   onFinish,
 }: {
   name: string;
   setName: (name: string) => void;
-  disableClear: boolean;
-  onClear: () => void;
+  disableReset: boolean;
+  onReset: () => void;
   disableFinish: boolean;
   onFinish: () => void;
 }) {
@@ -192,7 +202,8 @@ function WorkoutHeader({
         padding: 10,
       }}
     >
-      <View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text>✍️ </Text>
         <TextInput
           value={name}
           onChangeText={setName}
@@ -204,10 +215,10 @@ function WorkoutHeader({
           <IUIButton
             type="primary"
             feeling="negative"
-            disabled={disableClear}
-            onPress={onClear}
+            disabled={disableReset}
+            onPress={onReset}
           >
-            Clear
+            Reset
           </IUIButton>
         </View>
 
@@ -224,7 +235,7 @@ function WorkoutHeader({
   );
 }
 
-function ClearWorkoutModal({
+function ResetWorkoutModal({
   visible,
   onRequestClose,
 }: {
@@ -238,7 +249,7 @@ function ClearWorkoutModal({
         <Text style={{ fontWeight: 'bold' }}>✋</Text>
       </View>
       <View style={{ alignItems: 'center', paddingBottom: 20 }}>
-        <Text style={{ fontWeight: 'bold' }}>Clear Workout?</Text>
+        <Text style={{ fontWeight: 'bold' }}>Reset Workout?</Text>
       </View>
       <View style={{ marginBottom: 10 }}>
         <IUIButton
@@ -248,7 +259,7 @@ function ClearWorkoutModal({
             onRequestClose(true);
           }}
         >
-          Clear Workout
+          Reset Workout
         </IUIButton>
       </View>
     </IUIModal>
@@ -297,7 +308,13 @@ function AddExerciseModal({
     null
   );
   return (
-    <IUIModal visible={visible} onRequestClose={() => onRequestClose(null)}>
+    <IUIModal
+      visible={visible}
+      onRequestClose={() => {
+        onRequestClose(null);
+        setSelectedExercise(null);
+      }}
+    >
       <View style={{ alignItems: 'center', paddingBottom: 10 }}>
         <Text style={{ fontWeight: 'bold' }}>Add Exercise?</Text>
       </View>
@@ -323,8 +340,10 @@ function AddExerciseModal({
         <IUIButton
           type="secondary"
           feeling="positive"
+          disabled={selectedExercise == null}
           onPress={() => {
             onRequestClose(selectedExercise);
+            setSelectedExercise(null);
           }}
         >
           Add Exercise

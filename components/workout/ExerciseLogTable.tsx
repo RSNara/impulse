@@ -65,7 +65,7 @@ export function createExerciseLog<T extends ExerciseType>(
     return {
       name: exercise.name,
       type: exercise.type,
-      sets: [createSetLog('loaded', false)],
+      sets: [],
     } as ExerciseLog<'loaded'> as ExerciseLog<T>;
   }
 
@@ -73,7 +73,7 @@ export function createExerciseLog<T extends ExerciseType>(
     return {
       name: exercise.name,
       type: exercise.type,
-      sets: [createSetLog('reps', false)],
+      sets: [],
     } as ExerciseLog<'reps'> as ExerciseLog<T>;
   }
 
@@ -81,7 +81,7 @@ export function createExerciseLog<T extends ExerciseType>(
     return {
       name: exercise.name,
       type: exercise.type,
-      sets: [createSetLog('time', false)],
+      sets: [],
     } as ExerciseLog<'time'> as ExerciseLog<T>;
   }
 
