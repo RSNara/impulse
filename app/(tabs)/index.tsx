@@ -134,15 +134,18 @@ export default function WorkoutScreen() {
           }
         })}
       </ScrollView>
-      <IUIButton
-        style={{ marginHorizontal: 10, marginVertical: 20 }}
-        type="positive"
-        onPress={() => {
-          setShowAddExerciseModal(true);
-        }}
-      >
-        + Add Exercise
-      </IUIButton>
+      <View style={{ marginHorizontal: 10, marginVertical: 20 }}>
+        <IUIButton
+          type="secondary"
+          feeling="positive"
+          onPress={() => {
+            setShowAddExerciseModal(true);
+          }}
+        >
+          + Add Exercise
+        </IUIButton>
+      </View>
+
       <FinishWorkoutModal
         visible={showFinishWorkoutModal}
         onRequestClose={() => setShowFinishWorkoutModal(false)}
@@ -180,7 +183,7 @@ function WorkoutHeaderBar({
       <View>
         <Text style={{ fontWeight: 'bold' }}>{title}</Text>
       </View>
-      <IUIButton type="done" onPress={onFinish}>
+      <IUIButton type="primary" feeling="done" onPress={onFinish}>
         Finish
       </IUIButton>
     </View>
@@ -203,24 +206,29 @@ function FinishWorkoutModal({
       <View style={{ alignItems: 'center', paddingBottom: 20 }}>
         <Text style={{ fontWeight: 'bold' }}>Finished Workout?</Text>
       </View>
-      <IUIButton
-        type="done"
-        onPress={() => {
-          router.back();
-        }}
-        style={{ marginBottom: 10 }}
-      >
-        Finish Workout
-      </IUIButton>
-      <IUIButton
-        type="negative"
-        onPress={() => {
-          router.back();
-        }}
-        style={{ marginBottom: 10 }}
-      >
-        Cancel Workout
-      </IUIButton>
+      <View style={{ marginBottom: 10 }}>
+        <IUIButton
+          type="primary"
+          feeling="done"
+          onPress={() => {
+            router.back();
+          }}
+        >
+          Finish Workout
+        </IUIButton>
+      </View>
+
+      <View style={{ marginBottom: 10 }}>
+        <IUIButton
+          type="secondary"
+          feeling="negative"
+          onPress={() => {
+            router.back();
+          }}
+        >
+          Finish Workout
+        </IUIButton>
+      </View>
     </IUIModal>
   );
 }
@@ -260,15 +268,17 @@ function AddExerciseModal({
           );
         }}
       />
-      <IUIButton
-        type="positive"
-        style={{ marginVertical: 10 }}
-        onPress={() => {
-          onRequestClose(selectedExercise);
-        }}
-      >
-        Add Exercise
-      </IUIButton>
+      <View style={{ marginVertical: 10 }}>
+        <IUIButton
+          type="secondary"
+          feeling="positive"
+          onPress={() => {
+            onRequestClose(selectedExercise);
+          }}
+        >
+          Add Exercise
+        </IUIButton>
+      </View>
     </IUIModal>
   );
 }

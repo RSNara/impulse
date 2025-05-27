@@ -178,20 +178,23 @@ export default function ExerciseLogTable<T extends ExerciseType>({
       towards="left"
     >
       <View style={[styles.row, { justifyContent: 'space-between' }]}>
-        <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 0.9)' }}>
+        <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 1)' }}>
           {name}
         </Text>
       </View>
       <ExerciseLogTableHeader type={type} />
       {$rows}
-      <IUIButton
-        style={{ marginHorizontal: 10, marginTop: 10 }}
-        onPress={() => {
-          setSets(sets.concat(createSetLog(type, false)));
-        }}
-      >
-        + Add Set
-      </IUIButton>
+      <View style={{ marginHorizontal: 10, marginTop: 10 }}>
+        <IUIButton
+          type="secondary"
+          feeling="neutral"
+          onPress={() => {
+            setSets(sets.concat(createSetLog(type, false)));
+          }}
+        >
+          + Add Set
+        </IUIButton>
+      </View>
     </IUIDismissable>
   );
 }

@@ -30,13 +30,15 @@ export default function IUIModal({
           style={{ backgroundColor: 'white', borderRadius: 10, padding: 15 }}
         >
           {children}
-          <IUIButton
-            type="neutral"
-            onPress={onRequestClose}
-            style={{ marginBottom: 10 }}
-          >
-            Cancel
-          </IUIButton>
+          <View style={{ marginBottom: 10 }}>
+            <IUIButton
+              type="secondary"
+              feeling="neutral"
+              onPress={onRequestClose}
+            >
+              Cancel
+            </IUIButton>
+          </View>
         </View>
       </View>
     </Modal>

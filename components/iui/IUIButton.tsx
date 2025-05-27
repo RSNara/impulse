@@ -1,21 +1,30 @@
-import type { ViewStyle } from 'react-native';
 import { Pressable, Text, View } from 'react-native';
 
-export default function IUIButton({
+export default function IUIButton2({
   children,
-  type = 'neutral',
+  type = 'primary',
+  feeling = 'neutral',
+  disabled = false,
   onPress,
-  style,
 }: {
   children: string;
-  type?: 'neutral' | 'positive' | 'done' | 'negative';
+  type: 'primary' | 'secondary' | 'tertiary';
+  feeling: 'neutral' | 'positive' | 'done' | 'negative';
+  disabled?: boolean;
   onPress: () => void;
-  style?: ViewStyle;
 }) {
   const { color, backgroundColor } = getColors();
 
+  console.log({ color, backgroundColor });
+
   return (
-    <Pressable onPress={onPress}>
+    <Pressable
+      onPress={() => {
+        if (!disabled) {
+          onPress();
+        }
+      }}
+    >
       <View
         style={{
           backgroundColor,
@@ -23,7 +32,6 @@ export default function IUIButton({
           padding: 5,
           justifyContent: 'center',
           alignItems: 'center',
-          ...style,
         }}
       >
         <Text style={{ color, fontWeight: 'bold' }}>{children}</Text>
@@ -31,27 +39,40 @@ export default function IUIButton({
     </Pressable>
   );
 
+  function getColor(): [number, number, number] {
+    switch (feeling) {
+      case 'done':
+        return [0, 127, 0];
+      case 'positive':
+        return [0, 127, 255];
+      case 'negative':
+        return [255, 32, 64];
+      case 'neutral':
+        return [0, 0, 0];
+    }
+  }
+
   function getColors() {
-    if (type == 'done') {
+    const [r, g, b] = getColor();
+    const alphaScale = disabled ? 0.25 : 1;
+
+    if (type == 'primary') {
       return {
-        color: 'white',
-        backgroundColor: 'green',
-      };
-    } else if (type == 'positive') {
-      return {
-        color: 'rgba(0, 127, 255, 1)',
-        backgroundColor: 'rgba(0, 127, 255, 0.1)',
-      };
-    } else if (type == 'negative') {
-      return {
-        color: 'red',
-        backgroundColor: 'rgba(255, 0, 0, 0.15)',
-      };
-    } else {
-      return {
-        color: 'black',
-        backgroundColor: 'rgba(0, 0, 0, 0.15)',
+        color: `rgba(255, 255, 255, ${alphaScale})`,
+        backgroundColor: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
       };
     }
+
+    if (type == 'secondary') {
+      return {
+        color: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
+        backgroundColor: `rgba(${r}, ${g}, ${b}, ${0.1 * alphaScale})`,
+      };
+    }
+
+    return {
+      color: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
+      backgroundColor: `transparent`,
+    };
   }
 }
