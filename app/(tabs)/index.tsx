@@ -339,7 +339,11 @@ function AddExerciseModal({
       <ExerciseGroups
         selectedGroup={selectedGroup}
         onSelectGroup={(group) => {
+          if (group == selectedGroup) {
+            return;
+          }
           setSelectedGroup(group);
+          setSelectedExercise(null);
           if (flatListRef.current) {
             flatListRef.current.scrollToIndex({
               animated: true,
@@ -372,6 +376,7 @@ function AddExerciseModal({
               renderItem={(info) => {
                 const exercise = info.item;
                 const isSelected = selectedExercise == exercise;
+
                 return (
                   <ExerciseRow
                     exercise={exercise}
@@ -450,25 +455,25 @@ function ExerciseRow({
   isSelected: boolean;
   onPress: () => void;
 }) {
+  const paddingHorizontal = 10;
   return (
     <Pressable
       onPress={onPress}
       style={{
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-        borderColor: 'rgba(0, 127, 255, 0.05)',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal,
+        paddingVertical: 12,
         borderRadius: 5,
         ...(isSelected
           ? {
-              borderWidth: 1,
-              borderBottomWidth: 3,
               backgroundColor: 'rgba(0, 127, 255, 0.05)',
-              marginBottom: 4,
+              borderStartWidth: 2,
+              borderEndWidth: 2,
+              paddingHorizontal: paddingHorizontal - 2,
+              borderColor: 'rgba(0, 127, 255, 0.05)',
             }
-          : {
-              borderWidth: 1,
-              marginBottom: 6,
-            }),
+          : {}),
       }}
     >
       <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
