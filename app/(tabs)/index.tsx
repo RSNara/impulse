@@ -5,10 +5,13 @@ import type { ExerciseLog } from '@/components/workout/ExerciseLogTable';
 import ExerciseLogTable, {
   createExerciseLog,
 } from '@/components/workout/ExerciseLogTable';
-import type { AnyExercise, ExerciseType } from '@/data/exercises';
+import type {
+  AnyExercise,
+  ExerciseGroup,
+  ExerciseType,
+} from '@/data/exercises';
 import Exercises from '@/data/exercises';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -213,8 +216,8 @@ function WorkoutHeader({
       <View style={{ flexDirection: 'row' }}>
         <View style={{ marginRight: 5 }}>
           <IUIButton
-            type="primary"
-            feeling="negative"
+            type="secondary"
+            feeling="neutral"
             disabled={disableReset}
             onPress={onReset}
           >
@@ -242,7 +245,6 @@ function ResetWorkoutModal({
   visible: boolean;
   onRequestClose: (cleared: boolean) => void;
 }) {
-  const router = useRouter();
   return (
     <IUIModal visible={visible} onRequestClose={() => onRequestClose(false)}>
       <View style={{ alignItems: 'center', padding: 20 }}>
@@ -308,6 +310,17 @@ function AddExerciseModal({
   const [selectedExercise, setSelectedExercise] = useState<AnyExercise | null>(
     null
   );
+  const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup | null>(
+    null
+  );
+  const [listWidth, setListWidth] = useState<number | null>(null);
+
+  const exerciseGroups = [
+    ...new Set(Exercises.map((exercise) => exercise.group)),
+  ];
+
+  const flatListRef = useRef<FlatList>(null);
+
   return (
     <IUIModal
       visible={visible}
@@ -315,28 +328,65 @@ function AddExerciseModal({
         onRequestClose(null);
         setSelectedExercise(null);
       }}
+      onReceiveSize={({ width, height }) => {
+        setListWidth(width);
+      }}
     >
       <View style={{ alignItems: 'center', paddingBottom: 10 }}>
         <Text style={{ fontWeight: 'bold' }}>Add Exercise?</Text>
       </View>
-      <FlatList<AnyExercise>
-        data={Exercises.filter((exercise) => !alreadyPicked.has(exercise.name))}
-        keyExtractor={(info) => info.name.replaceAll(' ', '-')}
-        style={{ paddingBottom: 10 }}
+
+      <ExerciseGroups
+        selectedGroup={selectedGroup}
+        onSelectGroup={(group) => {
+          setSelectedGroup(group);
+          if (flatListRef.current) {
+            flatListRef.current.scrollToIndex({
+              animated: true,
+              index: exerciseGroups.indexOf(group),
+            });
+          }
+        }}
+        groups={exerciseGroups}
+      />
+      <FlatList
+        ref={flatListRef}
+        horizontal={true}
+        data={exerciseGroups}
+        keyExtractor={(item) => item}
+        scrollEnabled={false}
         renderItem={(info) => {
-          const exercise = info.item;
-          const isSelected = selectedExercise == exercise;
           return (
-            <ExerciseRow
-              exercise={exercise}
-              isSelected={selectedExercise == exercise}
-              onPress={() => {
-                setSelectedExercise(isSelected ? null : exercise);
+            <FlatList<AnyExercise>
+              data={Exercises.filter((exercise) => {
+                return (
+                  !alreadyPicked.has(exercise.name) &&
+                  exercise.group == info.item
+                );
+              })}
+              keyExtractor={(info) => info.name.replaceAll(' ', '-')}
+              style={{
+                paddingBottom: 10,
+                width: listWidth ? listWidth : undefined,
+              }}
+              renderItem={(info) => {
+                const exercise = info.item;
+                const isSelected = selectedExercise == exercise;
+                return (
+                  <ExerciseRow
+                    exercise={exercise}
+                    isSelected={isSelected}
+                    onPress={() => {
+                      setSelectedExercise(exercise);
+                    }}
+                  ></ExerciseRow>
+                );
               }}
             />
           );
         }}
       />
+
       <View style={{ marginVertical: 10 }}>
         <IUIButton
           type="secondary"
@@ -351,6 +401,43 @@ function AddExerciseModal({
         </IUIButton>
       </View>
     </IUIModal>
+  );
+}
+
+function ExerciseGroups({
+  groups,
+  onSelectGroup,
+  selectedGroup,
+}: {
+  groups: ReadonlyArray<ExerciseGroup>;
+  onSelectGroup: (group: ExerciseGroup) => void;
+  selectedGroup: ExerciseGroup | null;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+      {groups.map((group, i) => {
+        return (
+          <View
+            key={group}
+            style={{
+              paddingBottom: 10,
+              marginRight: 10,
+              minWidth: 65,
+            }}
+          >
+            <IUIButton
+              type={selectedGroup == group ? 'primary' : 'secondary'}
+              feeling="done"
+              onPress={() => {
+                onSelectGroup(group);
+              }}
+            >
+              {group}
+            </IUIButton>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -388,5 +475,21 @@ function ExerciseRow({
         {exercise.name}
       </Text>
     </Pressable>
+  );
+}
+
+function partition<T>(n: number, data: readonly T[]): T[][] {
+  return data.reduce(
+    (partitions, datum) => {
+      const lastPartition = partitions[partitions.length - 1];
+      if (lastPartition.length == n) {
+        return [...partitions, [datum]];
+      }
+      return [
+        ...partitions.slice(0, partitions.length - 1),
+        [...lastPartition, datum],
+      ];
+    },
+    [[]] as T[][]
   );
 }

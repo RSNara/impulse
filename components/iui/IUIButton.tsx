@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 export default function IUIButton2({
@@ -13,7 +14,7 @@ export default function IUIButton2({
   disabled?: boolean;
   onPress: () => void;
 }) {
-  const { color, backgroundColor } = getColors();
+  const { color, backgroundColor, ...props } = getProps();
 
   return (
     <Pressable
@@ -30,6 +31,7 @@ export default function IUIButton2({
           padding: 5,
           justifyContent: 'center',
           alignItems: 'center',
+          ...props,
         }}
       >
         <Text style={{ color, fontWeight: 'bold' }}>{children}</Text>
@@ -50,7 +52,7 @@ export default function IUIButton2({
     }
   }
 
-  function getColors() {
+  function getProps() {
     const [r, g, b] = getColor();
     const alphaScale = disabled ? 0.25 : 1;
 
@@ -71,6 +73,8 @@ export default function IUIButton2({
     return {
       color: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
       backgroundColor: `transparent`,
+      borderColor: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
+      borderWidth: 2,
     };
   }
 }

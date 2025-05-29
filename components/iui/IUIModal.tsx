@@ -5,10 +5,12 @@ export default function IUIModal({
   visible,
   onRequestClose,
   children,
+  onReceiveSize,
 }: {
   visible: boolean;
   onRequestClose: () => void;
   children: React.ReactNode;
+  onReceiveSize?: (size: { width: number; height: number }) => void;
 }) {
   return (
     <Modal
@@ -28,6 +30,17 @@ export default function IUIModal({
       >
         <View
           style={{ backgroundColor: 'white', borderRadius: 10, padding: 15 }}
+          onLayout={
+            onReceiveSize
+              ? (event) => {
+                  const { width, height } = event.nativeEvent.layout;
+                  onReceiveSize({
+                    width: width - 15 * 2,
+                    height: height - 15 * 2,
+                  });
+                }
+              : undefined
+          }
         >
           {children}
           <View style={{ marginBottom: 10 }}>
