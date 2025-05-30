@@ -33,7 +33,6 @@ function defaultWorkoutName() {
 
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
-  const [showResetWorkoutModal, setShowResetWorkoutModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
   const [workoutName, setWorkoutName] = useState(defaultWorkoutName());
   const [exerciseLogs, setExerciseLogs] = useState<
@@ -82,9 +81,6 @@ export default function WorkoutScreen() {
         name={workoutName}
         setName={setWorkoutName}
         disableReset={exerciseLogs.length == 0}
-        onReset={() => {
-          setShowResetWorkoutModal(true);
-        }}
         disableFinish={!canFinishWorkout}
         onFinish={() => {
           setShowFinishWorkoutModal(true);
@@ -148,16 +144,6 @@ export default function WorkoutScreen() {
         </IUIButton>
       </View>
 
-      <ResetWorkoutModal
-        visible={showResetWorkoutModal}
-        onRequestClose={(cleared) => {
-          setShowResetWorkoutModal(false);
-          if (cleared) {
-            setExerciseLogs([]);
-          }
-        }}
-      />
-
       <FinishWorkoutModal
         visible={showFinishWorkoutModal}
         onRequestClose={(finished) => {
@@ -184,15 +170,11 @@ export default function WorkoutScreen() {
 function WorkoutHeader({
   name,
   setName,
-  disableReset,
-  onReset,
   disableFinish,
   onFinish,
 }: {
   name: string;
   setName: (name: string) => void;
-  disableReset: boolean;
-  onReset: () => void;
   disableFinish: boolean;
   onFinish: () => void;
 }) {
@@ -214,17 +196,6 @@ function WorkoutHeader({
         />
       </View>
       <View style={{ flexDirection: 'row' }}>
-        <View style={{ marginRight: 5 }}>
-          <IUIButton
-            type="secondary"
-            feeling="neutral"
-            disabled={disableReset}
-            onPress={onReset}
-          >
-            Reset
-          </IUIButton>
-        </View>
-
         <IUIButton
           type="primary"
           feeling="done"
@@ -235,36 +206,6 @@ function WorkoutHeader({
         </IUIButton>
       </View>
     </View>
-  );
-}
-
-function ResetWorkoutModal({
-  visible,
-  onRequestClose,
-}: {
-  visible: boolean;
-  onRequestClose: (cleared: boolean) => void;
-}) {
-  return (
-    <IUIModal visible={visible} onRequestClose={() => onRequestClose(false)}>
-      <View style={{ alignItems: 'center', padding: 20 }}>
-        <Text style={{ fontWeight: 'bold' }}>✋</Text>
-      </View>
-      <View style={{ alignItems: 'center', paddingBottom: 20 }}>
-        <Text style={{ fontWeight: 'bold' }}>Reset Workout?</Text>
-      </View>
-      <View style={{ marginBottom: 10 }}>
-        <IUIButton
-          type="primary"
-          feeling="negative"
-          onPress={() => {
-            onRequestClose(true);
-          }}
-        >
-          Reset Workout
-        </IUIButton>
-      </View>
-    </IUIModal>
   );
 }
 
