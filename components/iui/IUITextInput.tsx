@@ -19,7 +19,14 @@ export function IUINumericTextInput<T>({
       inputMode="numeric"
       textAlign="center"
       onChangeText={(change) => {
-        onChange(change == '' ? null : Number(change));
+        if (change == '') {
+          onChange(null);
+        } else {
+          const parsed = Number(change);
+          if (!Number.isNaN(parsed)) {
+            onChange(parsed);
+          }
+        }
       }}
     />
   );

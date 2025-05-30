@@ -482,19 +482,3 @@ function ExerciseRow({
     </Pressable>
   );
 }
-
-function partition<T>(n: number, data: readonly T[]): T[][] {
-  return data.reduce(
-    (partitions, datum) => {
-      const lastPartition = partitions[partitions.length - 1];
-      if (lastPartition.length == n) {
-        return [...partitions, [datum]];
-      }
-      return [
-        ...partitions.slice(0, partitions.length - 1),
-        [...lastPartition, datum],
-      ];
-    },
-    [[]] as T[][]
-  );
-}
