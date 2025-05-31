@@ -17,7 +17,7 @@ import {
   type AnyExerciseLog,
   type ExerciseLog,
 } from '@/data/store';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -275,29 +275,46 @@ function AddExerciseModal({
   const [selectedExercise, setSelectedExercise] = useState<AnyExercise | null>(
     null
   );
-  const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup | null>(
-    null
-  );
   const [listWidth, setListWidth] = useState<number | null>(null);
 
   const exerciseGroups = [
     ...new Set(Exercises.map((exercise) => exercise.group)),
   ];
+  const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup>(
+    exerciseGroups[0]
+  );
+  const page = exerciseGroups.indexOf(selectedGroup);
 
   const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        animated: true,
+        index: page,
+      });
+    }
+  }, [page]);
+
+  function close(exercise?: AnyExercise | null) {
+    onRequestClose(exercise);
+    setTimeout(() => {
+      setSelectedExercise(null);
+      setSelectedGroup(exerciseGroups[0]);
+    }, 1000);
+  }
 
   return (
     <IUIModal
       visible={visible}
       onRequestClose={() => {
-        onRequestClose(null);
-        setSelectedExercise(null);
+        close(null);
       }}
       onReceiveSize={({ width, height }) => {
         setListWidth(width);
       }}
     >
-      <View style={{ alignItems: 'center', paddingBottom: 10 }}>
+      <View style={{ alignItems: 'center', marginBottom: 15 }}>
         <Text style={{ fontWeight: 'bold' }}>Add Exercise?</Text>
       </View>
 
@@ -309,12 +326,6 @@ function AddExerciseModal({
           }
           setSelectedGroup(group);
           setSelectedExercise(null);
-          if (flatListRef.current) {
-            flatListRef.current.scrollToIndex({
-              animated: true,
-              index: exerciseGroups.indexOf(group),
-            });
-          }
         }}
         groups={exerciseGroups}
       />
@@ -324,6 +335,14 @@ function AddExerciseModal({
         data={exerciseGroups}
         keyExtractor={(item) => item}
         scrollEnabled={false}
+        style={{
+          marginTop: 5,
+          marginBottom: 15,
+          borderTopWidth: 1,
+          borderBottomWidth: 1,
+          borderRadius: 5,
+          borderColor: 'rgba(0, 127, 255, 0.1)',
+        }}
         renderItem={(info) => {
           return (
             <FlatList<AnyExercise>
@@ -357,14 +376,13 @@ function AddExerciseModal({
         }}
       />
 
-      <View style={{ marginVertical: 10 }}>
+      <View style={{ marginBottom: 10 }}>
         <IUIButton
           type="secondary"
           feeling="positive"
           disabled={selectedExercise == null}
           onPress={() => {
-            onRequestClose(selectedExercise);
-            setSelectedExercise(null);
+            close(selectedExercise);
           }}
         >
           Add Exercise
@@ -390,7 +408,7 @@ function ExerciseGroups({
           <View
             key={group}
             style={{
-              paddingBottom: 10,
+              marginBottom: 10,
               marginRight: 10,
               minWidth: 65,
             }}
@@ -428,7 +446,7 @@ function ExerciseRow({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal,
-        paddingVertical: 12,
+        paddingVertical: 10,
         borderRadius: 5,
         ...(isSelected
           ? {
