@@ -83,17 +83,50 @@ export type ExerciseLog<T extends ExerciseType> = {
   time: TimeExerciseLog;
 }[T];
 
-function defaultWorkoutName() {
-  const today = new Date();
-  const month = today.toLocaleString('en-US', { month: 'short' }); // "May"
-  const day = today.getDate(); // 20
-  const year = today.getFullYear(); // 2025
-  return `${month} ${day}, ${year}`;
+function getWorkoutName(date: Date) {
+  const hours = date.getHours();
+  const ampm = hours < 12 ? 'AM' : 'PM';
+
+  const weekdays = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+  const dayName = weekdays[date.getDay()];
+
+  // Day of month (1-31)
+  const dayOfMonth = date.getDate();
+
+  // Week of month (1-based, each 7 days is a week)
+  const weekOfMonth = Math.floor((dayOfMonth - 1) / 7) + 1;
+
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  const monthName = months[date.getMonth()];
+
+  return `${dayName}, Week ${weekOfMonth} (${ampm}, ${monthName})`;
 }
 
 export function emptyWorkout() {
   return {
-    name: defaultWorkoutName(),
+    name: getWorkoutName(new Date()),
     exerciseLogs: [],
     startedAt: new Date().getTime(),
   };
