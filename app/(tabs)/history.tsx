@@ -66,17 +66,17 @@ function WorkoutCard({ workout }: { workout: Workout }) {
       {workout.exerciseLogs.map((exerciseLog) => {
         let $content = <Fragment />;
         if (exerciseLog.type == 'reps') {
-          const displaySets = exerciseLog.sets.slice(0, 2);
+          const displaySets = exerciseLog.setLogs.slice(0, 2);
           $content = (
             <Fragment>
               <Text>
-                {exerciseLog.sets.length} x {exerciseLog.name}
+                {exerciseLog.setLogs.length} x {exerciseLog.name}
               </Text>
               <View style={{ flexDirection: 'row' }}>
-                {displaySets.map((set, i) => {
+                {displaySets.map((setLog, i) => {
                   return (
                     <Text key={i} style={{ marginStart: 10 }}>
-                      {set.reps}
+                      {setLog.reps}
                     </Text>
                   );
                 })}
@@ -84,17 +84,17 @@ function WorkoutCard({ workout }: { workout: Workout }) {
             </Fragment>
           );
         } else if (exerciseLog.type === 'loaded') {
-          const displaySets = exerciseLog.sets.slice(0, 2);
+          const displaySets = exerciseLog.setLogs.slice(0, 2);
           $content = (
             <Fragment>
               <Text>
-                {exerciseLog.sets.length} x {exerciseLog.name}
+                {exerciseLog.setLogs.length} x {exerciseLog.name}
               </Text>
               <View style={{ flexDirection: 'row' }}>
-                {displaySets.map((set, i) => {
+                {displaySets.map((setLog, i) => {
                   return (
                     <Text key={i} style={{ marginStart: 10 }}>
-                      {set.mass} x {set.reps}
+                      {setLog.mass} x {setLog.reps}
                     </Text>
                   );
                 })}
@@ -102,17 +102,17 @@ function WorkoutCard({ workout }: { workout: Workout }) {
             </Fragment>
           );
         } else if (exerciseLog.type === 'time') {
-          const displaySets = exerciseLog.sets.slice(0, 2);
+          const displaySets = exerciseLog.setLogs.slice(0, 2);
           $content = (
             <Fragment>
               <Text>
-                {exerciseLog.sets.length} x {exerciseLog.name}
+                {exerciseLog.setLogs.length} x {exerciseLog.name}
               </Text>
               <View style={{ flexDirection: 'row' }}>
-                {displaySets.map((set, i) => {
+                {displaySets.map((setLog, i) => {
                   return (
                     <Text key={i} style={{ marginStart: 10 }}>
-                      {set.time}
+                      {setLog.time}
                     </Text>
                   );
                 })}

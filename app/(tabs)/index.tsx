@@ -85,8 +85,8 @@ export default function WorkoutScreen() {
     exerciseLogs.length != 0 &&
     exerciseLogs.every(
       (exerciseLog) =>
-        exerciseLog.sets.length != 0 &&
-        exerciseLog.sets.every((set) => set.done)
+        exerciseLog.setLogs.length != 0 &&
+        exerciseLog.setLogs.every((setLog) => setLog.done)
     );
 
   return (
@@ -116,10 +116,10 @@ export default function WorkoutScreen() {
                 key={exerciseLog.name}
                 name={exerciseLog.name}
                 type={exerciseLog.type}
-                sets={exerciseLog.sets}
+                setLogs={exerciseLog.setLogs}
                 onRemove={() => removeExerciseLog(exerciseLog)}
-                setSets={(sets) => {
-                  updateExerciseLog(exerciseLog, { sets });
+                setSetLogs={(setLogs) => {
+                  updateExerciseLog(exerciseLog, { setLogs });
                 }}
               />
             );
@@ -130,10 +130,10 @@ export default function WorkoutScreen() {
                 key={exerciseLog.name}
                 name={exerciseLog.name}
                 type={exerciseLog.type}
-                sets={exerciseLog.sets}
+                setLogs={exerciseLog.setLogs}
                 onRemove={() => removeExerciseLog(exerciseLog)}
-                setSets={(sets) => {
-                  updateExerciseLog(exerciseLog, { sets });
+                setSetLogs={(setLogs) => {
+                  updateExerciseLog(exerciseLog, { setLogs });
                 }}
               />
             );
@@ -144,10 +144,10 @@ export default function WorkoutScreen() {
                 key={exerciseLog.name}
                 name={exerciseLog.name}
                 type={exerciseLog.type}
-                sets={exerciseLog.sets}
+                setLogs={exerciseLog.setLogs}
                 onRemove={() => removeExerciseLog(exerciseLog)}
-                setSets={(sets) => {
-                  updateExerciseLog(exerciseLog, { sets });
+                setSetLogs={(setLogs) => {
+                  updateExerciseLog(exerciseLog, { setLogs });
                 }}
               />
             );

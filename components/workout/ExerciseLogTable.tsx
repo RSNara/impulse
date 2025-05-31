@@ -28,7 +28,7 @@ export function createExerciseLog<T extends ExerciseType>(
     return {
       name: exercise.name,
       type: exercise.type,
-      sets: [],
+      setLogs: [],
     } as ExerciseLog<'loaded'> as ExerciseLog<T>;
   }
 
@@ -36,7 +36,7 @@ export function createExerciseLog<T extends ExerciseType>(
     return {
       name: exercise.name,
       type: exercise.type,
-      sets: [],
+      setLogs: [],
     } as ExerciseLog<'reps'> as ExerciseLog<T>;
   }
 
@@ -44,7 +44,7 @@ export function createExerciseLog<T extends ExerciseType>(
     return {
       name: exercise.name,
       type: exercise.type,
-      sets: [],
+      setLogs: [],
     } as ExerciseLog<'time'> as ExerciseLog<T>;
   }
 
@@ -88,36 +88,36 @@ export function createSetLog<T extends ExerciseType>(
 export type ExerciseLogTableProps<T extends ExerciseType> = {
   name: string;
   type: T;
-  sets: ReadonlyArray<SetLog<T>>;
-  setSets: (sets: ReadonlyArray<SetLog<T>>) => void;
+  setLogs: ReadonlyArray<SetLog<T>>;
+  setSetLogs: (sets: ReadonlyArray<SetLog<T>>) => void;
   onRemove: () => void;
 };
 
 export default function ExerciseLogTable<T extends ExerciseType>({
   name,
   type,
-  sets,
-  setSets,
+  setLogs,
+  setSetLogs,
   onRemove,
 }: ExerciseLogTableProps<T>) {
   function updateSet(set: SetLog<T>, update: Partial<SetLog<T>>) {
-    setSets(
-      sets.map((otherSet) => {
+    setSetLogs(
+      setLogs.map((otherSet) => {
         return set == otherSet ? { ...set, ...update } : otherSet;
       })
     );
   }
 
   function removeSet(set: SetLog<T>) {
-    setSets(
-      sets.filter((otherSet) => {
+    setSetLogs(
+      setLogs.filter((otherSet) => {
         return otherSet != set;
       })
     );
   }
 
   type RowAccumulator = { rows: React.ReactNode[]; num: number };
-  const { rows: $rows } = sets.reduce(
+  const { rows: $rows } = setLogs.reduce(
     (acc: RowAccumulator, set: SetLog<T>) => {
       const num = !set.warmup ? acc.num + 1 : acc.num;
       return {
@@ -155,7 +155,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
           type="secondary"
           feeling="neutral"
           onPress={() => {
-            setSets(sets.concat(createSetLog(type, false)));
+            setSetLogs(setLogs.concat(createSetLog(type, false)));
           }}
         >
           + Add Set
