@@ -5,7 +5,7 @@ import type {
   ExerciseType,
   SetLog,
 } from '@/data/store';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Animated,
   StyleSheet,
@@ -99,6 +99,18 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   const setLogs = log.setLogs as SetLog<T>[];
   const name = log.name;
   const type = log.type;
+
+  const idRef = useRef(0);
+  const setIdMap = useRef(new WeakMap<SetLog<T>, number>()).current;
+
+  function getSetLogKey(setLog: SetLog<T>) {
+    const result = setIdMap.get(setLog);
+    if (result == null) {
+      setIdMap.set(setLog, idRef.current++);
+    }
+    return setIdMap.get(setLog);
+  }
+
   function updateSetLog(setLog: SetLog<T>, update: Partial<SetLog<T>>) {
     updateSetLogs(
       setLogs.map((otherSetLog) => {
@@ -127,7 +139,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
         rows: [
           ...acc.rows,
           <ExerciseLogTableRow
-            key={num}
+            key={getSetLogKey(set)}
             setLog={set}
             pastSetLog={pastSetLog}
             num={num}
