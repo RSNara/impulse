@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useContext } from 'react';
-import storage from './storage';
 
 export type Store = {
   currentWorkout: Workout;
@@ -100,7 +99,7 @@ export function emptyWorkout() {
   };
 }
 
-export function defaultStore(): Store {
+export function emptyStore(): Store {
   return {
     currentWorkout: emptyWorkout(),
     pastWorkouts: [],
@@ -108,17 +107,9 @@ export function defaultStore(): Store {
 }
 
 export const StoreContext = React.createContext<[Store, React.Dispatch<Store>]>(
-  [defaultStore(), (value: Store) => {}]
+  [emptyStore(), (value: Store) => {}]
 );
 
 export function useStore() {
   return useContext(StoreContext);
-}
-
-export function load(): Promise<Store> {
-  return storage.load<Store>({ key: 'store' });
-}
-
-export function save(store: Store): Promise<void> {
-  return storage.save({ key: 'store', data: store });
 }
