@@ -18,10 +18,6 @@ export type LoadedSetLog = {
   type: 'loaded';
   warmup: boolean;
   done: boolean;
-  previous?: {
-    mass: number;
-    reps: number;
-  };
   mass: number | null;
   reps: number | null;
 };
@@ -30,9 +26,6 @@ type RepsSetLog = {
   type: 'reps';
   warmup: boolean;
   done: boolean;
-  previous?: {
-    reps: number;
-  };
   reps: number | null;
 };
 
@@ -40,9 +33,6 @@ type TimeSetLog = {
   type: 'time';
   warmup: boolean;
   done: boolean;
-  previous?: {
-    time: number;
-  };
   time: number | null;
 };
 

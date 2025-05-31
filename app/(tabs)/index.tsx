@@ -89,6 +89,25 @@ export default function WorkoutScreen() {
         exerciseLog.setLogs.every((setLog) => setLog.done)
     );
 
+  const { pastWorkouts } = store;
+
+  function pastExerciseLog<T extends ExerciseType>(
+    exerciseLog: ExerciseLog<T>
+  ): ExerciseLog<T> | null {
+    for (const workout of pastWorkouts) {
+      for (const pastExerciseLog of workout.exerciseLogs) {
+        if (
+          pastExerciseLog.name == exerciseLog.name &&
+          pastExerciseLog.type == exerciseLog.type
+        ) {
+          console.log('found past exercise log: ', pastExerciseLog);
+          return pastExerciseLog as ExerciseLog<T>;
+        }
+      }
+    }
+    return null;
+  }
+
   return (
     <IUIContainer>
       <WorkoutHeader
@@ -109,16 +128,15 @@ export default function WorkoutScreen() {
         }}
       />
       <ScrollView>
-        {(workout?.exerciseLogs || []).map((exerciseLog, i) => {
+        {exerciseLogs.map((exerciseLog, i) => {
           if (exerciseLog.type == 'loaded') {
             return (
-              <ExerciseLogTable
+              <ExerciseLogTable<'loaded'>
                 key={exerciseLog.name}
-                name={exerciseLog.name}
-                type={exerciseLog.type}
-                setLogs={exerciseLog.setLogs}
+                log={exerciseLog}
+                pastLog={pastExerciseLog<'loaded'>(exerciseLog)}
                 onRemove={() => removeExerciseLog(exerciseLog)}
-                setSetLogs={(setLogs) => {
+                updateSetLogs={(setLogs) => {
                   updateExerciseLog(exerciseLog, { setLogs });
                 }}
               />
@@ -126,13 +144,12 @@ export default function WorkoutScreen() {
           }
           if (exerciseLog.type == 'reps') {
             return (
-              <ExerciseLogTable
+              <ExerciseLogTable<'reps'>
                 key={exerciseLog.name}
-                name={exerciseLog.name}
-                type={exerciseLog.type}
-                setLogs={exerciseLog.setLogs}
+                log={exerciseLog}
+                pastLog={pastExerciseLog<'reps'>(exerciseLog)}
                 onRemove={() => removeExerciseLog(exerciseLog)}
-                setSetLogs={(setLogs) => {
+                updateSetLogs={(setLogs) => {
                   updateExerciseLog(exerciseLog, { setLogs });
                 }}
               />
@@ -140,13 +157,12 @@ export default function WorkoutScreen() {
           }
           if (exerciseLog.type == 'time') {
             return (
-              <ExerciseLogTable
+              <ExerciseLogTable<'time'>
                 key={exerciseLog.name}
-                name={exerciseLog.name}
-                type={exerciseLog.type}
-                setLogs={exerciseLog.setLogs}
+                log={exerciseLog}
+                pastLog={pastExerciseLog<'time'>(exerciseLog)}
                 onRemove={() => removeExerciseLog(exerciseLog)}
-                setSetLogs={(setLogs) => {
+                updateSetLogs={(setLogs) => {
                   updateExerciseLog(exerciseLog, { setLogs });
                 }}
               />

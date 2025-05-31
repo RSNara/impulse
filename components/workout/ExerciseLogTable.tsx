@@ -59,7 +59,6 @@ export function createSetLog<T extends ExerciseType>(
     return {
       type: 'time',
       time: null,
-      previous: undefined,
       done: false,
       warmup,
     } as SetLog<T>;
@@ -70,7 +69,6 @@ export function createSetLog<T extends ExerciseType>(
       type: 'loaded',
       mass: null,
       reps: null,
-      previous: undefined,
       done: false,
       warmup,
     } as SetLog<T>;
@@ -79,39 +77,40 @@ export function createSetLog<T extends ExerciseType>(
   return {
     type: 'reps',
     reps: null,
-    previous: undefined,
     done: false,
     warmup,
   } as SetLog<T>;
 }
 
 export type ExerciseLogTableProps<T extends ExerciseType> = {
-  name: string;
-  type: T;
-  setLogs: ReadonlyArray<SetLog<T>>;
-  setSetLogs: (sets: ReadonlyArray<SetLog<T>>) => void;
+  log: ExerciseLog<T>;
+  pastLog: ExerciseLog<T> | null;
+  updateSetLogs: (sets: ReadonlyArray<SetLog<T>>) => void;
   onRemove: () => void;
 };
 
 export default function ExerciseLogTable<T extends ExerciseType>({
-  name,
-  type,
-  setLogs,
-  setSetLogs,
+  log,
+  pastLog,
+  updateSetLogs,
   onRemove,
 }: ExerciseLogTableProps<T>) {
-  function updateSet(set: SetLog<T>, update: Partial<SetLog<T>>) {
-    setSetLogs(
-      setLogs.map((otherSet) => {
-        return set == otherSet ? { ...set, ...update } : otherSet;
+  const pastSetLogs = pastLog?.setLogs || [];
+  const setLogs = log.setLogs as SetLog<T>[];
+  const name = log.name;
+  const type = log.type;
+  function updateSetLog(setLog: SetLog<T>, update: Partial<SetLog<T>>) {
+    updateSetLogs(
+      setLogs.map((otherSetLog) => {
+        return setLog == otherSetLog ? { ...setLog, ...update } : otherSetLog;
       })
     );
   }
 
-  function removeSet(set: SetLog<T>) {
-    setSetLogs(
-      setLogs.filter((otherSet) => {
-        return otherSet != set;
+  function removeSetLog(setLog: SetLog<T>) {
+    updateSetLogs(
+      setLogs.filter((otherSetLog) => {
+        return otherSetLog != setLog;
       })
     );
   }
@@ -120,16 +119,20 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   const { rows: $rows } = setLogs.reduce(
     (acc: RowAccumulator, set: SetLog<T>) => {
       const num = !set.warmup ? acc.num + 1 : acc.num;
+      const pastSetLog = pastSetLogs.filter((setLog) => !setLog.warmup)[
+        num - 1
+      ] as SetLog<T> | null;
       return {
         num,
         rows: [
           ...acc.rows,
           <ExerciseLogTableRow
             key={num}
-            set={set}
+            setLog={set}
+            pastSetLog={pastSetLog}
             num={num}
-            updateSet={(update) => updateSet(set, update)}
-            onDismiss={() => removeSet(set)}
+            onUpdate={(update) => updateSetLog(set, update)}
+            onDismiss={() => removeSetLog(set)}
           />,
         ],
       };
@@ -155,7 +158,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
           type="secondary"
           feeling="neutral"
           onPress={() => {
-            setSetLogs(setLogs.concat(createSetLog(type, false)));
+            updateSetLogs(setLogs.concat(createSetLog<T>(type as T, false)));
           }}
         >
           + Add Set
@@ -215,17 +218,19 @@ function ExerciseLogTableHeader({ type }: { type: ExerciseType }) {
 }
 
 function ExerciseLogTableRow<T extends ExerciseType>({
-  set,
   num,
-  updateSet,
+  setLog,
+  pastSetLog,
+  onUpdate,
   onDismiss,
 }: {
-  set: SetLog<T>;
   num: number;
-  updateSet: (partial: Partial<SetLog<T>>) => void;
+  setLog: SetLog<T>;
+  pastSetLog: SetLog<T> | null;
+  onUpdate: (partial: Partial<SetLog<T>>) => void;
   onDismiss: () => void;
 }) {
-  const colorValue = useAnimatedValue(set.done ? 1 : 0);
+  const colorValue = useAnimatedValue(setLog.done ? 1 : 0);
   const backgroundColor = colorValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['rgba(0, 255, 0, 0)', 'rgba(0, 255, 0, 0.125)'],
@@ -233,14 +238,14 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   });
 
   const canFinishSet = !(
-    (set.type === 'time' && set.time == null) ||
-    (set.type == 'loaded' && (set.reps == null || set.mass == null)) ||
-    (set.type == 'reps' && set.reps == null)
+    (setLog.type === 'time' && setLog.time == null) ||
+    (setLog.type == 'loaded' && (setLog.reps == null || setLog.mass == null)) ||
+    (setLog.type == 'reps' && setLog.reps == null)
   );
 
   useEffect(() => {
-    if (!canFinishSet && set.done) {
-      updateSet({
+    if (!canFinishSet && setLog.done) {
+      onUpdate({
         done: false,
       } as Partial<SetLog<T>>);
 
@@ -249,7 +254,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
         useNativeDriver: false,
       }).start();
     }
-  }, [set, canFinishSet]);
+  }, [setLog, canFinishSet]);
 
   return (
     <IUIDismissable onDismiss={onDismiss} towards="right">
@@ -263,36 +268,36 @@ function ExerciseLogTableRow<T extends ExerciseType>({
         }}
       >
         <View style={rowStyles.setNum}>
-          <SetIndicator set={set} num={num} />
+          <SetIndicator setLog={setLog} num={num} />
         </View>
         <View style={rowStyles.previous}>
-          <SetPreviousPerf set={set} />
+          <SetPreviousPerf pastSetLog={pastSetLog} />
         </View>
         <View style={rowStyles.dataContainer}>
-          {(set.type == 'time' || set.type == 'reps') && (
+          {(setLog.type == 'time' || setLog.type == 'reps') && (
             <View style={rowStyles.data} />
           )}
-          {set.type === 'time' ? (
+          {setLog.type === 'time' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
-                value={set.time}
-                onChange={(time) => updateSet({ time } as SetLog<T>)}
+                value={setLog.time}
+                onChange={(time) => onUpdate({ time } as SetLog<T>)}
               />
             </View>
           ) : null}
-          {set.type === 'loaded' ? (
+          {setLog.type === 'loaded' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
-                value={set.mass}
-                onChange={(mass) => updateSet({ mass } as SetLog<T>)}
+                value={setLog.mass}
+                onChange={(mass) => onUpdate({ mass } as SetLog<T>)}
               />
             </View>
           ) : null}
-          {set.type == 'loaded' || set.type == 'reps' ? (
+          {setLog.type == 'loaded' || setLog.type == 'reps' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
-                value={set.reps}
-                onChange={(reps) => updateSet({ reps } as SetLog<T>)}
+                value={setLog.reps}
+                onChange={(reps) => onUpdate({ reps } as SetLog<T>)}
               />
             </View>
           ) : null}
@@ -300,11 +305,11 @@ function ExerciseLogTableRow<T extends ExerciseType>({
         <View style={rowStyles.done}>
           <IUIButton
             disabled={!canFinishSet}
-            type={set.done ? 'primary' : 'secondary'}
-            feeling={set.done ? 'done' : 'neutral'}
+            type={setLog.done ? 'primary' : 'secondary'}
+            feeling={setLog.done ? 'done' : 'neutral'}
             onPress={() => {
-              const isDone = !set.done;
-              updateSet({
+              const isDone = !setLog.done;
+              onUpdate({
                 done: isDone,
               } as Partial<SetLog<T>>);
 
@@ -331,15 +336,15 @@ function ExerciseLogTableRow<T extends ExerciseType>({
 }
 2;
 
-function SetIndicator({ set, num }: { set: AnySetLog; num: number }) {
+function SetIndicator({ setLog, num }: { setLog: AnySetLog; num: number }) {
   return (
     <IUIButton type="secondary" feeling="neutral" onPress={() => {}}>
-      {set.warmup ? 'w' : String(num)}
+      {setLog.warmup ? 'w' : String(num)}
     </IUIButton>
   );
 }
 
-function SetPreviousPerf({ set }: { set: AnySetLog }) {
+function SetPreviousPerf({ pastSetLog }: { pastSetLog: AnySetLog | null }) {
   return (
     <View
       style={{
@@ -349,11 +354,11 @@ function SetPreviousPerf({ set }: { set: AnySetLog }) {
       }}
     >
       <Text style={{ fontWeight: 'bold' }}>
-        {set.previous && set.type == 'loaded'
-          ? `${set.previous.mass} x ${set.previous.reps}`
+        {pastSetLog && pastSetLog.type == 'loaded'
+          ? `${pastSetLog.mass} lb x ${pastSetLog.reps}`
           : null}
-        {set.previous && set.type == 'reps' ? `${set.previous.reps}` : null}
-        {set.previous && set.type == 'time' ? `${set.previous.time}s` : null}
+        {pastSetLog && pastSetLog.type == 'reps' ? `${pastSetLog.reps}` : null}
+        {pastSetLog && pastSetLog.type == 'time' ? `${pastSetLog.time}s` : null}
       </Text>
     </View>
   );
