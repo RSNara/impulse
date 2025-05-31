@@ -11,7 +11,9 @@ import type {
   ExerciseType,
 } from '@/data/exercises';
 import Exercises from '@/data/exercises';
-import { useRef, useState } from 'react';
+import storage from '@/data/storage';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -31,16 +33,61 @@ function defaultWorkoutName() {
   return `${month} ${day}, ${year}`;
 }
 
+export type Workout = {
+  name: string;
+  exerciseLogs: (
+    | ExerciseLog<'loaded'>
+    | ExerciseLog<'reps'>
+    | ExerciseLog<'time'>
+  )[];
+  startedAt: number;
+};
+
+function initWorkout() {
+  return {
+    name: defaultWorkoutName(),
+    exerciseLogs: [],
+    startedAt: new Date().getTime(),
+  };
+}
+
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
-  const [workoutName, setWorkoutName] = useState(defaultWorkoutName());
-  const [exerciseLogs, setExerciseLogs] = useState<
-    (ExerciseLog<'loaded'> | ExerciseLog<'reps'> | ExerciseLog<'time'>)[]
-  >([]);
+  const [workout, setWorkout] = useState<Workout | null>(null);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log('starting to fetch workout');
+    storage.load<Workout | null>({ key: 'currentWorkout' }).then(
+      (data) => {
+        if (data) {
+          setWorkout(data);
+        } else {
+          setWorkout(initWorkout());
+        }
+      },
+      (error) => {
+        setWorkout(initWorkout());
+      }
+    );
+
+    return () => {
+      if (workout) {
+        storage.save({ key: 'currentWorkout', data: workout });
+      }
+    };
+  }, []);
 
   function addExercise(exercise: AnyExercise) {
-    setExerciseLogs([...exerciseLogs, createExerciseLog(exercise)]);
+    if (!workout) {
+      return;
+    }
+    setWorkout({
+      ...workout,
+      exerciseLogs: [...workout.exerciseLogs, createExerciseLog(exercise)],
+    });
   }
 
   function removeExerciseLog(
@@ -49,27 +96,56 @@ export default function WorkoutScreen() {
       | ExerciseLog<'reps'>
       | ExerciseLog<'time'>
   ) {
-    setExerciseLogs(
-      exerciseLogs.filter((otherExerciseLog) => exerciseLog != otherExerciseLog)
-    );
+    if (!workout) {
+      return;
+    }
+    setWorkout({
+      ...workout,
+      exerciseLogs: workout.exerciseLogs.filter(
+        (otherExerciseLog) => exerciseLog != otherExerciseLog
+      ),
+    });
   }
 
   function updateExerciseLog<T extends ExerciseType>(
     exerciseLog: ExerciseLog<T>,
     update: Partial<ExerciseLog<T>>
   ) {
-    setExerciseLogs(
-      exerciseLogs.map((otherExerciseLog) => {
+    if (!workout) {
+      return;
+    }
+    setWorkout({
+      ...workout,
+      exerciseLogs: workout.exerciseLogs.map((otherExerciseLog) => {
         return exerciseLog == otherExerciseLog
           ? { ...exerciseLog, ...update }
           : otherExerciseLog;
+      }),
+    });
+  }
+
+  function finishWorkout() {
+    if (!workout) {
+      return;
+    }
+
+    storage
+      .save({
+        key: 'workouts',
+        id: String(workout.startedAt),
+        data: workout,
       })
-    );
+      .then(() => {
+        storage.save({ key: 'currentWorkout', data: null });
+        setWorkout(initWorkout());
+        router.push('/history');
+      });
   }
 
   const canFinishWorkout =
-    exerciseLogs.length != 0 &&
-    exerciseLogs.every(
+    workout &&
+    workout.exerciseLogs.length != 0 &&
+    workout.exerciseLogs.every(
       (exerciseLog) =>
         exerciseLog.sets.length != 0 &&
         exerciseLog.sets.every((set) => set.done)
@@ -78,16 +154,24 @@ export default function WorkoutScreen() {
   return (
     <IUIContainer>
       <WorkoutHeader
-        name={workoutName}
-        setName={setWorkoutName}
-        disableReset={exerciseLogs.length == 0}
+        name={workout?.name || ''}
+        setName={(name) => {
+          if (workout == null) {
+            return;
+          }
+
+          setWorkout({
+            ...workout,
+            name,
+          });
+        }}
         disableFinish={!canFinishWorkout}
         onFinish={() => {
           setShowFinishWorkoutModal(true);
         }}
       />
       <ScrollView>
-        {exerciseLogs.map((exerciseLog, i) => {
+        {(workout?.exerciseLogs || []).map((exerciseLog, i) => {
           if (exerciseLog.type == 'loaded') {
             return (
               <ExerciseLogTable
@@ -149,13 +233,15 @@ export default function WorkoutScreen() {
         onRequestClose={(finished) => {
           setShowFinishWorkoutModal(false);
           if (finished) {
-            // do stuff
+            finishWorkout();
           }
         }}
       />
       <AddExerciseModal
         visible={showAddExerciseModal}
-        alreadyPicked={new Set(exerciseLogs.map((log) => log.name))}
+        alreadyPicked={
+          new Set((workout?.exerciseLogs || []).map((log) => log.name))
+        }
         onRequestClose={(exercise) => {
           if (exercise) {
             addExercise(exercise);
