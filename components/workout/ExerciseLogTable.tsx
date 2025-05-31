@@ -1,4 +1,10 @@
 import type { Exercise } from '@/data/exercises';
+import type {
+  AnySetLog,
+  ExerciseLog,
+  ExerciseType,
+  SetLog,
+} from '@/data/store';
 import { useEffect } from 'react';
 import {
   Animated,
@@ -10,49 +16,6 @@ import {
 import IUIButton from '../iui/IUIButton';
 import IUIDismissable from '../iui/IUIDismissable';
 import { IUINumericTextInput } from '../iui/IUITextInput';
-
-type AnySetLog = LoadedSetLog | RepsSetLog | TimeSetLog;
-
-type LoadedSetLog = {
-  type: 'loaded';
-  warmup: boolean;
-  done: boolean;
-  previous?: {
-    mass: number;
-    reps: number;
-  };
-  mass: number | null;
-  reps: number | null;
-  id: number;
-};
-
-type RepsSetLog = {
-  type: 'reps';
-  warmup: boolean;
-  done: boolean;
-  previous?: {
-    reps: number;
-  };
-  reps: number | null;
-  id: number;
-};
-
-type TimeSetLog = {
-  type: 'time';
-  warmup: boolean;
-  done: boolean;
-  previous?: {
-    time: number;
-  };
-  time: number | null;
-  id: number;
-};
-
-export type SetLog<T extends ExerciseType> = {
-  loaded: LoadedSetLog;
-  reps: RepsSetLog;
-  time: TimeSetLog;
-}[T];
 
 function assertNever(x: never): never {
   throw new Error('Unexpected value: ' + x);
@@ -88,8 +51,6 @@ export function createExerciseLog<T extends ExerciseType>(
   assertNever(exercise);
 }
 
-let setId = 0;
-
 export function createSetLog<T extends ExerciseType>(
   type: T,
   warmup: boolean
@@ -101,7 +62,6 @@ export function createSetLog<T extends ExerciseType>(
       previous: undefined,
       done: false,
       warmup,
-      id: setId++,
     } as SetLog<T>;
   }
 
@@ -113,7 +73,6 @@ export function createSetLog<T extends ExerciseType>(
       previous: undefined,
       done: false,
       warmup,
-      id: setId++,
     } as SetLog<T>;
   }
 
@@ -123,35 +82,8 @@ export function createSetLog<T extends ExerciseType>(
     previous: undefined,
     done: false,
     warmup,
-    id: setId++,
   } as SetLog<T>;
 }
-
-type ExerciseType = 'loaded' | 'reps' | 'time';
-
-type LoadedExerciseLog = {
-  name: string;
-  type: 'loaded';
-  sets: ReadonlyArray<SetLog<'loaded'>>;
-};
-
-type RepsExerciseLog = {
-  name: string;
-  type: 'reps';
-  sets: ReadonlyArray<SetLog<'reps'>>;
-};
-
-type TimeExerciseLog = {
-  name: string;
-  type: 'time';
-  sets: ReadonlyArray<SetLog<'time'>>;
-};
-
-export type ExerciseLog<T extends ExerciseType> = {
-  loaded: LoadedExerciseLog;
-  reps: RepsExerciseLog;
-  time: TimeExerciseLog;
-}[T];
 
 export type ExerciseLogTableProps<T extends ExerciseType> = {
   name: string;
@@ -193,7 +125,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
         rows: [
           ...acc.rows,
           <ExerciseLogTableRow
-            key={set.id}
+            key={num}
             set={set}
             num={num}
             updateSet={(update) => updateSet(set, update)}

@@ -1,23 +1,17 @@
 import IUIContainer from '@/components/iui/IUIContainer';
-import storage from '@/data/storage';
-import type { Workout } from './index';
+import type { Workout } from '@/data/store';
+import { useStore } from '@/data/store';
 
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment } from 'react';
 import { FlatList, Text, View } from 'react-native';
 
 export default function HistoryScreen() {
-  const [workouts, setWorkouts] = useState<Workout[] | null>(null);
-
-  useEffect(() => {
-    storage.getAllDataForKey<Workout>('workouts').then((loadedWorkouts) => {
-      setWorkouts(loadedWorkouts);
-    });
-  }, []);
+  const [store] = useStore();
 
   return (
     <IUIContainer>
       <FlatList
-        data={workouts || []}
+        data={store.pastWorkouts}
         keyExtractor={(workout) => String(workout.startedAt)}
         renderItem={(info) => {
           const workout = info.item;

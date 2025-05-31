@@ -1,7 +1,6 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
-import type { ExerciseLog } from '@/components/workout/ExerciseLogTable';
 import ExerciseLogTable, {
   createExerciseLog,
 } from '@/components/workout/ExerciseLogTable';
@@ -11,9 +10,14 @@ import type {
   ExerciseType,
 } from '@/data/exercises';
 import Exercises from '@/data/exercises';
-import storage from '@/data/storage';
-import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import type { Workout } from '@/data/store';
+import {
+  emptyWorkout,
+  useStore,
+  type AnyExerciseLog,
+  type ExerciseLog,
+} from '@/data/store';
+import { useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -23,129 +27,63 @@ import {
   View,
 } from 'react-native';
 
-function defaultWorkoutName() {
-  const today = new Date();
-  const weekday = today.toLocaleString('en-US', { weekday: 'short' }); // "Mon"
-  const month = today.toLocaleString('en-US', { month: 'short' }); // "May"
-  const day = today.getDate(); // 20
-  const year = today.getFullYear(); // 2025
-
-  return `${month} ${day}, ${year}`;
-}
-
-export type Workout = {
-  name: string;
-  exerciseLogs: (
-    | ExerciseLog<'loaded'>
-    | ExerciseLog<'reps'>
-    | ExerciseLog<'time'>
-  )[];
-  startedAt: number;
-};
-
-function initWorkout() {
-  return {
-    name: defaultWorkoutName(),
-    exerciseLogs: [],
-    startedAt: new Date().getTime(),
-  };
-}
-
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
-  const [workout, setWorkout] = useState<Workout | null>(null);
+  const [store, setStore] = useStore();
 
-  const router = useRouter();
-
-  useEffect(() => {
-    console.log('starting to fetch workout');
-    storage.load<Workout | null>({ key: 'currentWorkout' }).then(
-      (data) => {
-        if (data) {
-          setWorkout(data);
-        } else {
-          setWorkout(initWorkout());
-        }
-      },
-      (error) => {
-        setWorkout(initWorkout());
-      }
-    );
-
-    return () => {
-      if (workout) {
-        storage.save({ key: 'currentWorkout', data: workout });
-      }
-    };
-  }, []);
-
-  function addExercise(exercise: AnyExercise) {
-    if (!workout) {
-      return;
-    }
-    setWorkout({
-      ...workout,
-      exerciseLogs: [...workout.exerciseLogs, createExerciseLog(exercise)],
+  const workout = store.currentWorkout;
+  function setWorkout(workout: Workout) {
+    setStore({
+      ...store,
+      currentWorkout: workout,
     });
   }
 
-  function removeExerciseLog(
-    exerciseLog:
-      | ExerciseLog<'loaded'>
-      | ExerciseLog<'reps'>
-      | ExerciseLog<'time'>
-  ) {
-    if (!workout) {
-      return;
-    }
-    setWorkout({
-      ...workout,
-      exerciseLogs: workout.exerciseLogs.filter(
-        (otherExerciseLog) => exerciseLog != otherExerciseLog
-      ),
+  const exerciseLogs = workout.exerciseLogs;
+  function setExerciseLogs(exerciseLogs: AnyExerciseLog[]) {
+    setStore({
+      ...store,
+      currentWorkout: {
+        ...store.currentWorkout,
+        exerciseLogs: exerciseLogs,
+      },
     });
+  }
+
+  function addExercise(exercise: AnyExercise) {
+    setExerciseLogs([...exerciseLogs, createExerciseLog(exercise)]);
+  }
+
+  function removeExerciseLog(exerciseLog: AnyExerciseLog) {
+    setExerciseLogs(
+      exerciseLogs.filter((otherExerciseLog) => exerciseLog != otherExerciseLog)
+    );
   }
 
   function updateExerciseLog<T extends ExerciseType>(
     exerciseLog: ExerciseLog<T>,
     update: Partial<ExerciseLog<T>>
   ) {
-    if (!workout) {
-      return;
-    }
-    setWorkout({
-      ...workout,
-      exerciseLogs: workout.exerciseLogs.map((otherExerciseLog) => {
+    setExerciseLogs(
+      exerciseLogs.map((otherExerciseLog) => {
         return exerciseLog == otherExerciseLog
           ? { ...exerciseLog, ...update }
           : otherExerciseLog;
-      }),
-    });
+      })
+    );
   }
 
   function finishWorkout() {
-    if (!workout) {
-      return;
-    }
-
-    storage
-      .save({
-        key: 'workouts',
-        id: String(workout.startedAt),
-        data: workout,
-      })
-      .then(() => {
-        storage.save({ key: 'currentWorkout', data: null });
-        setWorkout(initWorkout());
-        router.push('/history');
-      });
+    setStore({
+      currentWorkout: emptyWorkout(),
+      pastWorkouts: [workout, ...store.pastWorkouts],
+    });
   }
 
   const canFinishWorkout =
-    workout &&
-    workout.exerciseLogs.length != 0 &&
-    workout.exerciseLogs.every(
+    exerciseLogs.length != 0 &&
+    exerciseLogs.every(
       (exerciseLog) =>
         exerciseLog.sets.length != 0 &&
         exerciseLog.sets.every((set) => set.done)
