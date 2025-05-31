@@ -24,17 +24,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="timer"
+        options={{
+          title: 'Timer',
+          tabBarIcon: ({ color }) => <IUIIcon>⏱️</IUIIcon>,
+        }}
+      />
+      <Tabs.Screen
         name="history"
         options={{
           title: 'Past Logs',
           tabBarIcon: ({ color }) => <IUIIcon>📜</IUIIcon>,
-        }}
-      />
-      <Tabs.Screen
-        name="exercises"
-        options={{
-          title: 'Database',
-          tabBarIcon: ({ color }) => <IUIIcon>🏋</IUIIcon>,
         }}
       />
     </Tabs>
