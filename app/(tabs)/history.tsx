@@ -82,7 +82,7 @@ function WorkoutCard({ workout }: { workout: Workout }) {
                 {displaySets.map((set, i) => {
                   return (
                     <Text key={i} style={{ marginStart: 10 }}>
-                      {String(set.reps).padStart(3, ' ')}
+                      {set.reps}
                     </Text>
                   );
                 })}
@@ -100,8 +100,7 @@ function WorkoutCard({ workout }: { workout: Workout }) {
                 {displaySets.map((set, i) => {
                   return (
                     <Text key={i} style={{ marginStart: 10 }}>
-                      {String(set.mass).padStart(3, ' ')} x
-                      {String(set.reps).padStart(3, ' ')}
+                      {set.mass} x {set.reps}
                     </Text>
                   );
                 })}
@@ -116,10 +115,10 @@ function WorkoutCard({ workout }: { workout: Workout }) {
                 {exerciseLog.sets.length} x {exerciseLog.name}
               </Text>
               <View style={{ flexDirection: 'row' }}>
-                {exerciseLog.sets.slice(0, 2).map((set, i) => {
+                {displaySets.map((set, i) => {
                   return (
                     <Text key={i} style={{ marginStart: 10 }}>
-                      {String(set.time).padStart(3, ' ')}
+                      {set.time}
                     </Text>
                   );
                 })}
