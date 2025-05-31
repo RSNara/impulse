@@ -50,7 +50,9 @@ function WorkoutCard({ workout }: { workout: Workout }) {
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 1)' }}>
           {workout.name}
         </Text>
-        <Text>📆 {stringifyDate(new Date(workout.startedAt))}</Text>
+        <Text style={{ color: 'rgba(0, 128, 255, 1)' }}>
+          {stringifyDate(new Date(workout.startedAt))}
+        </Text>
       </View>
       <View
         style={{
@@ -59,7 +61,7 @@ function WorkoutCard({ workout }: { workout: Workout }) {
           justifyContent: 'space-between',
         }}
       >
-        <Text style={{ fontWeight: 'bold' }}>Exercise</Text>
+        <Text style={{ fontWeight: 'bold' }}>Exercises</Text>
         <Text style={{ fontWeight: 'bold' }}>Sets</Text>
       </View>
       <View
