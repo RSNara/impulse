@@ -225,7 +225,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   updateSet: (partial: Partial<SetLog<T>>) => void;
   onDismiss: () => void;
 }) {
-  const colorValue = useAnimatedValue(0);
+  const colorValue = useAnimatedValue(set.done ? 1 : 0);
   const backgroundColor = colorValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['rgba(0, 255, 0, 0)', 'rgba(0, 255, 0, 0.125)'],
