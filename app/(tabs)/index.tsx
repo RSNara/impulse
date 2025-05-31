@@ -12,6 +12,7 @@ import type {
 import Exercises from '@/data/exercises';
 import type { Workout } from '@/data/store';
 import {
+  emptyTimer,
   emptyWorkout,
   useStore,
   type AnyExerciseLog,
@@ -78,6 +79,7 @@ export default function WorkoutScreen() {
     setStore({
       currentWorkout: emptyWorkout(),
       pastWorkouts: [workout, ...store.pastWorkouts],
+      timer: emptyTimer(),
     });
   }
 
@@ -100,7 +102,6 @@ export default function WorkoutScreen() {
           pastExerciseLog.name == exerciseLog.name &&
           pastExerciseLog.type == exerciseLog.type
         ) {
-          console.log('found past exercise log: ', pastExerciseLog);
           return pastExerciseLog as ExerciseLog<T>;
         }
       }

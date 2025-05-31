@@ -1,9 +1,16 @@
 import * as React from 'react';
 import { useContext } from 'react';
 
+export type Timer = {
+  duration: number;
+  elapsed: number;
+  ticking: boolean;
+};
+
 export type Store = {
   currentWorkout: Workout;
   pastWorkouts: Workout[];
+  timer: Timer;
 };
 
 export type Workout = {
@@ -122,10 +129,23 @@ export function emptyWorkout() {
   };
 }
 
+export function emptyTimer(): Timer {
+  return {
+    duration: 210 * 1000,
+    elapsed: 0,
+    ticking: false,
+  };
+}
+
 export function emptyStore(): Store {
   return {
     currentWorkout: emptyWorkout(),
     pastWorkouts: [],
+    timer: {
+      duration: 360 * 1000,
+      elapsed: 0,
+      ticking: false,
+    },
   };
 }
 
