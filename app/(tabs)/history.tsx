@@ -1,8 +1,7 @@
 import IUIContainer from '@/components/iui/IUIContainer';
-import type { Workout } from '@/data/store';
+import type { AnySetLog, Workout } from '@/data/store';
 import { useStore } from '@/data/store';
 
-import { Fragment } from 'react';
 import { FlatList, Text, View } from 'react-native';
 
 export default function HistoryScreen() {
@@ -30,6 +29,7 @@ function stringifyDate(date: Date) {
 }
 
 function WorkoutCard({ workout }: { workout: Workout }) {
+  const exerciseLogs = workout.exerciseLogs;
   return (
     <View
       style={{
@@ -52,7 +52,6 @@ function WorkoutCard({ workout }: { workout: Workout }) {
         </Text>
         <Text>📆 {stringifyDate(new Date(workout.startedAt))}</Text>
       </View>
-
       <View
         style={{
           marginBottom: 5,
@@ -63,73 +62,69 @@ function WorkoutCard({ workout }: { workout: Workout }) {
         <Text style={{ fontWeight: 'bold' }}>Exercise</Text>
         <Text style={{ fontWeight: 'bold' }}>Sets</Text>
       </View>
-      {workout.exerciseLogs.map((exerciseLog) => {
-        let $content = <Fragment />;
-        if (exerciseLog.type == 'reps') {
-          const displaySets = exerciseLog.setLogs.slice(0, 2);
-          $content = (
-            <Fragment>
-              <Text>
-                {exerciseLog.setLogs.length} x {exerciseLog.name}
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                {displaySets.map((setLog, i) => {
-                  return (
-                    <Text key={i} style={{ marginStart: 10 }}>
-                      {setLog.reps}
-                    </Text>
-                  );
-                })}
-              </View>
-            </Fragment>
-          );
-        } else if (exerciseLog.type === 'loaded') {
-          const displaySets = exerciseLog.setLogs.slice(0, 2);
-          $content = (
-            <Fragment>
-              <Text>
-                {exerciseLog.setLogs.length} x {exerciseLog.name}
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                {displaySets.map((setLog, i) => {
-                  return (
-                    <Text key={i} style={{ marginStart: 10 }}>
-                      {setLog.mass} x {setLog.reps}
-                    </Text>
-                  );
-                })}
-              </View>
-            </Fragment>
-          );
-        } else if (exerciseLog.type === 'time') {
-          const displaySets = exerciseLog.setLogs.slice(0, 2);
-          $content = (
-            <Fragment>
-              <Text>
-                {exerciseLog.setLogs.length} x {exerciseLog.name}
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                {displaySets.map((setLog, i) => {
-                  return (
-                    <Text key={i} style={{ marginStart: 10 }}>
-                      {setLog.time}
-                    </Text>
-                  );
-                })}
-              </View>
-            </Fragment>
-          );
-        }
-
-        return (
-          <View
-            key={exerciseLog.name}
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-          >
-            {$content}
+      <View
+        style={{
+          marginBottom: 5,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}
+      >
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ alignItems: 'flex-end' }}>
+            {exerciseLogs.map((exerciseLog) => {
+              return (
+                <Text key={exerciseLog.name}>
+                  {exerciseLog.setLogs.length} x
+                </Text>
+              );
+            })}
           </View>
-        );
-      })}
+          <View style={{ marginLeft: 5 }}>
+            {exerciseLogs.map((exerciseLog) => {
+              return (
+                <Text key={exerciseLog.name} numberOfLines={1}>
+                  {exerciseLog.name}
+                </Text>
+              );
+            })}
+          </View>
+        </View>
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ alignItems: 'flex-end' }}>
+            {exerciseLogs.map((exerciseLog, i) => {
+              const nonWarmupSets = exerciseLog.setLogs.filter(
+                (setLog) => !setLog.warmup
+              );
+              const firstLog = nonWarmupSets[0];
+              return firstLog ? <SetLog setLog={firstLog} key={i} /> : null;
+            })}
+          </View>
+          <View style={{ marginLeft: 5, alignItems: 'flex-end' }}>
+            {exerciseLogs.map((exerciseLog, i) => {
+              const nonWarmupSets = exerciseLog.setLogs.filter(
+                (setLog) => !setLog.warmup
+              );
+              const secondLog = nonWarmupSets[0];
+              return secondLog ? <SetLog setLog={secondLog} key={i} /> : null;
+            })}
+          </View>
+        </View>
+      </View>
     </View>
   );
+}
+
+function SetLog({ setLog }: { setLog: AnySetLog }) {
+  if (setLog.type === 'loaded') {
+    return (
+      <Text style={{ marginStart: 10 }}>
+        {setLog.mass} lb x {setLog.reps}
+      </Text>
+    );
+  }
+  if (setLog.type === 'time') {
+    return <Text style={{ marginStart: 10 }}>{setLog.time}</Text>;
+  }
+
+  return <Text style={{ marginStart: 10 }}>{setLog.reps}</Text>;
 }
