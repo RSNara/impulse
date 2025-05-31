@@ -15,7 +15,3 @@ export default function RootLayout() {
     </StoreContext.Provider>
   );
 }
-
-// 0s fn()
-// 1s fn()
-// 5s fn()
