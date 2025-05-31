@@ -120,7 +120,7 @@ function SetLog({ setLog }: { setLog: AnySetLog }) {
   if (setLog.type === 'loaded') {
     return (
       <Text style={{ marginStart: 10 }}>
-        {setLog.mass} lb x {setLog.reps}
+        {setLog.mass} x {setLog.reps}
       </Text>
     );
   }

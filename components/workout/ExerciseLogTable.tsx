@@ -367,7 +367,7 @@ function SetPreviousPerf({ pastSetLog }: { pastSetLog: AnySetLog | null }) {
     >
       <Text style={{ fontWeight: 'bold' }}>
         {pastSetLog && pastSetLog.type == 'loaded'
-          ? `${pastSetLog.mass} lb x ${pastSetLog.reps}`
+          ? `${pastSetLog.mass} x ${pastSetLog.reps}`
           : null}
         {pastSetLog && pastSetLog.type == 'reps' ? `${pastSetLog.reps}` : null}
         {pastSetLog && pastSetLog.type == 'time' ? `${pastSetLog.time}s` : null}
