@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useContext } from 'react';
 
-export type Timer = {
+export type Timer = Readonly<{
   duration: number;
   elapsed: number;
   ticking: boolean;
-};
+}>;
 
 export function emptyTimer(): Timer {
   return {
@@ -23,38 +23,38 @@ export function useTimer(): [Timer, React.Dispatch<Timer>] {
   return useContext(TimerContext);
 }
 
-export type Workout = {
+export type Workout = Readonly<{
   name: string;
   exerciseLogs: AnyExerciseLog[];
   startedAt: number;
-};
+}>;
 
 export type AnySetLog = LoadedSetLog | RepsSetLog | TimeSetLog;
 
-type LoadedSetLog = {
+type LoadedSetLog = Readonly<{
   type: 'loaded';
   warmup: boolean;
   done: boolean;
   mass: number | null;
   reps: number | null;
   id: string;
-};
+}>;
 
-type RepsSetLog = {
+type RepsSetLog = Readonly<{
   type: 'reps';
   warmup: boolean;
   done: boolean;
   reps: number | null;
   id: string;
-};
+}>;
 
-type TimeSetLog = {
+type TimeSetLog = Readonly<{
   type: 'time';
   warmup: boolean;
   done: boolean;
   time: number | null;
   id: string;
-};
+}>;
 
 export type SetLog<T extends ExerciseType> = {
   loaded: LoadedSetLog;
@@ -64,26 +64,26 @@ export type SetLog<T extends ExerciseType> = {
 
 export type ExerciseType = 'loaded' | 'reps' | 'time';
 
-type LoadedExerciseLog = {
+type LoadedExerciseLog = Readonly<{
   name: string;
   type: 'loaded';
   setLogs: ReadonlyArray<SetLog<'loaded'>>;
   id: string;
-};
+}>;
 
-type RepsExerciseLog = {
+type RepsExerciseLog = Readonly<{
   name: string;
   type: 'reps';
   setLogs: ReadonlyArray<SetLog<'reps'>>;
   id: string;
-};
+}>;
 
-type TimeExerciseLog = {
+type TimeExerciseLog = Readonly<{
   name: string;
   type: 'time';
   setLogs: ReadonlyArray<SetLog<'time'>>;
   id: string;
-};
+}>;
 
 export type AnyExerciseLog =
   | ExerciseLog<'loaded'>
@@ -154,8 +154,8 @@ export function useCurrentWorkout() {
 }
 
 export const PastWorkoutsContext = React.createContext<
-  [Workout[], React.Dispatch<Workout[]>]
->([[], (value: Workout[]) => {}]);
+  [ReadonlyArray<Workout>, React.Dispatch<ReadonlyArray<Workout>>]
+>([[], (value: ReadonlyArray<Workout>) => {}]);
 
 export function usePastWorkouts() {
   return useContext(PastWorkoutsContext);
@@ -171,23 +171,23 @@ export type ExerciseGroup =
   | 'fullbody'
   | 'aerial';
 
-type LoadedExercise = {
+type LoadedExercise = Readonly<{
   name: string;
   type: 'loaded';
   group: ExerciseGroup;
-};
+}>;
 
-type RepsExercise = {
+type RepsExercise = Readonly<{
   name: string;
   type: 'reps';
   group: ExerciseGroup;
-};
+}>;
 
-type TimeExercise = {
+type TimeExercise = Readonly<{
   name: string;
   type: 'time';
   group: ExerciseGroup;
-};
+}>;
 
 export type Exercise<T extends ExerciseType> = {
   loaded: LoadedExercise;

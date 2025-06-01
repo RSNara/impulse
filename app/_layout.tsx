@@ -20,10 +20,9 @@ export default function RootLayout() {
     'currentWorkout',
     emptyWorkout()
   );
-  const [pastWorkouts, setPastWorkouts] = useSyncedState<Workout[]>(
-    'pastWorkouts',
-    []
-  );
+  const [pastWorkouts, setPastWorkouts] = useSyncedState<
+    ReadonlyArray<Workout>
+  >('pastWorkouts', []);
   const [timer, setTimer] = useSyncedState<Timer>('timer', emptyTimer());
   const [exercises, setExercises] = useSyncedState<ReadonlyArray<AnyExercise>>(
     'exercises',
