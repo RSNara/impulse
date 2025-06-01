@@ -321,12 +321,13 @@ function AddExerciseModal({
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
         {exerciseGroups.map((group, i) => {
           return (
-            <ExerciseGroup
-              key={group}
-              group={group}
-              isSelected={group == selectedGroup}
-              onSelect={() => setSelectedGroup(group)}
-            />
+            <View key={group} style={{ marginBottom: 10, marginEnd: 10 }}>
+              <ExerciseGroup
+                group={group}
+                isSelected={group == selectedGroup}
+                onSelect={() => setSelectedGroup(group)}
+              />
+            </View>
           );
         })}
       </View>
@@ -468,14 +469,15 @@ function CreateExerciseModal({
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {(['loaded', 'reps', 'time'] as ExerciseType[]).map((type) => {
             return (
-              <ExerciseType
-                key={type}
-                type={type}
-                isSelected={exerciseType == type}
-                onSelect={() => {
-                  setExerciseType(type);
-                }}
-              />
+              <View key={type} style={{ marginBottom: 10, marginEnd: 10 }}>
+                <ExerciseType
+                  type={type}
+                  isSelected={exerciseType == type}
+                  onSelect={() => {
+                    setExerciseType(type);
+                  }}
+                />
+              </View>
             );
           })}
         </View>
@@ -488,14 +490,15 @@ function CreateExerciseModal({
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {exerciseGroups.map((group) => {
             return (
-              <ExerciseGroup
-                key={group}
-                group={group}
-                isSelected={exerciseGroup == group}
-                onSelect={() => {
-                  setExerciseGroup(group);
-                }}
-              />
+              <View key={group} style={{ marginBottom: 10, marginEnd: 10 }}>
+                <ExerciseGroup
+                  group={group}
+                  isSelected={exerciseGroup == group}
+                  onSelect={() => {
+                    setExerciseGroup(group);
+                  }}
+                />
+              </View>
             );
           })}
         </View>
@@ -546,8 +549,6 @@ function ExerciseType({
   return (
     <View
       style={{
-        marginBottom: 10,
-        marginRight: 10,
         minWidth: 65,
       }}
     >
@@ -576,8 +577,6 @@ function ExerciseGroup({
   return (
     <View
       style={{
-        marginBottom: 10,
-        marginRight: 10,
         minWidth: 65,
       }}
     >
@@ -611,7 +610,7 @@ function Exercise({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal,
-        paddingVertical: 10,
+        paddingVertical: 5,
         borderRadius: 5,
         borderColor: 'rgba(0, 127, 255, 0.1)',
         borderBottomWidth: 1,
@@ -626,9 +625,23 @@ function Exercise({
           : {}),
       }}
     >
-      <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
-        {exercise.name}
-      </Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
+          {exercise.name}
+        </Text>
+        <ExerciseType
+          type={exercise.type}
+          isSelected={isSelected}
+          onSelect={() => {}}
+        />
+      </View>
     </Pressable>
   );
 }
