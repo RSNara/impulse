@@ -36,6 +36,7 @@ export default function TabLayout() {
             <CircularProgress
               value={Math.floor((timeLeft / timer.duration) * 100)}
               radius={10}
+              initialValue={Math.floor((timeLeft / timer.duration) * 100)}
               activeStrokeColor={'rgba(0, 127, 255, 1)'}
               inActiveStrokeColor={'rgba(0, 0, 0, 0.1)'}
               showProgressValue={false}
