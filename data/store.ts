@@ -140,11 +140,6 @@ export function emptyStore(): Store {
   return {
     currentWorkout: emptyWorkout(),
     pastWorkouts: [],
-    timer: {
-      duration: 360 * 1000,
-      elapsed: 0,
-      ticking: false,
-    },
   };
 }
 
