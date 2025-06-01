@@ -1,8 +1,9 @@
-import type { Store, Timer } from '@/data/store';
+import type { Timer, Workout } from '@/data/store';
 import {
-  emptyStore,
+  CurrentWorkoutContext,
   emptyTimer,
-  StoreContext,
+  emptyWorkout,
+  PastWorkoutsContext,
   TimerContext,
 } from '@/data/store';
 
@@ -11,7 +12,14 @@ import { Stack } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
 export default function RootLayout() {
-  const [store, setStore] = useSyncedState<Store>('store', emptyStore());
+  const [currentWorkout, setCurrentWorkout] = useSyncedState<Workout>(
+    'currentWorkout',
+    emptyWorkout()
+  );
+  const [pastWorkouts, setPastWorkouts] = useSyncedState<Workout[]>(
+    'pastWorkouts',
+    []
+  );
   const [timer, setTimer] = useSyncedState<Timer>('timer', emptyTimer());
 
   useInterval(
@@ -36,13 +44,15 @@ export default function RootLayout() {
   );
 
   return (
-    <StoreContext.Provider value={[store, setStore]}>
-      <TimerContext.Provider value={[timer, setTimer]}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </TimerContext.Provider>
-    </StoreContext.Provider>
+    <CurrentWorkoutContext.Provider value={[currentWorkout, setCurrentWorkout]}>
+      <PastWorkoutsContext.Provider value={[pastWorkouts, setPastWorkouts]}>
+        <TimerContext.Provider value={[timer, setTimer]}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </TimerContext.Provider>
+      </PastWorkoutsContext.Provider>
+    </CurrentWorkoutContext.Provider>
   );
 }
 

@@ -10,10 +10,10 @@ import type {
   ExerciseType,
 } from '@/data/exercises';
 import Exercises from '@/data/exercises';
-import type { Workout } from '@/data/store';
 import {
   emptyWorkout,
-  useStore,
+  useCurrentWorkout,
+  usePastWorkouts,
   type AnyExerciseLog,
   type ExerciseLog,
 } from '@/data/store';
@@ -30,24 +30,15 @@ import {
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
-  const [store, setStore] = useStore();
 
-  const workout = store.currentWorkout;
-  function setWorkout(workout: Workout) {
-    setStore({
-      ...store,
-      currentWorkout: workout,
-    });
-  }
+  const [currentWorkout, setCurrentWorkout] = useCurrentWorkout();
+  const [pastWorkouts, setPastWorkouts] = usePastWorkouts();
 
-  const exerciseLogs = workout.exerciseLogs;
+  const exerciseLogs = currentWorkout.exerciseLogs;
   function setExerciseLogs(exerciseLogs: AnyExerciseLog[]) {
-    setStore({
-      ...store,
-      currentWorkout: {
-        ...store.currentWorkout,
-        exerciseLogs: exerciseLogs,
-      },
+    setCurrentWorkout({
+      ...currentWorkout,
+      exerciseLogs: exerciseLogs,
     });
   }
 
@@ -75,10 +66,8 @@ export default function WorkoutScreen() {
   }
 
   function finishWorkout() {
-    setStore({
-      currentWorkout: emptyWorkout(),
-      pastWorkouts: [workout, ...store.pastWorkouts],
-    });
+    setCurrentWorkout(emptyWorkout());
+    setPastWorkouts([currentWorkout, ...pastWorkouts]);
   }
 
   const canFinishWorkout =
@@ -88,8 +77,6 @@ export default function WorkoutScreen() {
         exerciseLog.setLogs.length != 0 &&
         exerciseLog.setLogs.every((setLog) => setLog.done)
     );
-
-  const { pastWorkouts } = store;
 
   function pastExerciseLog<T extends ExerciseType>(
     exerciseLog: ExerciseLog<T>
@@ -110,14 +97,10 @@ export default function WorkoutScreen() {
   return (
     <IUIContainer>
       <WorkoutHeader
-        name={workout?.name || ''}
+        name={currentWorkout.name || ''}
         setName={(name) => {
-          if (workout == null) {
-            return;
-          }
-
-          setWorkout({
-            ...workout,
+          setCurrentWorkout({
+            ...currentWorkout,
             name,
           });
         }}
@@ -192,9 +175,7 @@ export default function WorkoutScreen() {
       />
       <AddExerciseModal
         visible={showAddExerciseModal}
-        alreadyPicked={
-          new Set((workout?.exerciseLogs || []).map((log) => log.name))
-        }
+        alreadyPicked={new Set(exerciseLogs.map((log) => log.name))}
         onRequestClose={(exercise) => {
           if (exercise) {
             addExercise(exercise);

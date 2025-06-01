@@ -1,16 +1,16 @@
 import IUIContainer from '@/components/iui/IUIContainer';
 import type { AnySetLog, Workout } from '@/data/store';
-import { useStore } from '@/data/store';
+import { usePastWorkouts } from '@/data/store';
 
 import { FlatList, Text, View } from 'react-native';
 
 export default function HistoryScreen() {
-  const [store] = useStore();
+  const [pastWorkouts] = usePastWorkouts();
 
   return (
     <IUIContainer>
       <FlatList
-        data={store.pastWorkouts}
+        data={pastWorkouts}
         keyExtractor={(workout) => String(workout.startedAt)}
         renderItem={(info) => {
           const workout = info.item;

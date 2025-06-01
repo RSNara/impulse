@@ -7,11 +7,6 @@ export type Timer = {
   ticking: boolean;
 };
 
-export type Store = {
-  currentWorkout: Workout;
-  pastWorkouts: Workout[];
-};
-
 export type Workout = {
   name: string;
   exerciseLogs: AnyExerciseLog[];
@@ -136,19 +131,20 @@ export function emptyTimer(): Timer {
   };
 }
 
-export function emptyStore(): Store {
-  return {
-    currentWorkout: emptyWorkout(),
-    pastWorkouts: [],
-  };
+export const CurrentWorkoutContext = React.createContext<
+  [Workout, React.Dispatch<Workout>]
+>([emptyWorkout(), (value: Workout) => {}]);
+
+export function useCurrentWorkout() {
+  return useContext(CurrentWorkoutContext);
 }
 
-export const StoreContext = React.createContext<[Store, React.Dispatch<Store>]>(
-  [emptyStore(), (value: Store) => {}]
-);
+export const PastWorkoutsContext = React.createContext<
+  [Workout[], React.Dispatch<Workout[]>]
+>([[], (value: Workout[]) => {}]);
 
-export function useStore() {
-  return useContext(StoreContext);
+export function usePastWorkouts() {
+  return useContext(PastWorkoutsContext);
 }
 
 export const TimerContext = React.createContext<[Timer, React.Dispatch<Timer>]>(
