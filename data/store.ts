@@ -52,18 +52,21 @@ type LoadedExerciseLog = {
   name: string;
   type: 'loaded';
   setLogs: ReadonlyArray<SetLog<'loaded'>>;
+  id: string;
 };
 
 type RepsExerciseLog = {
   name: string;
   type: 'reps';
   setLogs: ReadonlyArray<SetLog<'reps'>>;
+  id: string;
 };
 
 type TimeExerciseLog = {
   name: string;
   type: 'time';
   setLogs: ReadonlyArray<SetLog<'time'>>;
+  id: string;
 };
 
 export type AnyExerciseLog =
