@@ -6,6 +6,7 @@ import type {
   SetLog,
 } from '@/data/store';
 import { emptyTimer, useTimer } from '@/data/store';
+import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import {
   Animated,
@@ -272,6 +273,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   // TODO: Is there a better way to start the timer...
   // Kinda weird to be having to use the global timer like this.
   const [, setTimer] = useTimer();
+  const router = useRouter();
 
   return (
     <IUIDismissable onDismiss={onDismiss} towards="right">
@@ -339,7 +341,11 @@ function ExerciseLogTableRow<T extends ExerciseType>({
                   toValue: 1,
                   duration: 200,
                   useNativeDriver: false,
-                }).start(() => {});
+                }).start(() => {
+                  setTimeout(() => {
+                    router.navigate('/timer');
+                  });
+                });
               } else {
                 Animated.spring(colorValue, {
                   toValue: 0,
