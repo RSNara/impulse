@@ -6,7 +6,8 @@ export type ExerciseGroup =
   | 'core'
   | 'back'
   | 'chest'
-  | 'fullbody';
+  | 'fullbody'
+  | 'aerial';
 
 type LoadedExercise = {
   name: string;
@@ -36,16 +37,6 @@ export type AnyExercise =
   | Exercise<'loaded'>
   | Exercise<'reps'>
   | Exercise<'time'>;
-
-export const ExerciseGroups: ReadonlyArray<ExerciseGroup> = [
-  'legs',
-  'arms',
-  'shoulders',
-  'core',
-  'back',
-  'chest',
-  'fullbody',
-];
 
 const Exercises: AnyExercise[] = [
   // LOADED EXERCISES
