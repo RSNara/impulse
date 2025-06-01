@@ -1,4 +1,3 @@
-import type { Exercise } from '@/data/exercises';
 import type {
   AnySetLog,
   ExerciseLog,
@@ -15,90 +14,10 @@ import {
   View,
   useAnimatedValue,
 } from 'react-native';
-import uuid from 'react-native-uuid';
-import IUIButton from '../iui/IUIButton';
-import IUIDismissable from '../iui/IUIDismissable';
-import { IUINumericTextInput } from '../iui/IUITextInput';
-
-function assertNever(x: never): never {
-  throw new Error('Unexpected value: ' + x);
-}
-
-export function createExerciseLog<T extends ExerciseType>(
-  exercise: Exercise<T>
-): ExerciseLog<T> {
-  if (exercise.type == 'loaded') {
-    return {
-      name: exercise.name,
-      type: exercise.type,
-      setLogs: [createSetLog<'loaded'>('loaded', false)],
-      id: uuid.v4(),
-    } as ExerciseLog<'loaded'> as ExerciseLog<T>;
-  }
-
-  if (exercise.type == 'reps') {
-    return {
-      name: exercise.name,
-      type: exercise.type,
-      setLogs: [createSetLog<'reps'>('reps', false)],
-      id: uuid.v4(),
-    } as ExerciseLog<'reps'> as ExerciseLog<T>;
-  }
-
-  if (exercise.type == 'time') {
-    return {
-      name: exercise.name,
-      type: exercise.type,
-      setLogs: [createSetLog<'time'>('time', false)],
-      id: uuid.v4(),
-    } as ExerciseLog<'time'> as ExerciseLog<T>;
-  }
-
-  assertNever(exercise);
-}
-
-export function createSetLog<T extends ExerciseType>(
-  type: T,
-  warmup: boolean
-): SetLog<T> {
-  if (type == 'time') {
-    const setLog: SetLog<'time'> = {
-      type: 'time',
-      time: null,
-      done: false,
-      warmup,
-      id: uuid.v4(),
-    };
-    return setLog as SetLog<T>;
-  }
-
-  if (type == 'loaded') {
-    const setLog: SetLog<'loaded'> = {
-      type: 'loaded',
-      mass: null,
-      reps: null,
-      done: false,
-      warmup,
-      id: uuid.v4(),
-    };
-
-    return setLog as SetLog<T>;
-  }
-
-  if (type == 'reps') {
-    const setLog: SetLog<'reps'> = {
-      type: 'reps',
-      reps: null,
-      done: false,
-      warmup,
-      id: uuid.v4(),
-    };
-
-    return setLog as SetLog<T>;
-  }
-
-  assertNever(type);
-}
+import IUIButton from '../../iui/IUIButton';
+import IUIDismissable from '../../iui/IUIDismissable';
+import { IUINumericTextInput } from '../../iui/IUITextInput';
+import createSetLog from './createSetLog';
 
 export type ExerciseLogTableProps<T extends ExerciseType> = {
   log: ExerciseLog<T>;
