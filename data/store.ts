@@ -156,3 +156,17 @@ export const StoreContext = React.createContext<[Store, React.Dispatch<Store>]>(
 export function useStore() {
   return useContext(StoreContext);
 }
+
+export function useTimer(): [Timer, React.Dispatch<Timer>] {
+  const [store, setStore] = useStore();
+
+  return [
+    store.timer,
+    function setTimer(timer: Timer) {
+      setStore({
+        ...store,
+        timer,
+      });
+    },
+  ];
+}

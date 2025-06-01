@@ -1,46 +1,12 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
-import type { Timer } from '@/data/store';
-import { emptyTimer, useStore } from '@/data/store';
-import { useEffect, useRef } from 'react';
+import { emptyTimer, useTimer } from '@/data/store';
 import { StyleSheet, Text, View } from 'react-native';
 import CircularProgress from 'react-native-circular-progress-indicator';
 
-let id = 0;
-
 export default function ExercisesScreen() {
-  const [store, setStore] = useStore();
-
-  const { timer } = store;
-  function updateTimer(partial: Partial<Timer>) {
-    setStore({
-      ...store,
-      timer: {
-        ...timer,
-        ...partial,
-      },
-    });
-  }
-
+  const [timer, setTimer] = useTimer();
   const timeLeft = Math.max(timer.duration - timer.elapsed, 0);
-
-  useInterval(
-    () => {
-      console.log(timeLeft);
-      if (timeLeft <= 0) {
-        updateTimer({
-          elapsed: 0,
-          ticking: false,
-        });
-      } else {
-        updateTimer({
-          elapsed: Math.min(timer.elapsed + 1000, timer.duration),
-        });
-      }
-    },
-    1000,
-    timer.ticking
-  );
 
   return (
     <IUIContainer>
@@ -81,7 +47,8 @@ export default function ExercisesScreen() {
               type="secondary"
               feeling="neutral"
               onPress={() => {
-                updateTimer({
+                setTimer({
+                  ...timer,
                   duration: Math.max(timer.duration - 30 * 1000, 0),
                 });
               }}
@@ -96,7 +63,8 @@ export default function ExercisesScreen() {
                 type="primary"
                 feeling="positive"
                 onPress={() => {
-                  updateTimer({
+                  setTimer({
+                    ...timer,
                     ticking: true,
                   });
                 }}
@@ -108,7 +76,7 @@ export default function ExercisesScreen() {
                 type="secondary"
                 feeling="negative"
                 onPress={() => {
-                  updateTimer(emptyTimer());
+                  setTimer(emptyTimer());
                 }}
               >
                 Reset
@@ -121,7 +89,8 @@ export default function ExercisesScreen() {
               type="secondary"
               feeling="neutral"
               onPress={() => {
-                updateTimer({
+                setTimer({
+                  ...timer,
                   duration: timer.duration + 30 * 1000,
                 });
               }}
@@ -140,25 +109,6 @@ function formatMs(ms: number) {
   const minutes = Math.floor(seconds / 60);
   const secondsInMinute = Math.floor(seconds - minutes * 60);
   return `${minutes}:${String(secondsInMinute).padStart(2, '0')}`;
-}
-
-function useInterval(fn: () => void, interval: number, isOn: boolean) {
-  const fnRef = useRef(fn);
-  useEffect(() => {
-    fnRef.current = fn;
-  }, [fn]);
-
-  useEffect(() => {
-    if (isOn) {
-      const id = setInterval(() => {
-        fnRef.current();
-      }, interval);
-
-      return () => {
-        clearInterval(id);
-      };
-    }
-  }, [interval, isOn]);
 }
 
 const styles = StyleSheet.create({
