@@ -1,6 +1,6 @@
 import { TextInput } from 'react-native';
 
-export function IUINumericTextInput<T>({
+export function IUINumericTextInput({
   value,
   onChange,
 }: {
@@ -28,6 +28,30 @@ export function IUINumericTextInput<T>({
           }
         }
       }}
+    />
+  );
+}
+
+export function IUIStringTextInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <TextInput
+      style={{
+        backgroundColor: 'rgba(0,0,0,0.1)',
+        borderRadius: 5,
+        padding: 5,
+        color: 'rgba(0, 127, 255, 1)',
+        fontWeight: 'bold',
+      }}
+      value={value != null ? String(value) : ''}
+      inputMode="text"
+      textAlign="left"
+      onChangeText={onChange}
     />
   );
 }

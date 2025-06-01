@@ -1,6 +1,7 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
+import { IUIStringTextInput } from '@/components/iui/IUITextInput';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
 import {
   createExerciseLog,
@@ -14,6 +15,7 @@ import {
   type ExerciseLog,
   type ExerciseType,
 } from '@/data/store';
+import assertNever from '@/utils/assertNever';
 import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
@@ -107,48 +109,49 @@ export default function WorkoutScreen() {
         }}
       />
       <ScrollView>
-        {exerciseLogs.map((exerciseLog, i) => {
-          if (exerciseLog.type == 'loaded') {
-            return (
-              <ExerciseLogTable<'loaded'>
-                type="loaded"
-                key={exerciseLog.name}
-                log={exerciseLog}
-                pastLog={pastExerciseLog<'loaded'>(exerciseLog)}
-                onRemove={() => removeExerciseLog(exerciseLog)}
-                setSetLogs={(setLogs) => {
-                  updateExerciseLog(exerciseLog, { setLogs });
-                }}
-              />
-            );
-          }
-          if (exerciseLog.type == 'reps') {
-            return (
-              <ExerciseLogTable<'reps'>
-                type="reps"
-                key={exerciseLog.name}
-                log={exerciseLog}
-                pastLog={pastExerciseLog<'reps'>(exerciseLog)}
-                onRemove={() => removeExerciseLog(exerciseLog)}
-                setSetLogs={(setLogs) => {
-                  updateExerciseLog(exerciseLog, { setLogs });
-                }}
-              />
-            );
-          }
-          if (exerciseLog.type == 'time') {
-            return (
-              <ExerciseLogTable<'time'>
-                type="time"
-                key={exerciseLog.name}
-                log={exerciseLog}
-                pastLog={pastExerciseLog<'time'>(exerciseLog)}
-                onRemove={() => removeExerciseLog(exerciseLog)}
-                setSetLogs={(setLogs) => {
-                  updateExerciseLog(exerciseLog, { setLogs });
-                }}
-              />
-            );
+        {exerciseLogs.map((exerciseLog) => {
+          switch (exerciseLog.type) {
+            case 'loaded':
+              return (
+                <ExerciseLogTable<'loaded'>
+                  type="loaded"
+                  key={exerciseLog.name}
+                  log={exerciseLog}
+                  pastLog={pastExerciseLog<'loaded'>(exerciseLog)}
+                  onRemove={() => removeExerciseLog(exerciseLog)}
+                  setSetLogs={(setLogs) => {
+                    updateExerciseLog(exerciseLog, { setLogs });
+                  }}
+                />
+              );
+            case 'reps':
+              return (
+                <ExerciseLogTable<'reps'>
+                  type="reps"
+                  key={exerciseLog.name}
+                  log={exerciseLog}
+                  pastLog={pastExerciseLog<'reps'>(exerciseLog)}
+                  onRemove={() => removeExerciseLog(exerciseLog)}
+                  setSetLogs={(setLogs) => {
+                    updateExerciseLog(exerciseLog, { setLogs });
+                  }}
+                />
+              );
+            case 'time':
+              return (
+                <ExerciseLogTable<'time'>
+                  type="time"
+                  key={exerciseLog.name}
+                  log={exerciseLog}
+                  pastLog={pastExerciseLog<'time'>(exerciseLog)}
+                  onRemove={() => removeExerciseLog(exerciseLog)}
+                  setSetLogs={(setLogs) => {
+                    updateExerciseLog(exerciseLog, { setLogs });
+                  }}
+                />
+              );
+            default:
+              assertNever(exerciseLog);
           }
         })}
       </ScrollView>
@@ -272,7 +275,7 @@ function AddExerciseModal({
     null
   );
   const [listWidth, setListWidth] = useState<number | null>(null);
-  const [exercises] = useExercises();
+  const [exercises, setExercises] = useExercises();
 
   const exerciseGroups = dedupe(exercises.map((exercise) => exercise.group));
   const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup>(
@@ -281,6 +284,8 @@ function AddExerciseModal({
   const page = exerciseGroups.indexOf(selectedGroup);
 
   const flatListRef = useRef<FlatList>(null);
+
+  const [showCreateExerciseModal, setShowCreateExerciseModal] = useState(false);
 
   useEffect(() => {
     if (flatListRef.current) {
@@ -385,7 +390,177 @@ function AddExerciseModal({
           Add Exercise
         </IUIButton>
       </View>
+
+      <View style={{ marginBottom: 10 }}>
+        <IUIButton
+          type="secondary"
+          feeling="neutral"
+          onPress={() => {
+            setShowCreateExerciseModal(true);
+          }}
+        >
+          Create Exercise
+        </IUIButton>
+      </View>
+
+      <CreateExerciseModal
+        visible={showCreateExerciseModal}
+        exerciseGroups={exerciseGroups}
+        exerciseNames={new Set(exercises.map((exercise) => exercise.name))}
+        onRequestClose={(exercise: AnyExercise | null) => {
+          setShowCreateExerciseModal(false);
+          if (exercise != null) {
+            setExercises([...exercises, exercise]);
+            setSelectedGroup(exercise.group);
+            setSelectedExercise(exercise);
+          }
+        }}
+      />
     </IUIModal>
+  );
+}
+
+function CreateExerciseModal({
+  visible,
+  onRequestClose,
+  exerciseGroups,
+  exerciseNames,
+}: {
+  visible: boolean;
+  onRequestClose: (exercise: AnyExercise | null) => void;
+  exerciseGroups: ReadonlyArray<ExerciseGroup>;
+  exerciseNames: Set<string>;
+}) {
+  const [exerciseName, setExerciseName] = useState('');
+  const [exerciseType, setExerciseType] = useState<ExerciseType | null>(null);
+  const [exerciseGroup, setExerciseGroup] = useState<ExerciseGroup | null>(
+    null
+  );
+
+  function onClose(exercise: AnyExercise | null) {
+    onRequestClose(exercise);
+    if (exercise != null) {
+      setExerciseName('');
+      setExerciseGroup(null);
+      setExerciseType(null);
+    }
+  }
+  return (
+    <IUIModal visible={visible} onRequestClose={() => onClose(null)}>
+      <View style={{ alignItems: 'center', marginBottom: 15 }}>
+        <Text style={{ fontWeight: 'bold' }}>Create Exercise?</Text>
+      </View>
+      <View style={{ marginBottom: 15 }}>
+        <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+          <Text style={{ fontWeight: 'bold' }}>Exercise Name </Text>
+          <Text style={{ color: 'red' }}>
+            {exerciseNames.has(exerciseName.trim()) ? '(taken)' : ''}
+          </Text>
+        </View>
+
+        <IUIStringTextInput value={exerciseName} onChange={setExerciseName} />
+      </View>
+
+      <View style={{ marginBottom: 5 }}>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
+          Exercise Type
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {(['loaded', 'reps', 'time'] as ExerciseType[]).map((type) => {
+            return (
+              <ExerciseType
+                key={type}
+                type={type}
+                isSelected={exerciseType == type}
+                onSelect={() => {
+                  setExerciseType(type);
+                }}
+              />
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={{ marginBottom: 5 }}>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
+          Exercise Group
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {exerciseGroups.map((group) => {
+            return (
+              <ExerciseGroup
+                key={group}
+                group={group}
+                isSelected={exerciseGroup == group}
+                onSelect={() => {
+                  setExerciseGroup(group);
+                }}
+              />
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={{ marginBottom: 10, marginTop: 5 }}>
+        <IUIButton
+          type="secondary"
+          feeling="positive"
+          disabled={
+            exerciseType == null ||
+            exerciseGroup == null ||
+            exerciseName.trim() == '' ||
+            exerciseNames.has(exerciseName.trim())
+          }
+          onPress={() => {
+            if (
+              exerciseType == null ||
+              exerciseGroup == null ||
+              exerciseName.trim() == '' ||
+              exerciseNames.has(exerciseName.trim())
+            ) {
+              return;
+            }
+            onClose({
+              type: exerciseType,
+              group: exerciseGroup,
+              name: exerciseName,
+            });
+          }}
+        >
+          Create Exercise
+        </IUIButton>
+      </View>
+    </IUIModal>
+  );
+}
+
+function ExerciseType({
+  type,
+  onSelect,
+  isSelected,
+}: {
+  type: ExerciseType;
+  onSelect: () => void;
+  isSelected: boolean;
+}) {
+  return (
+    <View
+      style={{
+        marginBottom: 10,
+        marginRight: 10,
+        minWidth: 65,
+      }}
+    >
+      <IUIButton
+        type={isSelected ? 'primary' : 'secondary'}
+        feeling="mild"
+        onPress={() => {
+          onSelect();
+        }}
+      >
+        {type}
+      </IUIButton>
+    </View>
   );
 }
 
@@ -400,7 +575,6 @@ function ExerciseGroup({
 }) {
   return (
     <View
-      key={group}
       style={{
         marginBottom: 10,
         marginRight: 10,
