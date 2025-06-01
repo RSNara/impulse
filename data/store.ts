@@ -1,5 +1,7 @@
+import assertNever from '@/utils/assertNever';
 import * as React from 'react';
 import { useContext } from 'react';
+import uuid from 'react-native-uuid';
 
 export type Timer = Readonly<{
   duration: number;
@@ -62,6 +64,41 @@ export type SetLog<T extends ExerciseType> = {
   time: TimeSetLog;
 }[T];
 
+export function createSetLog<T extends ExerciseType>(
+  type: T,
+  warmup: boolean
+): SetLog<T> {
+  switch (type) {
+    case 'time':
+      return {
+        type: 'time',
+        time: null,
+        done: false,
+        warmup,
+        id: uuid.v4(),
+      } as SetLog<T>;
+    case 'loaded':
+      return {
+        type: 'loaded',
+        mass: null,
+        reps: null,
+        done: false,
+        warmup,
+        id: uuid.v4(),
+      } as SetLog<T>;
+    case 'reps':
+      return {
+        type: 'reps',
+        reps: null,
+        done: false,
+        warmup,
+        id: uuid.v4(),
+      } as SetLog<T>;
+  }
+
+  assertNever(type);
+}
+
 export type ExerciseType = 'loaded' | 'reps' | 'time';
 
 type LoadedExerciseLog = Readonly<{
@@ -95,6 +132,36 @@ export type ExerciseLog<T extends ExerciseType> = {
   reps: RepsExerciseLog;
   time: TimeExerciseLog;
 }[T];
+
+export function createExerciseLog<T extends ExerciseType>(
+  exercise: Exercise<T>
+): ExerciseLog<T> {
+  switch (exercise.type) {
+    case 'loaded':
+      return {
+        name: exercise.name,
+        type: exercise.type,
+        setLogs: [createSetLog<'loaded'>('loaded', false)],
+        id: uuid.v4(),
+      } as ExerciseLog<'loaded'> as ExerciseLog<T>;
+    case 'reps':
+      return {
+        name: exercise.name,
+        type: exercise.type,
+        setLogs: [createSetLog<'reps'>('reps', false)],
+        id: uuid.v4(),
+      } as ExerciseLog<'reps'> as ExerciseLog<T>;
+    case 'time':
+      return {
+        name: exercise.name,
+        type: exercise.type,
+        setLogs: [createSetLog<'time'>('time', false)],
+        id: uuid.v4(),
+      } as ExerciseLog<'time'> as ExerciseLog<T>;
+    default:
+      assertNever(exercise);
+  }
+}
 
 function getWorkoutName(date: Date) {
   const hours = date.getHours();

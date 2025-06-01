@@ -4,7 +4,7 @@ import type {
   ExerciseType,
   SetLog,
 } from '@/data/store';
-import { emptyTimer, useTimer } from '@/data/store';
+import { createSetLog, emptyTimer, useTimer } from '@/data/store';
 import assertNever from '@/utils/assertNever';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
@@ -15,10 +15,9 @@ import {
   View,
   useAnimatedValue,
 } from 'react-native';
-import IUIButton from '../../iui/IUIButton';
-import IUIDismissable from '../../iui/IUIDismissable';
-import { IUINumericTextInput } from '../../iui/IUITextInput';
-import createSetLog from './createSetLog';
+import IUIButton from '../iui/IUIButton';
+import IUIDismissable from '../iui/IUIDismissable';
+import { IUINumericTextInput } from '../iui/IUITextInput';
 
 export default function ExerciseLogTable<T extends ExerciseType>(
   props: {

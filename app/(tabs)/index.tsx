@@ -2,8 +2,8 @@ import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
-import createExerciseLog from '@/components/workout/ExerciseLogTable/createExerciseLog';
 import {
+  createExerciseLog,
   emptyWorkout,
   useCurrentWorkout,
   useExercises,
