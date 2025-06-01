@@ -5,6 +5,7 @@ import type {
   SetLog,
 } from '@/data/store';
 import { emptyTimer, useTimer } from '@/data/store';
+import assertNever from '@/utils/assertNever';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import {
@@ -76,6 +77,8 @@ export default function ExerciseLogTable<T extends ExerciseType>(
         />
       );
       break;
+    default:
+      assertNever(props);
   }
 
   return (
@@ -101,17 +104,19 @@ export default function ExerciseLogTable<T extends ExerciseType>(
                 props.setSetLogs(
                   props.log.setLogs.concat(createSetLog(props.type, false))
                 );
-                return;
+                break;
               case 'loaded':
                 props.setSetLogs(
                   props.log.setLogs.concat(createSetLog(props.type, false))
                 );
-                return;
+                break;
               case 'time':
                 props.setSetLogs(
                   props.log.setLogs.concat(createSetLog(props.type, false))
                 );
-                return;
+                break;
+              default:
+                assertNever(props);
             }
           }}
         >
@@ -150,9 +155,10 @@ function ExerciseLogTableRows<T extends ExerciseType>(
     warmupNum: number;
   };
 
+  let $rows = null;
   switch (props.type) {
-    case 'loaded': {
-      let { rows: $rows } = props.setLogs.reduce(
+    case 'loaded':
+      ({ rows: $rows } = props.setLogs.reduce(
         (acc: RowAccumulator, setLog: SetLog<'loaded'>) => {
           const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
           const workingNum = !setLog.warmup
@@ -170,6 +176,7 @@ function ExerciseLogTableRows<T extends ExerciseType>(
               <ExerciseLogTableRow<'loaded'>
                 key={setLog.id}
                 setLog={setLog}
+                type={props.type}
                 pastSetLog={pastSetLog}
                 num={setLog.warmup ? warmupNum : workingNum}
                 updateSetLog={(update) => {
@@ -193,11 +200,11 @@ function ExerciseLogTableRows<T extends ExerciseType>(
           };
         },
         { rows: [], workingNum: 0, warmupNum: 0 }
-      );
-      return $rows;
-    }
-    case 'reps': {
-      const { rows: $rows } = props.setLogs.reduce(
+      ));
+      break;
+
+    case 'reps':
+      ({ rows: $rows } = props.setLogs.reduce(
         (acc: RowAccumulator, setLog: SetLog<'reps'>) => {
           const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
           const workingNum = !setLog.warmup
@@ -214,6 +221,7 @@ function ExerciseLogTableRows<T extends ExerciseType>(
               ...acc.rows,
               <ExerciseLogTableRow<'reps'>
                 key={setLog.id}
+                type={props.type}
                 setLog={setLog}
                 pastSetLog={pastSetLog}
                 num={setLog.warmup ? warmupNum : workingNum}
@@ -238,11 +246,11 @@ function ExerciseLogTableRows<T extends ExerciseType>(
           };
         },
         { rows: [], workingNum: 0, warmupNum: 0 }
-      );
-      return $rows;
-    }
-    case 'time': {
-      const { rows: $rows } = props.setLogs.reduce(
+      ));
+      break;
+
+    case 'time':
+      ({ rows: $rows } = props.setLogs.reduce(
         (acc: RowAccumulator, setLog: SetLog<'time'>) => {
           const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
           const workingNum = !setLog.warmup
@@ -259,6 +267,7 @@ function ExerciseLogTableRows<T extends ExerciseType>(
               ...acc.rows,
               <ExerciseLogTableRow<'time'>
                 key={setLog.id}
+                type={props.type}
                 setLog={setLog}
                 pastSetLog={pastSetLog}
                 num={setLog.warmup ? warmupNum : workingNum}
@@ -283,26 +292,44 @@ function ExerciseLogTableRows<T extends ExerciseType>(
           };
         },
         { rows: [], workingNum: 0, warmupNum: 0 }
-      );
-      return $rows;
-    }
+      ));
+      break;
+    default:
+      assertNever(props);
   }
+
+  return $rows;
 }
 
-function ExerciseLogTableRow<T extends ExerciseType>({
-  num,
-  setLog,
-  pastSetLog,
-  updateSetLog,
-  onDismiss,
-}: {
-  num: number;
-  setLog: SetLog<T>;
-  pastSetLog: SetLog<T> | null;
-  updateSetLog: (partial: Partial<SetLog<T>>) => void;
-  onDismiss: () => void;
-}) {
-  const colorValue = useAnimatedValue(setLog.done ? 1 : 0);
+function ExerciseLogTableRow<T extends ExerciseType>(
+  props: {
+    loaded: {
+      type: 'loaded';
+      num: number;
+      setLog: SetLog<'loaded'>;
+      pastSetLog: SetLog<'loaded'> | null;
+      updateSetLog: (partial: Partial<SetLog<'loaded'>>) => void;
+      onDismiss: () => void;
+    };
+    reps: {
+      type: 'reps';
+      num: number;
+      setLog: SetLog<'reps'>;
+      pastSetLog: SetLog<'reps'> | null;
+      updateSetLog: (partial: Partial<SetLog<'reps'>>) => void;
+      onDismiss: () => void;
+    };
+    time: {
+      num: number;
+      type: 'time';
+      setLog: SetLog<'time'>;
+      pastSetLog: SetLog<'time'> | null;
+      updateSetLog: (partial: Partial<SetLog<'time'>>) => void;
+      onDismiss: () => void;
+    };
+  }[T]
+) {
+  const colorValue = useAnimatedValue(props.setLog.done ? 1 : 0);
   const backgroundColor = colorValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['rgba(0, 255, 0, 0)', 'rgba(0, 255, 0, 0.125)'],
@@ -310,23 +337,24 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   });
 
   const canFinishSet = !(
-    (setLog.type === 'time' && setLog.time == null) ||
-    (setLog.type == 'loaded' && (setLog.reps == null || setLog.mass == null)) ||
-    (setLog.type == 'reps' && setLog.reps == null)
+    (props.setLog.type === 'time' && props.setLog.time == null) ||
+    (props.setLog.type == 'loaded' &&
+      (props.setLog.reps == null || props.setLog.mass == null)) ||
+    (props.setLog.type == 'reps' && props.setLog.reps == null)
   );
 
   useEffect(() => {
-    if (!canFinishSet && setLog.done) {
-      updateSetLog({
+    if (!canFinishSet && props.setLog.done) {
+      props.updateSetLog({
         done: false,
-      } as Partial<SetLog<T>>);
+      });
 
       Animated.spring(colorValue, {
         toValue: 0,
         useNativeDriver: false,
       }).start();
     }
-  }, [setLog, canFinishSet]);
+  }, [props.setLog, canFinishSet]);
 
   // TODO: Is there a better way to start the timer...
   // Kinda weird to be having to use the global timer like this.
@@ -334,7 +362,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   const router = useRouter();
 
   return (
-    <IUIDismissable onDismiss={onDismiss} towards="right">
+    <IUIDismissable onDismiss={props.onDismiss} towards="right">
       <Animated.View
         style={{
           flex: 1,
@@ -346,44 +374,45 @@ function ExerciseLogTableRow<T extends ExerciseType>({
       >
         <View style={rowStyles.setNum}>
           <SetIndicator
-            setLog={setLog}
-            num={num}
+            warmup={props.setLog.warmup}
+            num={props.num}
             onPress={() => {
-              updateSetLog({
-                ...setLog,
-                warmup: !setLog.warmup,
+              props.updateSetLog({
+                warmup: !props.setLog.warmup,
               });
             }}
           />
         </View>
         <View style={rowStyles.previous}>
-          <SetPreviousPerf pastSetLog={pastSetLog} />
+          <SetPreviousPerf pastSetLog={props.pastSetLog} />
         </View>
         <View style={rowStyles.dataContainer}>
-          {(setLog.type == 'time' || setLog.type == 'reps') && (
+          {(props.type == 'time' || props.type == 'reps') && (
             <View style={rowStyles.data} />
           )}
-          {setLog.type === 'time' ? (
+          {props.type === 'time' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
-                value={setLog.time}
-                onChange={(time) => updateSetLog({ time } as SetLog<T>)}
+                value={props.setLog.time}
+                onChange={(time) => {
+                  props.updateSetLog({ time });
+                }}
               />
             </View>
           ) : null}
-          {setLog.type === 'loaded' ? (
+          {props.type === 'loaded' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
-                value={setLog.mass}
-                onChange={(mass) => updateSetLog({ mass } as SetLog<T>)}
+                value={props.setLog.mass}
+                onChange={(mass) => props.updateSetLog({ mass })}
               />
             </View>
           ) : null}
-          {setLog.type == 'loaded' || setLog.type == 'reps' ? (
+          {props.type == 'loaded' || props.type == 'reps' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
-                value={setLog.reps}
-                onChange={(reps) => updateSetLog({ reps } as SetLog<T>)}
+                value={props.setLog.reps}
+                onChange={(reps) => props.updateSetLog({ reps })}
               />
             </View>
           ) : null}
@@ -391,13 +420,13 @@ function ExerciseLogTableRow<T extends ExerciseType>({
         <View style={rowStyles.done}>
           <IUIButton
             disabled={!canFinishSet}
-            type={setLog.done ? 'primary' : 'secondary'}
-            feeling={setLog.done ? 'done' : 'neutral'}
+            type={props.setLog.done ? 'primary' : 'secondary'}
+            feeling={props.setLog.done ? 'done' : 'neutral'}
             onPress={() => {
-              const isDone = !setLog.done;
-              updateSetLog({
+              const isDone = !props.setLog.done;
+              props.updateSetLog({
                 done: isDone,
-              } as Partial<SetLog<T>>);
+              });
               if (isDone) {
                 setTimer({
                   ...emptyTimer(),
@@ -429,22 +458,18 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   );
 }
 
-function SetIndicator({
-  setLog,
-  num,
-  onPress,
-}: {
-  setLog: AnySetLog;
+function SetIndicator(props: {
+  warmup: boolean;
   num: number;
   onPress: () => void;
 }) {
   return (
     <IUIButton
       type="secondary"
-      feeling={setLog.warmup ? 'mild' : 'neutral'}
-      onPress={onPress}
+      feeling={props.warmup ? 'mild' : 'neutral'}
+      onPress={props.onPress}
     >
-      {setLog.warmup ? 'w' : String(num)}
+      {props.warmup ? 'w' : String(props.num)}
     </IUIButton>
   );
 }
