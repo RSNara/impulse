@@ -15,7 +15,7 @@ export type Workout = {
 
 export type AnySetLog = LoadedSetLog | RepsSetLog | TimeSetLog;
 
-export type LoadedSetLog = {
+type LoadedSetLog = {
   type: 'loaded';
   warmup: boolean;
   done: boolean;
