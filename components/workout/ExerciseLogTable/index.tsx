@@ -19,173 +19,62 @@ import IUIDismissable from '../../iui/IUIDismissable';
 import { IUINumericTextInput } from '../../iui/IUITextInput';
 import createSetLog from './createSetLog';
 
-export type ExerciseLogTableProps<T extends ExerciseType> = {
-  loaded: {
-    type: 'loaded';
-    log: ExerciseLog<'loaded'>;
-    pastLog: ExerciseLog<'loaded'> | null;
-    setSetLogs: (sets: ReadonlyArray<SetLog<'loaded'>>) => void;
-    onRemove: () => void;
-  };
-  reps: {
-    type: 'reps';
-    log: ExerciseLog<'reps'>;
-    pastLog: ExerciseLog<'reps'> | null;
-    setSetLogs: (sets: ReadonlyArray<SetLog<'reps'>>) => void;
-    onRemove: () => void;
-  };
-  time: {
-    type: 'time';
-    log: ExerciseLog<'time'>;
-    pastLog: ExerciseLog<'time'> | null;
-    setSetLogs: (sets: ReadonlyArray<SetLog<'time'>>) => void;
-    onRemove: () => void;
-  };
-}[T];
-
 export default function ExerciseLogTable<T extends ExerciseType>(
-  props: ExerciseLogTableProps<T>
+  props: {
+    loaded: {
+      type: 'loaded';
+      log: ExerciseLog<'loaded'>;
+      pastLog: ExerciseLog<'loaded'> | null;
+      setSetLogs: (sets: ReadonlyArray<SetLog<'loaded'>>) => void;
+      onRemove: () => void;
+    };
+    reps: {
+      type: 'reps';
+      log: ExerciseLog<'reps'>;
+      pastLog: ExerciseLog<'reps'> | null;
+      setSetLogs: (sets: ReadonlyArray<SetLog<'reps'>>) => void;
+      onRemove: () => void;
+    };
+    time: {
+      type: 'time';
+      log: ExerciseLog<'time'>;
+      pastLog: ExerciseLog<'time'> | null;
+      setSetLogs: (sets: ReadonlyArray<SetLog<'time'>>) => void;
+      onRemove: () => void;
+    };
+  }[T]
 ) {
-  type RowAccumulator = {
-    rows: React.ReactNode[];
-    workingNum: number;
-    warmupNum: number;
-  };
-
   let $rows = null;
   switch (props.type) {
-    case 'loaded': {
-      ({ rows: $rows } = props.log.setLogs.reduce(
-        (acc: RowAccumulator, setLog: SetLog<'loaded'>) => {
-          const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
-          const workingNum = !setLog.warmup
-            ? acc.workingNum + 1
-            : acc.workingNum;
-          const pastSetLogs = props.pastLog?.setLogs || [];
-          const pastSetLog: SetLog<'loaded'> | null = setLog.warmup
-            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
-            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
-          return {
-            workingNum,
-            warmupNum,
-            rows: [
-              ...acc.rows,
-              <ExerciseLogTableRow<'loaded'>
-                key={setLog.id}
-                setLog={setLog}
-                pastSetLog={pastSetLog}
-                num={setLog.warmup ? warmupNum : workingNum}
-                updateSetLog={(update) => {
-                  props.setSetLogs(
-                    props.log.setLogs.map((otherSetLog) => {
-                      return otherSetLog == setLog
-                        ? { ...otherSetLog, ...update }
-                        : otherSetLog;
-                    })
-                  );
-                }}
-                onDismiss={() => {
-                  props.setSetLogs(
-                    props.log.setLogs.filter((otherSetLog) => {
-                      return otherSetLog != setLog;
-                    })
-                  );
-                }}
-              />,
-            ],
-          };
-        },
-        { rows: [], workingNum: 0, warmupNum: 0 }
-      ));
+    case 'loaded':
+      $rows = (
+        <ExerciseLogTableRows<'loaded'>
+          type={props.type}
+          setLogs={props.log.setLogs}
+          pastSetLogs={props.pastLog?.setLogs || null}
+          setSetLogs={props.setSetLogs}
+        />
+      );
       break;
-    }
     case 'reps':
-      ({ rows: $rows } = props.log.setLogs.reduce(
-        (acc: RowAccumulator, setLog: SetLog<'reps'>) => {
-          const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
-          const workingNum = !setLog.warmup
-            ? acc.workingNum + 1
-            : acc.workingNum;
-          const pastSetLogs = props.pastLog?.setLogs || [];
-          const pastSetLog: SetLog<'reps'> | null = setLog.warmup
-            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
-            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
-          return {
-            workingNum,
-            warmupNum,
-            rows: [
-              ...acc.rows,
-              <ExerciseLogTableRow<'reps'>
-                key={setLog.id}
-                setLog={setLog}
-                pastSetLog={pastSetLog}
-                num={setLog.warmup ? warmupNum : workingNum}
-                updateSetLog={(update) => {
-                  props.setSetLogs(
-                    props.log.setLogs.map((otherSetLog) => {
-                      return otherSetLog == setLog
-                        ? { ...otherSetLog, ...update }
-                        : otherSetLog;
-                    })
-                  );
-                }}
-                onDismiss={() => {
-                  props.setSetLogs(
-                    props.log.setLogs.filter((otherSetLog) => {
-                      return otherSetLog != setLog;
-                    })
-                  );
-                }}
-              />,
-            ],
-          };
-        },
-        { rows: [], workingNum: 0, warmupNum: 0 }
-      ));
+      $rows = (
+        <ExerciseLogTableRows<'reps'>
+          type={props.type}
+          setLogs={props.log.setLogs}
+          pastSetLogs={props.pastLog?.setLogs || null}
+          setSetLogs={props.setSetLogs}
+        />
+      );
       break;
     case 'time':
-      ({ rows: $rows } = props.log.setLogs.reduce(
-        (acc: RowAccumulator, setLog: SetLog<'time'>) => {
-          const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
-          const workingNum = !setLog.warmup
-            ? acc.workingNum + 1
-            : acc.workingNum;
-          const pastSetLogs = props.pastLog?.setLogs || [];
-          const pastSetLog: SetLog<'time'> | null = setLog.warmup
-            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
-            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
-          return {
-            workingNum,
-            warmupNum,
-            rows: [
-              ...acc.rows,
-              <ExerciseLogTableRow<'time'>
-                key={setLog.id}
-                setLog={setLog}
-                pastSetLog={pastSetLog}
-                num={setLog.warmup ? warmupNum : workingNum}
-                updateSetLog={(update) => {
-                  props.setSetLogs(
-                    props.log.setLogs.map((otherSetLog) => {
-                      return otherSetLog == setLog
-                        ? { ...otherSetLog, ...update }
-                        : otherSetLog;
-                    })
-                  );
-                }}
-                onDismiss={() => {
-                  props.setSetLogs(
-                    props.log.setLogs.filter((otherSetLog) => {
-                      return otherSetLog != setLog;
-                    })
-                  );
-                }}
-              />,
-            ],
-          };
-        },
-        { rows: [], workingNum: 0, warmupNum: 0 }
-      ));
+      $rows = (
+        <ExerciseLogTableRows<'time'>
+          type={props.type}
+          setLogs={props.log.setLogs}
+          pastSetLogs={props.pastLog?.setLogs || null}
+          setSetLogs={props.setSetLogs}
+        />
+      );
       break;
   }
 
@@ -231,6 +120,173 @@ export default function ExerciseLogTable<T extends ExerciseType>(
       </View>
     </IUIDismissable>
   );
+}
+
+function ExerciseLogTableRows<T extends ExerciseType>(
+  props: {
+    loaded: {
+      type: 'loaded';
+      setLogs: ReadonlyArray<SetLog<'loaded'>>;
+      pastSetLogs: ReadonlyArray<SetLog<'loaded'>> | null;
+      setSetLogs: (setLogs: ReadonlyArray<SetLog<'loaded'>>) => void;
+    };
+    reps: {
+      type: 'reps';
+      setLogs: ReadonlyArray<SetLog<'reps'>>;
+      pastSetLogs: ReadonlyArray<SetLog<'reps'>> | null;
+      setSetLogs: (setLogs: ReadonlyArray<SetLog<'reps'>>) => void;
+    };
+    time: {
+      type: 'time';
+      setLogs: ReadonlyArray<SetLog<'time'>>;
+      pastSetLogs: ReadonlyArray<SetLog<'time'>> | null;
+      setSetLogs: (setLogs: ReadonlyArray<SetLog<'time'>>) => void;
+    };
+  }[T]
+) {
+  type RowAccumulator = {
+    rows: React.ReactNode[];
+    workingNum: number;
+    warmupNum: number;
+  };
+
+  switch (props.type) {
+    case 'loaded': {
+      let { rows: $rows } = props.setLogs.reduce(
+        (acc: RowAccumulator, setLog: SetLog<'loaded'>) => {
+          const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
+          const workingNum = !setLog.warmup
+            ? acc.workingNum + 1
+            : acc.workingNum;
+          const pastSetLogs = props.pastSetLogs || [];
+          const pastSetLog: SetLog<'loaded'> | null = setLog.warmup
+            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
+            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
+          return {
+            workingNum,
+            warmupNum,
+            rows: [
+              ...acc.rows,
+              <ExerciseLogTableRow<'loaded'>
+                key={setLog.id}
+                setLog={setLog}
+                pastSetLog={pastSetLog}
+                num={setLog.warmup ? warmupNum : workingNum}
+                updateSetLog={(update) => {
+                  props.setSetLogs(
+                    props.setLogs.map((otherSetLog) => {
+                      return otherSetLog == setLog
+                        ? { ...otherSetLog, ...update }
+                        : otherSetLog;
+                    })
+                  );
+                }}
+                onDismiss={() => {
+                  props.setSetLogs(
+                    props.setLogs.filter((otherSetLog) => {
+                      return otherSetLog != setLog;
+                    })
+                  );
+                }}
+              />,
+            ],
+          };
+        },
+        { rows: [], workingNum: 0, warmupNum: 0 }
+      );
+      return $rows;
+    }
+    case 'reps': {
+      const { rows: $rows } = props.setLogs.reduce(
+        (acc: RowAccumulator, setLog: SetLog<'reps'>) => {
+          const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
+          const workingNum = !setLog.warmup
+            ? acc.workingNum + 1
+            : acc.workingNum;
+          const pastSetLogs = props.pastSetLogs || [];
+          const pastSetLog: SetLog<'reps'> | null = setLog.warmup
+            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
+            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
+          return {
+            workingNum,
+            warmupNum,
+            rows: [
+              ...acc.rows,
+              <ExerciseLogTableRow<'reps'>
+                key={setLog.id}
+                setLog={setLog}
+                pastSetLog={pastSetLog}
+                num={setLog.warmup ? warmupNum : workingNum}
+                updateSetLog={(update) => {
+                  props.setSetLogs(
+                    props.setLogs.map((otherSetLog) => {
+                      return otherSetLog == setLog
+                        ? { ...otherSetLog, ...update }
+                        : otherSetLog;
+                    })
+                  );
+                }}
+                onDismiss={() => {
+                  props.setSetLogs(
+                    props.setLogs.filter((otherSetLog) => {
+                      return otherSetLog != setLog;
+                    })
+                  );
+                }}
+              />,
+            ],
+          };
+        },
+        { rows: [], workingNum: 0, warmupNum: 0 }
+      );
+      return $rows;
+    }
+    case 'time': {
+      const { rows: $rows } = props.setLogs.reduce(
+        (acc: RowAccumulator, setLog: SetLog<'time'>) => {
+          const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
+          const workingNum = !setLog.warmup
+            ? acc.workingNum + 1
+            : acc.workingNum;
+          const pastSetLogs = props.pastSetLogs || [];
+          const pastSetLog: SetLog<'time'> | null = setLog.warmup
+            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
+            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
+          return {
+            workingNum,
+            warmupNum,
+            rows: [
+              ...acc.rows,
+              <ExerciseLogTableRow<'time'>
+                key={setLog.id}
+                setLog={setLog}
+                pastSetLog={pastSetLog}
+                num={setLog.warmup ? warmupNum : workingNum}
+                updateSetLog={(update) => {
+                  props.setSetLogs(
+                    props.setLogs.map((otherSetLog) => {
+                      return otherSetLog == setLog
+                        ? { ...otherSetLog, ...update }
+                        : otherSetLog;
+                    })
+                  );
+                }}
+                onDismiss={() => {
+                  props.setSetLogs(
+                    props.setLogs.filter((otherSetLog) => {
+                      return otherSetLog != setLog;
+                    })
+                  );
+                }}
+              />,
+            ],
+          };
+        },
+        { rows: [], workingNum: 0, warmupNum: 0 }
+      );
+      return $rows;
+    }
+  }
 }
 
 function ExerciseLogTableRow<T extends ExerciseType>({
