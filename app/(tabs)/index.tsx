@@ -273,9 +273,7 @@ function AddExerciseModal({
   );
   const [listWidth, setListWidth] = useState<number | null>(null);
 
-  const exerciseGroups = [
-    ...new Set(Exercises.map((exercise) => exercise.group)),
-  ];
+  const exerciseGroups = dedupe(Exercises.map((exercise) => exercise.group));
   const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup>(
     exerciseGroups[0]
   );
@@ -314,17 +312,19 @@ function AddExerciseModal({
         <Text style={{ fontWeight: 'bold' }}>Add Exercise?</Text>
       </View>
 
-      <ExerciseGroups
-        selectedGroup={selectedGroup}
-        onSelectGroup={(group) => {
-          if (group == selectedGroup) {
-            return;
-          }
-          setSelectedGroup(group);
-          setSelectedExercise(null);
-        }}
-        groups={exerciseGroups}
-      />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+        {exerciseGroups.map((group, i) => {
+          return (
+            <ExerciseGroup
+              key={group}
+              group={group}
+              isSelected={group == selectedGroup}
+              onSelect={() => setSelectedGroup(group)}
+            />
+          );
+        })}
+      </View>
+
       <FlatList
         ref={flatListRef}
         horizontal={true}
@@ -358,13 +358,13 @@ function AddExerciseModal({
                 const isSelected = selectedExercise == exercise;
 
                 return (
-                  <ExerciseRow
+                  <Exercise
                     exercise={exercise}
                     isSelected={isSelected}
                     onPress={() => {
                       setSelectedExercise(exercise);
                     }}
-                  ></ExerciseRow>
+                  ></Exercise>
                 );
               }}
             />
@@ -388,44 +388,38 @@ function AddExerciseModal({
   );
 }
 
-function ExerciseGroups({
-  groups,
-  onSelectGroup,
-  selectedGroup,
+function ExerciseGroup({
+  group,
+  onSelect,
+  isSelected,
 }: {
-  groups: ReadonlyArray<ExerciseGroup>;
-  onSelectGroup: (group: ExerciseGroup) => void;
-  selectedGroup: ExerciseGroup | null;
+  group: ExerciseGroup;
+  onSelect: () => void;
+  isSelected: boolean;
 }) {
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      {groups.map((group, i) => {
-        return (
-          <View
-            key={group}
-            style={{
-              marginBottom: 10,
-              marginRight: 10,
-              minWidth: 65,
-            }}
-          >
-            <IUIButton
-              type={selectedGroup == group ? 'primary' : 'secondary'}
-              feeling="done"
-              onPress={() => {
-                onSelectGroup(group);
-              }}
-            >
-              {group}
-            </IUIButton>
-          </View>
-        );
-      })}
+    <View
+      key={group}
+      style={{
+        marginBottom: 10,
+        marginRight: 10,
+        minWidth: 65,
+      }}
+    >
+      <IUIButton
+        type={isSelected ? 'primary' : 'secondary'}
+        feeling="done"
+        onPress={() => {
+          onSelect();
+        }}
+      >
+        {group}
+      </IUIButton>
     </View>
   );
 }
 
-function ExerciseRow({
+function Exercise({
   exercise,
   isSelected,
   onPress,
@@ -460,4 +454,8 @@ function ExerciseRow({
       </Text>
     </Pressable>
   );
+}
+
+function dedupe<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
 }

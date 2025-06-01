@@ -182,55 +182,6 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   );
 }
 
-function ExerciseLogTableHeader({ type }: { type: ExerciseType }) {
-  return (
-    <View style={styles.row}>
-      <View style={headingStyles.setNum}>
-        <Title>Set</Title>
-      </View>
-      <View style={headingStyles.previous}>
-        <Title>Previous</Title>
-      </View>
-      <View style={headingStyles.dataContainer}>
-        {(type == 'time' || type == 'reps') && (
-          <View style={headingStyles.data}>
-            <Title />
-          </View>
-        )}
-        {type == 'time' && (
-          <View style={headingStyles.data}>
-            <Title>Time</Title>
-          </View>
-        )}
-        {type == 'loaded' && (
-          <View style={headingStyles.data}>
-            <Title>Mass</Title>
-          </View>
-        )}
-        {(type == 'loaded' || type == 'reps') && (
-          <View style={headingStyles.data}>
-            <Title>Reps</Title>
-          </View>
-        )}
-      </View>
-
-      <View style={{ flex: 1 }}>
-        <IUIButton type="tertiary" feeling="neutral" onPress={() => {}}>
-          ✓
-        </IUIButton>
-      </View>
-    </View>
-  );
-
-  function Title({ children }: { children?: string }) {
-    return (
-      <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>
-        {children}
-      </Text>
-    );
-  }
-}
-
 function ExerciseLogTableRow<T extends ExerciseType>({
   num,
   setLog,
@@ -361,7 +312,6 @@ function ExerciseLogTableRow<T extends ExerciseType>({
     </IUIDismissable>
   );
 }
-2;
 
 function SetIndicator({ setLog, num }: { setLog: AnySetLog; num: number }) {
   return (
@@ -389,6 +339,55 @@ function SetPreviousPerf({ pastSetLog }: { pastSetLog: AnySetLog | null }) {
       </Text>
     </View>
   );
+}
+
+function ExerciseLogTableHeader({ type }: { type: ExerciseType }) {
+  return (
+    <View style={styles.row}>
+      <View style={headingStyles.setNum}>
+        <Title>Set</Title>
+      </View>
+      <View style={headingStyles.previous}>
+        <Title>Previous</Title>
+      </View>
+      <View style={headingStyles.dataContainer}>
+        {(type == 'time' || type == 'reps') && (
+          <View style={headingStyles.data}>
+            <Title />
+          </View>
+        )}
+        {type == 'time' && (
+          <View style={headingStyles.data}>
+            <Title>Time</Title>
+          </View>
+        )}
+        {type == 'loaded' && (
+          <View style={headingStyles.data}>
+            <Title>Mass</Title>
+          </View>
+        )}
+        {(type == 'loaded' || type == 'reps') && (
+          <View style={headingStyles.data}>
+            <Title>Reps</Title>
+          </View>
+        )}
+      </View>
+
+      <View style={{ flex: 1 }}>
+        <IUIButton type="tertiary" feeling="neutral" onPress={() => {}}>
+          ✓
+        </IUIButton>
+      </View>
+    </View>
+  );
+
+  function Title({ children }: { children?: string }) {
+    return (
+      <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>
+        {children}
+      </Text>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
