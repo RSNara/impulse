@@ -9,7 +9,7 @@ import {
 import useInterval from '@/hooks/useInterval';
 import useSyncedState from '@/hooks/useSyncedState';
 
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 
 export default function RootLayout() {
   const [currentWorkout, setCurrentWorkout] = useSyncedState<Workout>(
@@ -21,20 +21,20 @@ export default function RootLayout() {
     []
   );
   const [timer, setTimer] = useSyncedState<Timer>('timer', emptyTimer());
+  const router = useRouter();
 
   useInterval(
     () => {
       const timeLeft = Math.max(timer.duration - timer.elapsed, 0);
       const isTimerFinished = timeLeft <= 0;
       if (isTimerFinished) {
-        setTimer({
-          ...timer,
+        updateTimer({
           elapsed: 0,
           ticking: false,
         });
+        router.navigate('/(tabs)');
       } else {
-        setTimer({
-          ...timer,
+        updateTimer({
           elapsed: Math.min(timer.elapsed + 1000, timer.duration),
         });
       }
@@ -54,4 +54,11 @@ export default function RootLayout() {
       </PastWorkoutsContext.Provider>
     </CurrentWorkoutContext.Provider>
   );
+
+  function updateTimer(update: Partial<Timer>) {
+    setTimer({
+      ...timer,
+      ...update,
+    });
+  }
 }
