@@ -21,11 +21,11 @@ import { IUINumericTextInput } from '../iui/IUITextInput';
 
 export default function ExerciseLogTable<T extends ExerciseType>(
   props: {
-    loaded: {
-      type: 'loaded';
-      log: ExerciseLog<'loaded'>;
-      pastLog: ExerciseLog<'loaded'> | null;
-      setSetLogs: (sets: ReadonlyArray<SetLog<'loaded'>>) => void;
+    weights: {
+      type: 'weights';
+      log: ExerciseLog<'weights'>;
+      pastLog: ExerciseLog<'weights'> | null;
+      setSetLogs: (sets: ReadonlyArray<SetLog<'weights'>>) => void;
       onRemove: () => void;
     };
     reps: {
@@ -46,9 +46,9 @@ export default function ExerciseLogTable<T extends ExerciseType>(
 ) {
   let $rows = null;
   switch (props.type) {
-    case 'loaded':
+    case 'weights':
       $rows = (
-        <ExerciseLogTableRows<'loaded'>
+        <ExerciseLogTableRows<'weights'>
           type={props.type}
           setLogs={props.log.setLogs}
           pastSetLogs={props.pastLog?.setLogs || null}
@@ -104,7 +104,7 @@ export default function ExerciseLogTable<T extends ExerciseType>(
                   props.log.setLogs.concat(createSetLog(props.type, false))
                 );
                 break;
-              case 'loaded':
+              case 'weights':
                 props.setSetLogs(
                   props.log.setLogs.concat(createSetLog(props.type, false))
                 );
@@ -128,11 +128,11 @@ export default function ExerciseLogTable<T extends ExerciseType>(
 
 function ExerciseLogTableRows<T extends ExerciseType>(
   props: {
-    loaded: {
-      type: 'loaded';
-      setLogs: ReadonlyArray<SetLog<'loaded'>>;
-      pastSetLogs: ReadonlyArray<SetLog<'loaded'>> | null;
-      setSetLogs: (setLogs: ReadonlyArray<SetLog<'loaded'>>) => void;
+    weights: {
+      type: 'weights';
+      setLogs: ReadonlyArray<SetLog<'weights'>>;
+      pastSetLogs: ReadonlyArray<SetLog<'weights'>> | null;
+      setSetLogs: (setLogs: ReadonlyArray<SetLog<'weights'>>) => void;
     };
     reps: {
       type: 'reps';
@@ -156,15 +156,15 @@ function ExerciseLogTableRows<T extends ExerciseType>(
 
   let $rows = null;
   switch (props.type) {
-    case 'loaded':
+    case 'weights':
       ({ rows: $rows } = props.setLogs.reduce(
-        (acc: RowAccumulator, setLog: SetLog<'loaded'>) => {
+        (acc: RowAccumulator, setLog: SetLog<'weights'>) => {
           const warmupNum = setLog.warmup ? acc.warmupNum + 1 : acc.warmupNum;
           const workingNum = !setLog.warmup
             ? acc.workingNum + 1
             : acc.workingNum;
           const pastSetLogs = props.pastSetLogs || [];
-          const pastSetLog: SetLog<'loaded'> | null = setLog.warmup
+          const pastSetLog: SetLog<'weights'> | null = setLog.warmup
             ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
             : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
           return {
@@ -172,7 +172,7 @@ function ExerciseLogTableRows<T extends ExerciseType>(
             warmupNum,
             rows: [
               ...acc.rows,
-              <ExerciseLogTableRow<'loaded'>
+              <ExerciseLogTableRow<'weights'>
                 key={setLog.id}
                 setLog={setLog}
                 type={props.type}
@@ -302,12 +302,12 @@ function ExerciseLogTableRows<T extends ExerciseType>(
 
 function ExerciseLogTableRow<T extends ExerciseType>(
   props: {
-    loaded: {
-      type: 'loaded';
+    weights: {
+      type: 'weights';
       num: number;
-      setLog: SetLog<'loaded'>;
-      pastSetLog: SetLog<'loaded'> | null;
-      updateSetLog: (partial: Partial<SetLog<'loaded'>>) => void;
+      setLog: SetLog<'weights'>;
+      pastSetLog: SetLog<'weights'> | null;
+      updateSetLog: (partial: Partial<SetLog<'weights'>>) => void;
       onDismiss: () => void;
     };
     reps: {
@@ -337,7 +337,7 @@ function ExerciseLogTableRow<T extends ExerciseType>(
 
   const canFinishSet = !(
     (props.setLog.type === 'time' && props.setLog.time == null) ||
-    (props.setLog.type == 'loaded' &&
+    (props.setLog.type == 'weights' &&
       (props.setLog.reps == null || props.setLog.mass == null)) ||
     (props.setLog.type == 'reps' && props.setLog.reps == null)
   );
@@ -399,7 +399,7 @@ function ExerciseLogTableRow<T extends ExerciseType>(
               />
             </View>
           ) : null}
-          {props.type === 'loaded' ? (
+          {props.type === 'weights' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={props.setLog.mass}
@@ -407,7 +407,7 @@ function ExerciseLogTableRow<T extends ExerciseType>(
               />
             </View>
           ) : null}
-          {props.type == 'loaded' || props.type == 'reps' ? (
+          {props.type == 'weights' || props.type == 'reps' ? (
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={props.setLog.reps}
@@ -483,7 +483,7 @@ function SetPreviousPerf({ pastSetLog }: { pastSetLog: AnySetLog | null }) {
       }}
     >
       <Text style={{ fontWeight: 'bold' }}>
-        {pastSetLog && pastSetLog.type == 'loaded'
+        {pastSetLog && pastSetLog.type == 'weights'
           ? `${pastSetLog.mass} x ${pastSetLog.reps}`
           : null}
         {pastSetLog && pastSetLog.type == 'reps' ? `${pastSetLog.reps}` : null}
@@ -513,12 +513,12 @@ function ExerciseLogTableHeader({ type }: { type: ExerciseType }) {
             <Title>Time</Title>
           </View>
         )}
-        {type == 'loaded' && (
+        {type == 'weights' && (
           <View style={headingStyles.data}>
             <Title>Mass</Title>
           </View>
         )}
-        {(type == 'loaded' || type == 'reps') && (
+        {(type == 'weights' || type == 'reps') && (
           <View style={headingStyles.data}>
             <Title>Reps</Title>
           </View>

@@ -111,13 +111,13 @@ export default function WorkoutScreen() {
       <ScrollView>
         {exerciseLogs.map((exerciseLog) => {
           switch (exerciseLog.type) {
-            case 'loaded':
+            case 'weights':
               return (
-                <ExerciseLogTable<'loaded'>
-                  type="loaded"
+                <ExerciseLogTable<'weights'>
+                  type="weights"
                   key={exerciseLog.name}
                   log={exerciseLog}
-                  pastLog={pastExerciseLog<'loaded'>(exerciseLog)}
+                  pastLog={pastExerciseLog<'weights'>(exerciseLog)}
                   onRemove={() => removeExerciseLog(exerciseLog)}
                   setSetLogs={(setLogs) => {
                     updateExerciseLog(exerciseLog, { setLogs });
@@ -467,7 +467,7 @@ function CreateExerciseModal({
           Exercise Type
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {(['loaded', 'reps', 'time'] as ExerciseType[]).map((type) => {
+          {(['weights', 'reps', 'time'] as ExerciseType[]).map((type) => {
             return (
               <View key={type} style={{ marginBottom: 10, marginEnd: 10 }}>
                 <ExerciseType
@@ -539,17 +539,17 @@ function CreateExerciseModal({
 
 function ExerciseType({
   type,
-  onSelect,
+  onSelect = () => {},
   isSelected,
 }: {
   type: ExerciseType;
-  onSelect: () => void;
+  onSelect?: () => void;
   isSelected: boolean;
 }) {
   return (
     <View
       style={{
-        minWidth: 65,
+        minWidth: 75,
       }}
     >
       <IUIButton
@@ -577,7 +577,7 @@ function ExerciseGroup({
   return (
     <View
       style={{
-        minWidth: 65,
+        minWidth: 70,
       }}
     >
       <IUIButton
@@ -636,11 +636,7 @@ function Exercise({
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
           {exercise.name}
         </Text>
-        <ExerciseType
-          type={exercise.type}
-          isSelected={isSelected}
-          onSelect={() => {}}
-        />
+        <ExerciseType type={exercise.type} isSelected={isSelected} />
       </View>
     </Pressable>
   );

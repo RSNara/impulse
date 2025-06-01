@@ -117,7 +117,7 @@ function WorkoutCard({ workout }: { workout: Workout }) {
 }
 
 function SetLog({ setLog }: { setLog: AnySetLog }) {
-  if (setLog.type === 'loaded') {
+  if (setLog.type === 'weights') {
     return (
       <Text style={{ marginStart: 10 }}>
         {setLog.mass} x {setLog.reps}

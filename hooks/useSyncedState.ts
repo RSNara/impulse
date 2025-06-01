@@ -27,9 +27,10 @@ const storage = new Storage({
 
 export default function useSyncedState<State>(
   key: string,
-  defaultValue: State
+  defaultValue: State,
+  overwrite: boolean = false
 ): [State, React.Dispatch<State>] {
-  const [shouldSync, setShouldSync] = useState(false);
+  const [shouldSync, setShouldSync] = useState(overwrite);
   const [state, setState] = useState<State>(defaultValue);
 
   const saveState = useDebounced((val: State) => {

@@ -6,13 +6,13 @@ export default function IUIButton2({
   type = 'primary',
   feeling = 'neutral',
   disabled = false,
-  onPress,
+  onPress = () => {},
 }: {
   children: string;
   type: 'primary' | 'secondary' | 'tertiary';
   feeling: 'neutral' | 'positive' | 'done' | 'negative' | 'mild';
   disabled?: boolean;
-  onPress: () => void;
+  onPress?: () => void;
 }) {
   const { color, backgroundColor } = getProps();
 

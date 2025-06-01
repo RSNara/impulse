@@ -26,7 +26,8 @@ export default function RootLayout() {
   const [timer, setTimer] = useSyncedState<Timer>('timer', emptyTimer());
   const [exercises, setExercises] = useSyncedState<ReadonlyArray<AnyExercise>>(
     'exercises',
-    defaultExercises()
+    defaultExercises(),
+    true
   );
   const router = useRouter();
 

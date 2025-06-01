@@ -34,7 +34,7 @@ export type Workout = Readonly<{
 export type AnySetLog = LoadedSetLog | RepsSetLog | TimeSetLog;
 
 type LoadedSetLog = Readonly<{
-  type: 'loaded';
+  type: 'weights';
   warmup: boolean;
   done: boolean;
   mass: number | null;
@@ -59,7 +59,7 @@ type TimeSetLog = Readonly<{
 }>;
 
 export type SetLog<T extends ExerciseType> = {
-  loaded: LoadedSetLog;
+  weights: LoadedSetLog;
   reps: RepsSetLog;
   time: TimeSetLog;
 }[T];
@@ -77,9 +77,9 @@ export function createSetLog<T extends ExerciseType>(
         warmup,
         id: uuid.v4(),
       } as SetLog<T>;
-    case 'loaded':
+    case 'weights':
       return {
-        type: 'loaded',
+        type: 'weights',
         mass: null,
         reps: null,
         done: false,
@@ -99,12 +99,12 @@ export function createSetLog<T extends ExerciseType>(
   assertNever(type);
 }
 
-export type ExerciseType = 'loaded' | 'reps' | 'time';
+export type ExerciseType = 'weights' | 'reps' | 'time';
 
-type LoadedExerciseLog = Readonly<{
+type WeightsExerciseLog = Readonly<{
   name: string;
-  type: 'loaded';
-  setLogs: ReadonlyArray<SetLog<'loaded'>>;
+  type: 'weights';
+  setLogs: ReadonlyArray<SetLog<'weights'>>;
   id: string;
 }>;
 
@@ -123,12 +123,12 @@ type TimeExerciseLog = Readonly<{
 }>;
 
 export type AnyExerciseLog =
-  | ExerciseLog<'loaded'>
+  | ExerciseLog<'weights'>
   | ExerciseLog<'reps'>
   | ExerciseLog<'time'>;
 
 export type ExerciseLog<T extends ExerciseType> = {
-  loaded: LoadedExerciseLog;
+  weights: WeightsExerciseLog;
   reps: RepsExerciseLog;
   time: TimeExerciseLog;
 }[T];
@@ -137,13 +137,13 @@ export function createExerciseLog<T extends ExerciseType>(
   exercise: Exercise<T>
 ): ExerciseLog<T> {
   switch (exercise.type) {
-    case 'loaded':
+    case 'weights':
       return {
         name: exercise.name,
         type: exercise.type,
-        setLogs: [createSetLog<'loaded'>('loaded', false)],
+        setLogs: [createSetLog<'weights'>('weights', false)],
         id: uuid.v4(),
-      } as ExerciseLog<'loaded'> as ExerciseLog<T>;
+      } as ExerciseLog<'weights'> as ExerciseLog<T>;
     case 'reps':
       return {
         name: exercise.name,
@@ -238,9 +238,9 @@ export type ExerciseGroup =
   | 'fullbody'
   | 'aerial';
 
-type LoadedExercise = Readonly<{
+type WeightsExercise = Readonly<{
   name: string;
-  type: 'loaded';
+  type: 'weights';
   group: ExerciseGroup;
 }>;
 
@@ -257,69 +257,69 @@ type TimeExercise = Readonly<{
 }>;
 
 export type Exercise<T extends ExerciseType> = {
-  loaded: LoadedExercise;
+  weights: WeightsExercise;
   reps: RepsExercise;
   time: TimeExercise;
 }[T];
 
 export type AnyExercise =
-  | Exercise<'loaded'>
+  | Exercise<'weights'>
   | Exercise<'reps'>
   | Exercise<'time'>;
 
 export function defaultExercises(): ReadonlyArray<AnyExercise> {
   return [
     // LOADED EXERCISES
-    { name: 'Barbell Back Squat', type: 'loaded', group: 'legs' },
-    { name: 'Barbell Front Squat', type: 'loaded', group: 'legs' },
-    { name: 'Goblet Squat', type: 'loaded', group: 'legs' },
-    { name: 'Bulgarian Split Squat', type: 'loaded', group: 'legs' },
-    { name: 'Hack Squat', type: 'loaded', group: 'legs' },
-    { name: 'Barbell Romanian Deadlift', type: 'loaded', group: 'legs' },
-    { name: 'Conventional Deadlift', type: 'loaded', group: 'legs' },
-    { name: 'Sumo Deadlift', type: 'loaded', group: 'legs' },
-    { name: 'Trap Bar Deadlift', type: 'loaded', group: 'legs' },
-    { name: 'Deficit Deadlift', type: 'loaded', group: 'legs' },
-    { name: 'Stiff-Leg Deadlift', type: 'loaded', group: 'legs' },
-    { name: 'Barbell Bench Press', type: 'loaded', group: 'chest' },
-    { name: 'Dumbbell Bench Press', type: 'loaded', group: 'chest' },
-    { name: 'Incline Bench Press', type: 'loaded', group: 'chest' },
-    { name: 'Decline Bench Press', type: 'loaded', group: 'chest' },
-    { name: 'Overhead Press', type: 'loaded', group: 'shoulders' },
-    { name: 'Seated Shoulder Press', type: 'loaded', group: 'shoulders' },
-    { name: 'Push Press', type: 'loaded', group: 'shoulders' },
-    { name: 'Arnold Press', type: 'loaded', group: 'shoulders' },
-    { name: 'Barbell Bent Over Row', type: 'loaded', group: 'back' },
-    { name: 'Pendlay Row', type: 'loaded', group: 'back' },
-    { name: 'Dumbbell Row', type: 'loaded', group: 'back' },
-    { name: 'Chest Supported Row', type: 'loaded', group: 'back' },
-    { name: 'T-Bar Row', type: 'loaded', group: 'back' },
-    { name: 'Cable Row', type: 'loaded', group: 'back' },
-    { name: 'Weighted Pull-Up', type: 'loaded', group: 'back' },
-    { name: 'Weighted Chin-Up', type: 'loaded', group: 'back' },
-    { name: 'Weighted Dip', type: 'loaded', group: 'chest' },
-    { name: 'Hip Thrust', type: 'loaded', group: 'legs' },
-    { name: 'Barbell Lunge', type: 'loaded', group: 'legs' },
-    { name: 'Dumbbell Lunge', type: 'loaded', group: 'legs' },
-    { name: 'Leg Press', type: 'loaded', group: 'legs' },
-    { name: 'Leg Extension', type: 'loaded', group: 'legs' },
-    { name: 'Hamstring Curl', type: 'loaded', group: 'legs' },
-    { name: 'Barbell Curl', type: 'loaded', group: 'arms' },
-    { name: 'Dumbbell Curl', type: 'loaded', group: 'arms' },
-    { name: 'EZ Bar Curl', type: 'loaded', group: 'arms' },
-    { name: 'Skullcrusher', type: 'loaded', group: 'arms' },
-    { name: 'Triceps Pushdown', type: 'loaded', group: 'arms' },
-    { name: 'Upright Row', type: 'loaded', group: 'shoulders' },
-    { name: 'Shrugs', type: 'loaded', group: 'shoulders' },
-    { name: 'Power Clean', type: 'loaded', group: 'fullbody' },
-    { name: 'Hang Power Clean', type: 'loaded', group: 'fullbody' },
-    { name: 'Clean & Jerk', type: 'loaded', group: 'fullbody' },
-    { name: 'Snatch', type: 'loaded', group: 'fullbody' },
-    { name: 'Kettlebell Swing', type: 'loaded', group: 'fullbody' },
-    { name: 'Kettlebell Goblet Squat', type: 'loaded', group: 'legs' },
-    { name: 'Cable Fly', type: 'loaded', group: 'chest' },
-    { name: 'Lat Pulldown', type: 'loaded', group: 'back' },
-    { name: 'Seated Row', type: 'loaded', group: 'back' },
+    { name: 'Barbell Back Squat', type: 'weights', group: 'legs' },
+    { name: 'Barbell Front Squat', type: 'weights', group: 'legs' },
+    { name: 'Goblet Squat', type: 'weights', group: 'legs' },
+    { name: 'Bulgarian Split Squat', type: 'weights', group: 'legs' },
+    { name: 'Hack Squat', type: 'weights', group: 'legs' },
+    { name: 'Barbell Romanian Deadlift', type: 'weights', group: 'legs' },
+    { name: 'Conventional Deadlift', type: 'weights', group: 'legs' },
+    { name: 'Sumo Deadlift', type: 'weights', group: 'legs' },
+    { name: 'Trap Bar Deadlift', type: 'weights', group: 'legs' },
+    { name: 'Deficit Deadlift', type: 'weights', group: 'legs' },
+    { name: 'Stiff-Leg Deadlift', type: 'weights', group: 'legs' },
+    { name: 'Barbell Bench Press', type: 'weights', group: 'chest' },
+    { name: 'Dumbbell Bench Press', type: 'weights', group: 'chest' },
+    { name: 'Incline Bench Press', type: 'weights', group: 'chest' },
+    { name: 'Decline Bench Press', type: 'weights', group: 'chest' },
+    { name: 'Overhead Press', type: 'weights', group: 'shoulders' },
+    { name: 'Seated Shoulder Press', type: 'weights', group: 'shoulders' },
+    { name: 'Push Press', type: 'weights', group: 'shoulders' },
+    { name: 'Arnold Press', type: 'weights', group: 'shoulders' },
+    { name: 'Barbell Bent Over Row', type: 'weights', group: 'back' },
+    { name: 'Pendlay Row', type: 'weights', group: 'back' },
+    { name: 'Dumbbell Row', type: 'weights', group: 'back' },
+    { name: 'Chest Supported Row', type: 'weights', group: 'back' },
+    { name: 'T-Bar Row', type: 'weights', group: 'back' },
+    { name: 'Cable Row', type: 'weights', group: 'back' },
+    { name: 'Weighted Pull-Up', type: 'weights', group: 'back' },
+    { name: 'Weighted Chin-Up', type: 'weights', group: 'back' },
+    { name: 'Weighted Dip', type: 'weights', group: 'chest' },
+    { name: 'Hip Thrust', type: 'weights', group: 'legs' },
+    { name: 'Barbell Lunge', type: 'weights', group: 'legs' },
+    { name: 'Dumbbell Lunge', type: 'weights', group: 'legs' },
+    { name: 'Leg Press', type: 'weights', group: 'legs' },
+    { name: 'Leg Extension', type: 'weights', group: 'legs' },
+    { name: 'Hamstring Curl', type: 'weights', group: 'legs' },
+    { name: 'Barbell Curl', type: 'weights', group: 'arms' },
+    { name: 'Dumbbell Curl', type: 'weights', group: 'arms' },
+    { name: 'EZ Bar Curl', type: 'weights', group: 'arms' },
+    { name: 'Skullcrusher', type: 'weights', group: 'arms' },
+    { name: 'Triceps Pushdown', type: 'weights', group: 'arms' },
+    { name: 'Upright Row', type: 'weights', group: 'shoulders' },
+    { name: 'Shrugs', type: 'weights', group: 'shoulders' },
+    { name: 'Power Clean', type: 'weights', group: 'fullbody' },
+    { name: 'Hang Power Clean', type: 'weights', group: 'fullbody' },
+    { name: 'Clean & Jerk', type: 'weights', group: 'fullbody' },
+    { name: 'Snatch', type: 'weights', group: 'fullbody' },
+    { name: 'Kettlebell Swing', type: 'weights', group: 'fullbody' },
+    { name: 'Kettlebell Goblet Squat', type: 'weights', group: 'legs' },
+    { name: 'Cable Fly', type: 'weights', group: 'chest' },
+    { name: 'Lat Pulldown', type: 'weights', group: 'back' },
+    { name: 'Seated Row', type: 'weights', group: 'back' },
 
     // REPS EXERCISES
     { name: 'Push-Up', type: 'reps', group: 'chest' },
