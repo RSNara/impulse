@@ -75,26 +75,29 @@ function debounce<Args extends unknown[]>(
 ) {
   let inCooldown = false;
   let scheduleEnd: Args | null = null;
-  let scheduleStart = true;
+  let isExecutingEnd = false;
 
   const debounced = (...args: Args) => {
     if (!inCooldown) {
       inCooldown = true;
-      if (scheduleStart) {
+      if (isExecutingEnd) {
+        scheduleEnd = args;
+      } else {
         setTimeout(() => {
           fn(...args);
         }, 0);
       }
+
       setTimeout(() => {
         inCooldown = false;
         if (scheduleEnd) {
-          const actualArgs = scheduleEnd ?? args;
+          const actualArgs = scheduleEnd;
           scheduleEnd = null;
           try {
-            scheduleStart = false;
+            isExecutingEnd = true;
             fn(...actualArgs);
           } finally {
-            scheduleStart = true;
+            isExecutingEnd = false;
           }
         }
       }, n);
