@@ -6,10 +6,10 @@ import {
   PastWorkoutsContext,
   TimerContext,
 } from '@/data/store';
-
+import useInterval from '@/hooks/useInterval';
 import useSyncedState from '@/hooks/useSyncedState';
+
 import { Stack } from 'expo-router';
-import { useEffect, useRef } from 'react';
 
 export default function RootLayout() {
   const [currentWorkout, setCurrentWorkout] = useSyncedState<Workout>(
@@ -54,23 +54,4 @@ export default function RootLayout() {
       </PastWorkoutsContext.Provider>
     </CurrentWorkoutContext.Provider>
   );
-}
-
-function useInterval(fn: () => void, interval: number, isOn: boolean) {
-  const fnRef = useRef(fn);
-  useEffect(() => {
-    fnRef.current = fn;
-  }, [fn]);
-
-  useEffect(() => {
-    if (isOn) {
-      const id = setInterval(() => {
-        fnRef.current();
-      }, interval);
-
-      return () => {
-        clearInterval(id);
-      };
-    }
-  }, [interval, isOn]);
 }
