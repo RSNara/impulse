@@ -3,18 +3,16 @@ import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
 import createExerciseLog from '@/components/workout/ExerciseLogTable/createExerciseLog';
-import type {
-  AnyExercise,
-  ExerciseGroup,
-  ExerciseType,
-} from '@/data/exercises';
-import Exercises from '@/data/exercises';
 import {
+  defaultExercises,
   emptyWorkout,
   useCurrentWorkout,
   usePastWorkouts,
+  type AnyExercise,
   type AnyExerciseLog,
+  type ExerciseGroup,
   type ExerciseLog,
+  type ExerciseType,
 } from '@/data/store';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -275,7 +273,9 @@ function AddExerciseModal({
   );
   const [listWidth, setListWidth] = useState<number | null>(null);
 
-  const exerciseGroups = dedupe(Exercises.map((exercise) => exercise.group));
+  const exerciseGroups = dedupe(
+    defaultExercises().map((exercise) => exercise.group)
+  );
   const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup>(
     exerciseGroups[0]
   );
@@ -344,7 +344,7 @@ function AddExerciseModal({
         renderItem={(info) => {
           return (
             <FlatList<AnyExercise>
-              data={Exercises.filter((exercise) => {
+              data={defaultExercises().filter((exercise) => {
                 return (
                   !alreadyPicked.has(exercise.name) &&
                   exercise.group == info.item
