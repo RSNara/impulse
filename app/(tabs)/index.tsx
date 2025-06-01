@@ -4,9 +4,9 @@ import IUIModal from '@/components/iui/IUIModal';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
 import createExerciseLog from '@/components/workout/ExerciseLogTable/createExerciseLog';
 import {
-  defaultExercises,
   emptyWorkout,
   useCurrentWorkout,
+  useExercises,
   usePastWorkouts,
   type AnyExercise,
   type AnyExerciseLog,
@@ -272,10 +272,9 @@ function AddExerciseModal({
     null
   );
   const [listWidth, setListWidth] = useState<number | null>(null);
+  const [exercises] = useExercises();
 
-  const exerciseGroups = dedupe(
-    defaultExercises().map((exercise) => exercise.group)
-  );
+  const exerciseGroups = dedupe(exercises.map((exercise) => exercise.group));
   const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup>(
     exerciseGroups[0]
   );
@@ -344,7 +343,7 @@ function AddExerciseModal({
         renderItem={(info) => {
           return (
             <FlatList<AnyExercise>
-              data={defaultExercises().filter((exercise) => {
+              data={exercises.filter((exercise) => {
                 return (
                   !alreadyPicked.has(exercise.name) &&
                   exercise.group == info.item

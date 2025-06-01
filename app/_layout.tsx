@@ -1,10 +1,14 @@
-import type { Timer, Workout } from '@/data/store';
 import {
+  AnyExercise,
   CurrentWorkoutContext,
+  defaultExercises,
   emptyTimer,
   emptyWorkout,
+  ExercisesContext,
   PastWorkoutsContext,
+  Timer,
   TimerContext,
+  Workout,
 } from '@/data/store';
 import useInterval from '@/hooks/useInterval';
 import useSyncedState from '@/hooks/useSyncedState';
@@ -21,6 +25,10 @@ export default function RootLayout() {
     []
   );
   const [timer, setTimer] = useSyncedState<Timer>('timer', emptyTimer());
+  const [exercises, setExercises] = useSyncedState<ReadonlyArray<AnyExercise>>(
+    'exercises',
+    defaultExercises()
+  );
   const router = useRouter();
 
   useInterval(
@@ -44,15 +52,19 @@ export default function RootLayout() {
   );
 
   return (
-    <CurrentWorkoutContext.Provider value={[currentWorkout, setCurrentWorkout]}>
-      <PastWorkoutsContext.Provider value={[pastWorkouts, setPastWorkouts]}>
-        <TimerContext.Provider value={[timer, setTimer]}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </TimerContext.Provider>
-      </PastWorkoutsContext.Provider>
-    </CurrentWorkoutContext.Provider>
+    <ExercisesContext.Provider value={[exercises, setExercises]}>
+      <CurrentWorkoutContext.Provider
+        value={[currentWorkout, setCurrentWorkout]}
+      >
+        <PastWorkoutsContext.Provider value={[pastWorkouts, setPastWorkouts]}>
+          <TimerContext.Provider value={[timer, setTimer]}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </TimerContext.Provider>
+        </PastWorkoutsContext.Provider>
+      </CurrentWorkoutContext.Provider>
+    </ExercisesContext.Provider>
   );
 
   function updateTimer(update: Partial<Timer>) {

@@ -7,6 +7,22 @@ export type Timer = {
   ticking: boolean;
 };
 
+export function emptyTimer(): Timer {
+  return {
+    duration: 210 * 1000,
+    elapsed: 0,
+    ticking: false,
+  };
+}
+
+export const TimerContext = React.createContext<[Timer, React.Dispatch<Timer>]>(
+  [emptyTimer(), (value: Timer) => {}]
+);
+
+export function useTimer(): [Timer, React.Dispatch<Timer>] {
+  return useContext(TimerContext);
+}
+
 export type Workout = {
   name: string;
   exerciseLogs: AnyExerciseLog[];
@@ -121,19 +137,11 @@ function getWorkoutName(date: Date) {
   return `${dayName}, Week ${weekOfMonth} (${ampm}, ${monthName})`;
 }
 
-export function emptyWorkout() {
+export function emptyWorkout(): Workout {
   return {
     name: getWorkoutName(new Date()),
     exerciseLogs: [],
     startedAt: new Date().getTime(),
-  };
-}
-
-export function emptyTimer(): Timer {
-  return {
-    duration: 210 * 1000,
-    elapsed: 0,
-    ticking: false,
   };
 }
 
@@ -151,14 +159,6 @@ export const PastWorkoutsContext = React.createContext<
 
 export function usePastWorkouts() {
   return useContext(PastWorkoutsContext);
-}
-
-export const TimerContext = React.createContext<[Timer, React.Dispatch<Timer>]>(
-  [emptyTimer(), (value: Timer) => {}]
-);
-
-export function useTimer(): [Timer, React.Dispatch<Timer>] {
-  return useContext(TimerContext);
 }
 
 export type ExerciseGroup =
@@ -321,4 +321,12 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     { name: 'Isometric Push-Up Hold', type: 'time', group: 'chest' },
     { name: 'Isometric Lunge Hold', type: 'time', group: 'legs' },
   ];
+}
+
+export const ExercisesContext = React.createContext<
+  [ReadonlyArray<AnyExercise>, React.Dispatch<ReadonlyArray<AnyExercise>>]
+>([[], (value: ReadonlyArray<AnyExercise>) => {}]);
+
+export function useExercises() {
+  return useContext(ExercisesContext);
 }
