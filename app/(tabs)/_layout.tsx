@@ -18,6 +18,7 @@ export default function TabLayout() {
           },
           default: {},
         }),
+        animation: 'shift',
       }}
     >
       <Tabs.Screen

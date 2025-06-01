@@ -1,12 +1,21 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
 import { emptyTimer, useTimer } from '@/data/store';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import CircularProgress from 'react-native-circular-progress-indicator';
 
 export default function ExercisesScreen() {
   const [timer, setTimer] = useTimer();
+  const router = useRouter();
   const timeLeft = Math.max(timer.duration - timer.elapsed, 0);
+
+  useEffect(() => {
+    if (timeLeft <= 1) {
+      router.navigate('/(tabs)');
+    }
+  }, [timeLeft]);
 
   return (
     <IUIContainer>
