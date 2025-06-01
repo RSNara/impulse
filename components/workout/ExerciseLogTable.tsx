@@ -7,7 +7,7 @@ import type {
 } from '@/data/store';
 import { emptyTimer, useTimer } from '@/data/store';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import {
   Animated,
   StyleSheet,
@@ -15,6 +15,7 @@ import {
   View,
   useAnimatedValue,
 } from 'react-native';
+import uuid from 'react-native-uuid';
 import IUIButton from '../iui/IUIButton';
 import IUIDismissable from '../iui/IUIDismissable';
 import { IUINumericTextInput } from '../iui/IUITextInput';
@@ -31,6 +32,7 @@ export function createExerciseLog<T extends ExerciseType>(
       name: exercise.name,
       type: exercise.type,
       setLogs: [createSetLog<'loaded'>('loaded', false)],
+      id: uuid.v4(),
     } as ExerciseLog<'loaded'> as ExerciseLog<T>;
   }
 
@@ -39,6 +41,7 @@ export function createExerciseLog<T extends ExerciseType>(
       name: exercise.name,
       type: exercise.type,
       setLogs: [createSetLog<'reps'>('reps', false)],
+      id: uuid.v4(),
     } as ExerciseLog<'reps'> as ExerciseLog<T>;
   }
 
@@ -47,6 +50,7 @@ export function createExerciseLog<T extends ExerciseType>(
       name: exercise.name,
       type: exercise.type,
       setLogs: [createSetLog<'time'>('time', false)],
+      id: uuid.v4(),
     } as ExerciseLog<'time'> as ExerciseLog<T>;
   }
 
@@ -58,30 +62,42 @@ export function createSetLog<T extends ExerciseType>(
   warmup: boolean
 ): SetLog<T> {
   if (type == 'time') {
-    return {
+    const setLog: SetLog<'time'> = {
       type: 'time',
       time: null,
       done: false,
       warmup,
-    } as SetLog<T>;
+      id: uuid.v4(),
+    };
+    return setLog as SetLog<T>;
   }
 
   if (type == 'loaded') {
-    return {
+    const setLog: SetLog<'loaded'> = {
       type: 'loaded',
       mass: null,
       reps: null,
       done: false,
       warmup,
-    } as SetLog<T>;
+      id: uuid.v4(),
+    };
+
+    return setLog as SetLog<T>;
   }
 
-  return {
-    type: 'reps',
-    reps: null,
-    done: false,
-    warmup,
-  } as SetLog<T>;
+  if (type == 'reps') {
+    const setLog: SetLog<'reps'> = {
+      type: 'reps',
+      reps: null,
+      done: false,
+      warmup,
+      id: uuid.v4(),
+    };
+
+    return setLog as SetLog<T>;
+  }
+
+  assertNever(type);
 }
 
 export type ExerciseLogTableProps<T extends ExerciseType> = {
@@ -101,17 +117,6 @@ export default function ExerciseLogTable<T extends ExerciseType>({
   const setLogs = log.setLogs as SetLog<T>[];
   const name = log.name;
   const type = log.type;
-
-  const idRef = useRef(0);
-  const setIdMap = useRef(new WeakMap<SetLog<T>, number>()).current;
-
-  function getSetLogKey(setLog: SetLog<T>) {
-    const result = setIdMap.get(setLog);
-    if (result == null) {
-      setIdMap.set(setLog, idRef.current++);
-    }
-    return setIdMap.get(setLog);
-  }
 
   function updateSetLog(setLog: SetLog<T>, update: Partial<SetLog<T>>) {
     updateSetLogs(
@@ -141,7 +146,7 @@ export default function ExerciseLogTable<T extends ExerciseType>({
         rows: [
           ...acc.rows,
           <ExerciseLogTableRow
-            key={getSetLogKey(set)}
+            key={set.id}
             setLog={set}
             pastSetLog={pastSetLog}
             num={num}

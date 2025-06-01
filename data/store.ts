@@ -21,6 +21,7 @@ export type LoadedSetLog = {
   done: boolean;
   mass: number | null;
   reps: number | null;
+  id: string;
 };
 
 type RepsSetLog = {
@@ -28,6 +29,7 @@ type RepsSetLog = {
   warmup: boolean;
   done: boolean;
   reps: number | null;
+  id: string;
 };
 
 type TimeSetLog = {
@@ -35,6 +37,7 @@ type TimeSetLog = {
   warmup: boolean;
   done: boolean;
   time: number | null;
+  id: string;
 };
 
 export type SetLog<T extends ExerciseType> = {
