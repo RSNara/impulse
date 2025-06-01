@@ -24,6 +24,7 @@ export default function ExercisesScreen() {
           <CircularProgress
             value={Math.floor((timeLeft / timer.duration) * 100)}
             radius={140}
+            initialValue={Math.floor((timeLeft / timer.duration) * 100)}
             activeStrokeWidth={15}
             inActiveStrokeWidth={15}
             activeStrokeColor={'rgba(0, 127, 255, 1)'}
