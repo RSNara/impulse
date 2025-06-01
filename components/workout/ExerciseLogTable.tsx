@@ -5,6 +5,7 @@ import type {
   ExerciseType,
   SetLog,
 } from '@/data/store';
+import { emptyTimer, useTimer } from '@/data/store';
 import { useEffect, useRef } from 'react';
 import {
   Animated,
@@ -268,6 +269,10 @@ function ExerciseLogTableRow<T extends ExerciseType>({
     }
   }, [setLog, canFinishSet]);
 
+  // TODO: Is there a better way to start the timer...
+  // Kinda weird to be having to use the global timer like this.
+  const [, setTimer] = useTimer();
+
   return (
     <IUIDismissable onDismiss={onDismiss} towards="right">
       <Animated.View
@@ -324,13 +329,17 @@ function ExerciseLogTableRow<T extends ExerciseType>({
               onUpdate({
                 done: isDone,
               } as Partial<SetLog<T>>);
-
               if (isDone) {
+                setTimer({
+                  ...emptyTimer(),
+                  ticking: true,
+                });
+
                 Animated.timing(colorValue, {
                   toValue: 1,
                   duration: 200,
                   useNativeDriver: false,
-                }).start();
+                }).start(() => {});
               } else {
                 Animated.spring(colorValue, {
                   toValue: 0,

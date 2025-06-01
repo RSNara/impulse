@@ -157,16 +157,10 @@ export function useStore() {
   return useContext(StoreContext);
 }
 
-export function useTimer(): [Timer, React.Dispatch<Timer>] {
-  const [store, setStore] = useStore();
+export const TimerContext = React.createContext<[Timer, React.Dispatch<Timer>]>(
+  [emptyTimer(), (value: Timer) => {}]
+);
 
-  return [
-    store.timer,
-    function setTimer(timer: Timer) {
-      setStore({
-        ...store,
-        timer,
-      });
-    },
-  ];
+export function useTimer(): [Timer, React.Dispatch<Timer>] {
+  return useContext(TimerContext);
 }

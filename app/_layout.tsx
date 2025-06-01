@@ -1,5 +1,10 @@
 import type { Store, Timer } from '@/data/store';
-import { emptyStore, StoreContext } from '@/data/store';
+import {
+  emptyStore,
+  emptyTimer,
+  StoreContext,
+  TimerContext,
+} from '@/data/store';
 
 import useSyncedState from '@/hooks/useSyncedState';
 import { Stack } from 'expo-router';
@@ -7,16 +12,7 @@ import { useEffect, useRef } from 'react';
 
 export default function RootLayout() {
   const [store, setStore] = useSyncedState<Store>('store', emptyStore());
-  const { timer } = store;
-
-  function setTimer(partial: Timer) {
-    setStore({
-      ...store,
-      timer: {
-        ...partial,
-      },
-    });
-  }
+  const [timer, setTimer] = useSyncedState<Timer>('timer', emptyTimer());
 
   useInterval(
     () => {
@@ -41,9 +37,11 @@ export default function RootLayout() {
 
   return (
     <StoreContext.Provider value={[store, setStore]}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      <TimerContext.Provider value={[timer, setTimer]}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </TimerContext.Provider>
     </StoreContext.Provider>
   );
 }
