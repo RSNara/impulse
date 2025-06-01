@@ -134,29 +134,39 @@ export default function ExerciseLogTable<T extends ExerciseType>({
     );
   }
 
-  type RowAccumulator = { rows: React.ReactNode[]; num: number };
+  type RowAccumulator = {
+    rows: React.ReactNode[];
+    workingNum: number;
+    warmupNum: number;
+  };
   const { rows: $rows } = setLogs.reduce(
     (acc: RowAccumulator, set: SetLog<T>) => {
-      const num = !set.warmup ? acc.num + 1 : acc.num;
-      const pastSetLog = pastSetLogs.filter((setLog) => !setLog.warmup)[
-        num - 1
-      ] as SetLog<T> | null;
+      const warmupNum = set.warmup ? acc.warmupNum + 1 : acc.warmupNum;
+      const workingNum = !set.warmup ? acc.workingNum + 1 : acc.workingNum;
+      const pastSetLog = set.warmup
+        ? (pastSetLogs.filter((setLog) => setLog.warmup)[
+            warmupNum
+          ] as SetLog<T> | null)
+        : (pastSetLogs.filter((setLog) => !setLog.warmup)[
+            workingNum
+          ] as SetLog<T> | null);
       return {
-        num,
+        workingNum,
+        warmupNum,
         rows: [
           ...acc.rows,
           <ExerciseLogTableRow
             key={set.id}
             setLog={set}
             pastSetLog={pastSetLog}
-            num={num}
-            onUpdate={(update) => updateSetLog(set, update)}
+            num={set.warmup ? warmupNum : workingNum}
+            updateSetLog={(update) => updateSetLog(set, update)}
             onDismiss={() => removeSetLog(set)}
           />,
         ],
       };
     },
-    { rows: [], num: 0 }
+    { rows: [], workingNum: 0, warmupNum: 0 }
   );
 
   return (
@@ -191,13 +201,13 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   num,
   setLog,
   pastSetLog,
-  onUpdate,
+  updateSetLog,
   onDismiss,
 }: {
   num: number;
   setLog: SetLog<T>;
   pastSetLog: SetLog<T> | null;
-  onUpdate: (partial: Partial<SetLog<T>>) => void;
+  updateSetLog: (partial: Partial<SetLog<T>>) => void;
   onDismiss: () => void;
 }) {
   const colorValue = useAnimatedValue(setLog.done ? 1 : 0);
@@ -215,7 +225,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
 
   useEffect(() => {
     if (!canFinishSet && setLog.done) {
-      onUpdate({
+      updateSetLog({
         done: false,
       } as Partial<SetLog<T>>);
 
@@ -243,7 +253,16 @@ function ExerciseLogTableRow<T extends ExerciseType>({
         }}
       >
         <View style={rowStyles.setNum}>
-          <SetIndicator setLog={setLog} num={num} />
+          <SetIndicator
+            setLog={setLog}
+            num={num}
+            onPress={() => {
+              updateSetLog({
+                ...setLog,
+                warmup: !setLog.warmup,
+              });
+            }}
+          />
         </View>
         <View style={rowStyles.previous}>
           <SetPreviousPerf pastSetLog={pastSetLog} />
@@ -256,7 +275,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={setLog.time}
-                onChange={(time) => onUpdate({ time } as SetLog<T>)}
+                onChange={(time) => updateSetLog({ time } as SetLog<T>)}
               />
             </View>
           ) : null}
@@ -264,7 +283,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={setLog.mass}
-                onChange={(mass) => onUpdate({ mass } as SetLog<T>)}
+                onChange={(mass) => updateSetLog({ mass } as SetLog<T>)}
               />
             </View>
           ) : null}
@@ -272,7 +291,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
             <View style={rowStyles.data}>
               <IUINumericTextInput
                 value={setLog.reps}
-                onChange={(reps) => onUpdate({ reps } as SetLog<T>)}
+                onChange={(reps) => updateSetLog({ reps } as SetLog<T>)}
               />
             </View>
           ) : null}
@@ -284,7 +303,7 @@ function ExerciseLogTableRow<T extends ExerciseType>({
             feeling={setLog.done ? 'done' : 'neutral'}
             onPress={() => {
               const isDone = !setLog.done;
-              onUpdate({
+              updateSetLog({
                 done: isDone,
               } as Partial<SetLog<T>>);
               if (isDone) {
@@ -318,9 +337,21 @@ function ExerciseLogTableRow<T extends ExerciseType>({
   );
 }
 
-function SetIndicator({ setLog, num }: { setLog: AnySetLog; num: number }) {
+function SetIndicator({
+  setLog,
+  num,
+  onPress,
+}: {
+  setLog: AnySetLog;
+  num: number;
+  onPress: () => void;
+}) {
   return (
-    <IUIButton type="secondary" feeling="neutral" onPress={() => {}}>
+    <IUIButton
+      type="secondary"
+      feeling={setLog.warmup ? 'mild' : 'neutral'}
+      onPress={onPress}
+    >
       {setLog.warmup ? 'w' : String(num)}
     </IUIButton>
   );

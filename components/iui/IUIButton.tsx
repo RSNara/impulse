@@ -10,7 +10,7 @@ export default function IUIButton2({
 }: {
   children: string;
   type: 'primary' | 'secondary' | 'tertiary';
-  feeling: 'neutral' | 'positive' | 'done' | 'negative';
+  feeling: 'neutral' | 'positive' | 'done' | 'negative' | 'mild';
   disabled?: boolean;
   onPress: () => void;
 }) {
@@ -48,30 +48,31 @@ export default function IUIButton2({
         return [255, 32, 64];
       case 'neutral':
         return [0, 0, 0];
+      case 'mild':
+        return [255, 127, 63];
     }
   }
 
-  function getProps() {
+  function getProps(): { color: string; backgroundColor: string } {
     const [r, g, b] = getColor();
     const alphaScale = disabled ? 0.25 : 1;
 
-    if (type == 'primary') {
-      return {
-        color: `rgba(255, 255, 255, 1)`,
-        backgroundColor: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
-      };
+    switch (type) {
+      case 'primary':
+        return {
+          color: `rgba(255, 255, 255, 1)`,
+          backgroundColor: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
+        };
+      case 'secondary':
+        return {
+          color: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
+          backgroundColor: `rgba(${r}, ${g}, ${b}, ${0.1 * alphaScale})`,
+        };
+      case 'tertiary':
+        return {
+          color: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
+          backgroundColor: `transparent`,
+        };
     }
-
-    if (type == 'secondary') {
-      return {
-        color: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
-        backgroundColor: `rgba(${r}, ${g}, ${b}, ${0.1 * alphaScale})`,
-      };
-    }
-
-    return {
-      color: `rgba(${r}, ${g}, ${b}, ${alphaScale})`,
-      backgroundColor: `transparent`,
-    };
   }
 }
