@@ -541,15 +541,24 @@ function ExerciseType({
   type,
   onSelect = () => {},
   isSelected,
+  abbreviated = false,
 }: {
   type: ExerciseType;
   onSelect?: () => void;
   isSelected: boolean;
+  abbreviated?: boolean;
 }) {
+  const text = abbreviated
+    ? type === 'reps'
+      ? '🔁'
+      : type === 'weights'
+      ? '🏋'
+      : '⏳'
+    : type;
   return (
     <View
       style={{
-        minWidth: 75,
+        minWidth: abbreviated ? 35 : 75,
       }}
     >
       <IUIButton
@@ -559,7 +568,7 @@ function ExerciseType({
           onSelect();
         }}
       >
-        {type}
+        {text}
       </IUIButton>
     </View>
   );
@@ -636,7 +645,11 @@ function Exercise({
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
           {exercise.name}
         </Text>
-        <ExerciseType type={exercise.type} isSelected={isSelected} />
+        <ExerciseType
+          type={exercise.type}
+          isSelected={isSelected}
+          abbreviated
+        />
       </View>
     </Pressable>
   );
