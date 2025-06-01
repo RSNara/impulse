@@ -613,6 +613,8 @@ function Exercise({
         paddingHorizontal,
         paddingVertical: 10,
         borderRadius: 5,
+        borderColor: 'rgba(0, 127, 255, 0.1)',
+        borderBottomWidth: 1,
         ...(isSelected
           ? {
               backgroundColor: 'rgba(0, 127, 255, 0.05)',
