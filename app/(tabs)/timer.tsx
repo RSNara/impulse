@@ -22,19 +22,24 @@ export default function ExercisesScreen() {
     });
   }
 
+  const timeLeft = Math.max(timer.duration - timer.elapsed, 0);
+
   useInterval(
     () => {
-      updateTimer({
-        elapsed: Math.min(timer.elapsed + 1000, timer.duration),
-        ticking: timer.elapsed + 1000 < timer.duration,
-      });
+      console.log(timeLeft);
+      if (timeLeft <= 0) {
+        updateTimer({
+          elapsed: 0,
+          ticking: false,
+        });
+      } else {
+        updateTimer({
+          elapsed: Math.min(timer.elapsed + 1000, timer.duration),
+        });
+      }
     },
     1000,
     timer.ticking
-  );
-
-  const circleValue = Math.floor(
-    (Math.max(timer.duration - timer.elapsed, 0) / timer.duration) * 100
   );
 
   return (
@@ -42,7 +47,7 @@ export default function ExercisesScreen() {
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <View style={{ margin: 10 }}>
           <CircularProgress
-            value={circleValue}
+            value={Math.floor((timeLeft / timer.duration) * 100)}
             radius={140}
             progressValueColor={'green'}
             titleFontSize={16}
@@ -64,7 +69,7 @@ export default function ExercisesScreen() {
             }}
           >
             <Text style={{ fontWeight: 'bold', fontSize: 50 }}>
-              {formatMs(Math.max(timer.duration - timer.elapsed, 0))}
+              {formatMs(timeLeft)}
             </Text>
             <Text style={{ fontSize: 20 }}>{formatMs(timer.duration)}</Text>
           </View>
@@ -86,18 +91,29 @@ export default function ExercisesScreen() {
           </View>
 
           <View style={{ marginHorizontal: 5 }}>
-            <IUIButton
-              type="primary"
-              feeling="positive"
-              onPress={() => {
-                updateTimer({
-                  ...emptyTimer(),
-                  ticking: true,
-                });
-              }}
-            >
-              skip
-            </IUIButton>
+            {timer.ticking == false ? (
+              <IUIButton
+                type="primary"
+                feeling="positive"
+                onPress={() => {
+                  updateTimer({
+                    ticking: true,
+                  });
+                }}
+              >
+                Start
+              </IUIButton>
+            ) : (
+              <IUIButton
+                type="secondary"
+                feeling="negative"
+                onPress={() => {
+                  updateTimer(emptyTimer());
+                }}
+              >
+                Reset
+              </IUIButton>
+            )}
           </View>
 
           <View style={{ marginHorizontal: 5 }}>
