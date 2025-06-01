@@ -12,7 +12,6 @@ import type {
 import Exercises from '@/data/exercises';
 import type { Workout } from '@/data/store';
 import {
-  emptyTimer,
   emptyWorkout,
   useStore,
   type AnyExerciseLog,
@@ -79,7 +78,6 @@ export default function WorkoutScreen() {
     setStore({
       currentWorkout: emptyWorkout(),
       pastWorkouts: [workout, ...store.pastWorkouts],
-      timer: emptyTimer(),
     });
   }
 

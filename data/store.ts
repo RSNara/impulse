@@ -10,7 +10,6 @@ export type Timer = {
 export type Store = {
   currentWorkout: Workout;
   pastWorkouts: Workout[];
-  timer: Timer;
 };
 
 export type Workout = {
