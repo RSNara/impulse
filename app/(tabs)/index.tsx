@@ -348,32 +348,16 @@ function AddExerciseModal({
         }}
         renderItem={(info) => {
           return (
-            <FlatList<AnyExercise>
-              data={exercises.filter((exercise) => {
+            <ExerciseList
+              listWidth={listWidth}
+              exercises={exercises.filter((exercise) => {
                 return (
                   !alreadyPicked.has(exercise.name) &&
                   exercise.group == info.item
                 );
               })}
-              keyExtractor={(info) => info.name.replaceAll(' ', '-')}
-              style={{
-                paddingBottom: 10,
-                width: listWidth ? listWidth : undefined,
-              }}
-              renderItem={(info) => {
-                const exercise = info.item;
-                const isSelected = selectedExercise == exercise;
-
-                return (
-                  <Exercise
-                    exercise={exercise}
-                    isSelected={isSelected}
-                    onPress={() => {
-                      setSelectedExercise(exercise);
-                    }}
-                  ></Exercise>
-                );
-              }}
+              selectedExercise={selectedExercise}
+              setSelectedExercise={setSelectedExercise}
             />
           );
         }}
@@ -418,6 +402,43 @@ function AddExerciseModal({
         }}
       />
     </IUIModal>
+  );
+}
+
+function ExerciseList({
+  listWidth,
+  exercises,
+  selectedExercise,
+  setSelectedExercise,
+}: {
+  listWidth: number | null;
+  exercises: ReadonlyArray<AnyExercise>;
+  selectedExercise: AnyExercise | null;
+  setSelectedExercise: (exercise: AnyExercise) => void;
+}) {
+  return (
+    <FlatList<AnyExercise>
+      data={exercises}
+      keyExtractor={(info) => info.name.replaceAll(' ', '-')}
+      style={{
+        paddingBottom: 10,
+        width: listWidth ? listWidth : undefined,
+      }}
+      renderItem={(info) => {
+        const exercise = info.item;
+        const isSelected = selectedExercise == exercise;
+
+        return (
+          <Exercise
+            exercise={exercise}
+            isSelected={isSelected}
+            onPress={() => {
+              setSelectedExercise(exercise);
+            }}
+          ></Exercise>
+        );
+      }}
+    />
   );
 }
 
