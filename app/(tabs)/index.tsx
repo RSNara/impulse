@@ -583,7 +583,7 @@ function ExerciseType({
       }}
     >
       <IUIButton
-        type={isSelected ? 'primary' : 'secondary'}
+        type={abbreviated ? 'tertiary' : isSelected ? 'primary' : 'secondary'}
         feeling="mild"
         onPress={() => {
           onSelect();
