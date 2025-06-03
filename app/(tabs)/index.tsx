@@ -639,7 +639,8 @@ function Exercise({
       style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal,
+        paddingStart: paddingHorizontal,
+        paddingEnd: paddingHorizontal - 5,
         paddingVertical: 5,
         borderRadius: 5,
         borderColor: 'rgba(0, 127, 255, 0.1)',
