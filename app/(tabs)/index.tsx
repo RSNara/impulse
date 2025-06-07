@@ -5,6 +5,7 @@ import IUISwipeToReveal from '@/components/iui/IUISwipeToReveal';
 import { IUIStringTextInput } from '@/components/iui/IUITextInput';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
 import {
+  createExercise,
   createExerciseLog,
   emptyWorkout,
   useCurrentWorkout,
@@ -17,7 +18,7 @@ import {
   type ExerciseType,
 } from '@/data/store';
 import assertNever from '@/utils/assertNever';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -277,20 +278,16 @@ function AddExerciseModal({
     null
   );
   const [listWidth, setListWidth] = useState<number | null>(null);
-  const [exercises, setExercises] = useExercises();
+  const [allExercises, setAllExercises] = useExercises();
 
-  function removeExercise(exercise: AnyExercise) {
-    setExercises(
-      exercises.filter((otherExercise) => otherExercise != exercise)
-    );
-  }
+  const exercises = allExercises.filter((exercise) => !exercise.archived);
 
   function updateExercise(
     exercise: AnyExercise,
     partial: Partial<AnyExercise>
   ) {
-    setExercises(
-      exercises.map((other) => {
+    setAllExercises(
+      allExercises.map((other) => {
         if (other == exercise) {
           return { ...other, ...partial };
         }
@@ -416,9 +413,6 @@ function AddExerciseModal({
               selected={selectedExercise}
               onRequestSelect={setSelectedExercise}
               onRequestEdit={setExerciseToEdit}
-              onRequestDelete={(exercise) => {
-                console.log('Deleting exercise', exercise);
-              }}
             />
           );
         }}
@@ -441,13 +435,19 @@ function AddExerciseModal({
         visible={showCreateExerciseModal}
         exercises={exercises}
         exerciseGroups={exerciseGroups}
-        onRequestClose={(exercise: AnyExercise | null) => {
+        onRequestCancel={() => {
           setShowCreateExerciseModal(false);
-          if (exercise != null) {
-            setExercises([...exercises, exercise]);
-            setSelectedGroup(exercise.group);
-            setSelectedExercise(exercise);
-          }
+        }}
+        onRequestCreate={(
+          name: string,
+          type: ExerciseType,
+          group: ExerciseGroup
+        ) => {
+          setShowCreateExerciseModal(false);
+          const exercise = createExercise(name, type, group);
+          setAllExercises([...exercises, exercise]);
+          setSelectedGroup(exercise.group);
+          setSelectedExercise(exercise);
         }}
       />
 
@@ -464,6 +464,12 @@ function AddExerciseModal({
           }
           setExerciseToEdit(null);
         }}
+        onRequestArchive={() => {
+          if (exerciseToEdit != null) {
+            updateExercise(exerciseToEdit, { archived: true });
+          }
+          setExerciseToEdit(null);
+        }}
       />
     </IUIModal>
   );
@@ -475,14 +481,12 @@ function ExerciseList({
   selected,
   onRequestSelect,
   onRequestEdit,
-  onRequestDelete,
 }: {
   listWidth: number | null;
   exercises: ReadonlyArray<AnyExercise>;
   selected: AnyExercise | null;
   onRequestSelect: (exercise: AnyExercise) => void;
   onRequestEdit: (exercise: AnyExercise) => void;
-  onRequestDelete: (exercise: AnyExercise) => void;
 }) {
   return (
     <FlatList<AnyExercise>
@@ -516,13 +520,11 @@ function ExerciseListRow({
   isSelected,
   onRequestEdit,
   onRequestSelect,
-  onRequestDelete,
 }: {
   exercise: AnyExercise;
   isSelected: boolean;
   onRequestEdit: () => void;
   onRequestSelect: () => void;
-  onRequestDelete: () => void;
 }) {
   const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
   const paddingHorizontal = 10;
@@ -532,39 +534,16 @@ function ExerciseListRow({
       status={status}
       setStatus={setStatus}
       actions={
-        <Fragment>
-          <View
-            style={{
-              paddingEnd: 5,
-              borderEndWidth: 1,
-              borderColor: 'rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            <IUIButton
-              type="tertiary"
-              feeling="neutral"
-              onPress={() => {
-                onRequestEdit();
-                setStatus('hidden');
-              }}
-            >
-              ⚙
-            </IUIButton>
-          </View>
-
-          <View style={{ paddingStart: 5 }}>
-            <IUIButton
-              type="tertiary"
-              feeling="negative"
-              onPress={() => {
-                onRequestEdit();
-                setStatus('hidden');
-              }}
-            >
-              🚮
-            </IUIButton>
-          </View>
-        </Fragment>
+        <IUIButton
+          type="tertiary"
+          feeling="neutral"
+          onPress={() => {
+            onRequestEdit();
+            setStatus('hidden');
+          }}
+        >
+          ⚙
+        </IUIButton>
       }
     >
       <Pressable
@@ -623,12 +602,14 @@ function EditExerciseModal({
   exercises,
   onRequestCancel,
   onRequestUpdate,
+  onRequestArchive,
 }: {
   visible: boolean;
   exercise: AnyExercise | null;
   exercises: ReadonlyArray<AnyExercise>;
   onRequestCancel: () => void;
   onRequestUpdate: (exercise: Partial<AnyExercise>) => void;
+  onRequestArchive: () => void;
 }) {
   const [exerciseName, setExerciseName] = useState(exercise?.name ?? '');
 
@@ -658,7 +639,7 @@ function EditExerciseModal({
         </View>
       </View>
 
-      <View style={{ marginTop: 5, marginBottom: 10 }}>
+      <View style={{ marginTop: 5, marginBottom: 5 }}>
         <IUIButton
           type="secondary"
           feeling="done"
@@ -675,18 +656,34 @@ function EditExerciseModal({
           Save
         </IUIButton>
       </View>
+      <View style={{ marginTop: 5, marginBottom: 10 }}>
+        <IUIButton
+          type="secondary"
+          feeling="negative"
+          disabled={exerciseName.trim() == '' || isExerciseNameTaken}
+          onPress={onRequestArchive}
+        >
+          Archive
+        </IUIButton>
+      </View>
     </IUIModal>
   );
 }
 
 function CreateExerciseModal({
   visible,
-  onRequestClose,
+  onRequestCreate,
+  onRequestCancel,
   exerciseGroups,
   exercises,
 }: {
   visible: boolean;
-  onRequestClose: (exercise: AnyExercise | null) => void;
+  onRequestCreate: (
+    name: string,
+    type: ExerciseType,
+    group: ExerciseGroup
+  ) => void;
+  onRequestCancel: () => void;
   exerciseGroups: ReadonlyArray<ExerciseGroup>;
   exercises: ReadonlyArray<AnyExercise>;
 }) {
@@ -696,13 +693,10 @@ function CreateExerciseModal({
     null
   );
 
-  function onClose(exercise: AnyExercise | null) {
-    onRequestClose(exercise);
-    if (exercise != null) {
-      setExerciseName('');
-      setExerciseGroup(null);
-      setExerciseType(null);
-    }
+  function clearState() {
+    setExerciseName('');
+    setExerciseGroup(null);
+    setExerciseType(null);
   }
 
   const isExerciseNameTaken =
@@ -712,7 +706,7 @@ function CreateExerciseModal({
     });
 
   return (
-    <IUIModal visible={visible} onRequestClose={() => onClose(null)}>
+    <IUIModal visible={visible} onRequestClose={() => onRequestCancel()}>
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
         <Text style={{ fontWeight: 'bold' }}>Create Exercise?</Text>
       </View>
@@ -798,11 +792,8 @@ function CreateExerciseModal({
             ) {
               return;
             }
-            onClose({
-              type: exerciseType,
-              group: exerciseGroup,
-              name: exerciseName,
-            });
+            onRequestCreate(exerciseName, exerciseType, exerciseGroup);
+            clearState();
           }}
         >
           Create Exercise
