@@ -156,6 +156,7 @@ export default function IUISwipeToReveal({
       <Animated.View
         style={{
           position: 'absolute',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
           ...(rowWidth == -1
             ? actionStylesHidden
             : actionsPos == 'start'
@@ -179,7 +180,6 @@ export default function IUISwipeToReveal({
         <View
           style={{
             flexDirection: 'row',
-            backgroundColor: 'rgba(0, 0, 0, 0.1)',
             alignItems: 'center',
             paddingHorizontal: 10,
           }}

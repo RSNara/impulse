@@ -280,6 +280,12 @@ function AddCreateExerciseModal({
   const [listWidth, setListWidth] = useState<number | null>(null);
   const [exercises, setExercises] = useExercises();
 
+  function removeExercise(exercise: AnyExercise) {
+    setExercises(
+      exercises.filter((otherExercise) => otherExercise != exercise)
+    );
+  }
+
   function updateExercise(
     exercise: AnyExercise,
     partial: Partial<AnyExercise>
@@ -440,9 +446,6 @@ function AddCreateExerciseModal({
         onCancel={() => {
           setExerciseToEdit(null);
         }}
-        onDeleteExercise={() => {
-          setExerciseToEdit(null);
-        }}
         onEditExercise={(partial) => {
           if (exerciseToEdit != null) {
             updateExercise(exerciseToEdit, partial);
@@ -519,14 +522,12 @@ function ExerciseDetailsModal({
   exercises,
   onCancel,
   onEditExercise,
-  onDeleteExercise,
 }: {
   visible: boolean;
   exercise: AnyExercise | null;
   exercises: ReadonlyArray<AnyExercise>;
   onCancel: () => void;
   onEditExercise: (exercise: Partial<AnyExercise>) => void;
-  onDeleteExercise: () => void;
 }) {
   const [exerciseName, setExerciseName] = useState(exercise?.name ?? '');
 
@@ -546,23 +547,20 @@ function ExerciseDetailsModal({
   return (
     <IUIModal visible={visible} onRequestClose={() => onCancel()}>
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
-        <Text style={{ fontWeight: 'bold' }}>Edit Exercise</Text>
-      </View>
-      <View style={{ marginBottom: 15 }}>
-        <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-          <Text style={{ fontWeight: 'bold' }}>Exercise Name </Text>
-          <Text style={{ color: 'red' }}>
-            {isExerciseNameTaken ? '(taken)' : ''}
-          </Text>
+        <View style={{ flexDirection: 'row' }}>
+          <Text>✍️ </Text>
+          <TextInput
+            value={exerciseName}
+            onChangeText={setExerciseName}
+            style={{ fontWeight: 'bold' }}
+          />
         </View>
-
-        <IUIStringTextInput value={exerciseName} onChange={setExerciseName} />
       </View>
 
-      <View style={{ marginBottom: 10, marginTop: 5 }}>
+      <View style={{ marginTop: 5, marginBottom: 10 }}>
         <IUIButton
           type="secondary"
-          feeling="positive"
+          feeling="done"
           disabled={exerciseName.trim() == '' || isExerciseNameTaken}
           onPress={() => {
             if (exerciseName.trim() == '' || isExerciseNameTaken) {
@@ -573,7 +571,7 @@ function ExerciseDetailsModal({
             });
           }}
         >
-          Edit Exercise
+          Save
         </IUIButton>
       </View>
     </IUIModal>
