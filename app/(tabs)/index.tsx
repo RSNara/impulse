@@ -30,8 +30,7 @@ import {
 
 export default function WorkoutScreen() {
   const [showFinishWorkoutModal, setShowFinishWorkoutModal] = useState(false);
-  const [showAddCreateExerciseModal, setShowAddCreateExerciseModal] =
-    useState(false);
+  const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
 
   const [currentWorkout, setCurrentWorkout] = useCurrentWorkout();
   const [pastWorkouts, setPastWorkouts] = usePastWorkouts();
@@ -163,7 +162,7 @@ export default function WorkoutScreen() {
           type="secondary"
           feeling="positive"
           onPress={() => {
-            setShowAddCreateExerciseModal(true);
+            setShowAddExerciseModal(true);
           }}
         >
           + Add Exercise
@@ -179,14 +178,14 @@ export default function WorkoutScreen() {
           }
         }}
       />
-      <AddCreateExerciseModal
-        visible={showAddCreateExerciseModal}
+      <AddExerciseModal
+        visible={showAddExerciseModal}
         alreadyPicked={new Set(exerciseLogs.map((log) => log.name))}
         onRequestClose={(exercise) => {
           if (exercise) {
             addExercise(exercise);
           }
-          setShowAddCreateExerciseModal(false);
+          setShowAddExerciseModal(false);
         }}
       />
     </IUIContainer>
@@ -265,7 +264,7 @@ function FinishWorkoutModal({
   );
 }
 
-function AddCreateExerciseModal({
+function AddExerciseModal({
   visible,
   alreadyPicked,
   onRequestClose,
@@ -445,7 +444,7 @@ function AddCreateExerciseModal({
         }}
       />
 
-      <ExerciseDetailsModal
+      <EditExerciseModal
         visible={exerciseToEdit != null}
         exercise={exerciseToEdit}
         exercises={exercises}
@@ -588,7 +587,7 @@ function ExerciseListRow({
   );
 }
 
-function ExerciseDetailsModal({
+function EditExerciseModal({
   visible,
   exercise,
   exercises,
