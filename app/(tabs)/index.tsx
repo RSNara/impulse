@@ -17,7 +17,7 @@ import {
   type ExerciseType,
 } from '@/data/store';
 import assertNever from '@/utils/assertNever';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -516,11 +516,13 @@ function ExerciseListRow({
   isSelected,
   onRequestEdit,
   onRequestSelect,
+  onRequestDelete,
 }: {
   exercise: AnyExercise;
   isSelected: boolean;
   onRequestEdit: () => void;
   onRequestSelect: () => void;
+  onRequestDelete: () => void;
 }) {
   const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
   const paddingHorizontal = 10;
@@ -530,16 +532,39 @@ function ExerciseListRow({
       status={status}
       setStatus={setStatus}
       actions={
-        <IUIButton
-          type="tertiary"
-          feeling="neutral"
-          onPress={() => {
-            onRequestEdit();
-            setStatus('hidden');
-          }}
-        >
-          🛠️
-        </IUIButton>
+        <Fragment>
+          <View
+            style={{
+              paddingEnd: 5,
+              borderEndWidth: 1,
+              borderColor: 'rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <IUIButton
+              type="tertiary"
+              feeling="neutral"
+              onPress={() => {
+                onRequestEdit();
+                setStatus('hidden');
+              }}
+            >
+              ⚙
+            </IUIButton>
+          </View>
+
+          <View style={{ paddingStart: 5 }}>
+            <IUIButton
+              type="tertiary"
+              feeling="negative"
+              onPress={() => {
+                onRequestEdit();
+                setStatus('hidden');
+              }}
+            >
+              🚮
+            </IUIButton>
+          </View>
+        </Fragment>
       }
     >
       <Pressable
@@ -572,9 +597,7 @@ function ExerciseListRow({
             alignItems: 'center',
           }}
         >
-          <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
-            {exercise.name}
-          </Text>
+          <Text style={{ fontWeight: 'bold' }}>{exercise.name}</Text>
           <View
             style={{
               minWidth: 35,
