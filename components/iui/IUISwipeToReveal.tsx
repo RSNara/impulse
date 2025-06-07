@@ -10,42 +10,42 @@ import {
 export default function IUISwipeToReveal({
   children,
   style,
-  towards = 'right',
-  revealables,
+  actionsPos = 'start',
+  actions,
 }: {
   children: React.ReactNode;
   style?: ViewStyle;
-  towards?: 'left' | 'right';
-  revealables: React.ReactNode;
+  actionsPos?: 'end' | 'start';
+  actions: React.ReactNode;
 }) {
   const translateX = useAnimatedValue(0);
-  const towardsRef = useRef(towards);
+  const actionsPosRef = useRef(actionsPos);
 
   useEffect(() => {
-    towardsRef.current = towards;
-  }, [towards]);
+    actionsPosRef.current = actionsPos;
+  }, [actionsPos]);
 
-  const [revealablesWidth, setRevealablesWidth] = useState(0);
-  const revealablesWidthRef = useRef(revealablesWidth);
+  const [actionsWidth, setActionsWidth] = useState(100);
+  const actionsWidthRef = useRef(actionsWidth);
 
   useEffect(() => {
-    if (revealablesWidth > 0) {
-      revealablesWidthRef.current = revealablesWidth;
+    if (actionsWidth > 0) {
+      actionsWidthRef.current = actionsWidth;
     }
-  }, [revealablesWidth]);
+  }, [actionsWidth]);
 
   const hiddenRef = useRef(true);
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        const panDx = revealablesWidthRef.current * 0.1;
+        const panDx = actionsWidthRef.current * 0.1;
         if (hiddenRef.current) {
-          return towardsRef.current == 'right'
+          return actionsPosRef.current == 'start'
             ? gestureState.dx > panDx
             : gestureState.dx < -panDx;
         }
-        return towardsRef.current == 'right'
+        return actionsPosRef.current == 'start'
           ? gestureState.dx < -panDx
           : gestureState.dx > panDx;
       },
@@ -53,18 +53,18 @@ export default function IUISwipeToReveal({
         if (hiddenRef.current) {
           translateX.setValue(gestureState.dx);
         } else {
-          if (towardsRef.current === 'right') {
-            translateX.setValue(revealablesWidthRef.current + gestureState.dx);
+          if (actionsPosRef.current === 'start') {
+            translateX.setValue(actionsWidthRef.current + gestureState.dx);
           } else {
-            translateX.setValue(-revealablesWidthRef.current + gestureState.dx);
+            translateX.setValue(-actionsWidthRef.current + gestureState.dx);
           }
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        const revealDx = revealablesWidthRef.current * 0.2;
+        const revealDx = actionsWidthRef.current * 0.2;
         if (hiddenRef.current) {
           const shouldReveal =
-            towardsRef.current == 'right'
+            actionsPosRef.current == 'start'
               ? gestureState.dx > revealDx
               : gestureState.dx < -revealDx;
           if (shouldReveal) {
@@ -78,7 +78,7 @@ export default function IUISwipeToReveal({
         }
 
         const shouldHide =
-          towardsRef.current == 'right'
+          actionsPosRef.current == 'start'
             ? gestureState.dx < -revealDx
             : gestureState.dx > revealDx;
 
@@ -92,9 +92,9 @@ export default function IUISwipeToReveal({
 
         function reveal() {
           const toValue =
-            towardsRef.current == 'right'
-              ? revealablesWidthRef.current
-              : -revealablesWidthRef.current;
+            actionsPosRef.current == 'start'
+              ? actionsWidthRef.current
+              : -actionsWidthRef.current;
 
           hiddenRef.current = false;
           Animated.spring(translateX, {
@@ -119,9 +119,9 @@ export default function IUISwipeToReveal({
           }).start();
         } else {
           const toValue =
-            towardsRef.current == 'right'
-              ? revealablesWidthRef.current
-              : -revealablesWidthRef.current;
+            actionsPosRef.current == 'start'
+              ? actionsWidthRef.current
+              : -actionsWidthRef.current;
 
           hiddenRef.current = false;
           Animated.spring(translateX, {
@@ -133,7 +133,16 @@ export default function IUISwipeToReveal({
     })
   ).current;
 
-  const [rowWidth, setRowWidth] = useState(0);
+  const [rowWidth, setRowWidth] = useState(-1);
+
+  const actionStylesHidden = {
+    top: 0,
+    bottom: 0,
+    start: -100,
+    width: 0,
+  };
+
+  const translateXNeg = Animated.multiply(translateX, -0.75);
 
   return (
     <Animated.View
@@ -147,18 +156,20 @@ export default function IUISwipeToReveal({
       <Animated.View
         style={{
           position: 'absolute',
-          ...(towards == 'right'
+          ...(rowWidth == -1
+            ? actionStylesHidden
+            : actionsPos == 'start'
             ? {
                 top: 0,
                 bottom: 0,
-                left: -rowWidth,
+                start: -rowWidth,
                 width: rowWidth,
                 flexDirection: 'row-reverse',
               }
             : {
                 top: 0,
                 bottom: 0,
-                left: rowWidth,
+                start: rowWidth,
                 width: rowWidth,
                 flexDirection: 'row',
               }),
@@ -174,13 +185,21 @@ export default function IUISwipeToReveal({
           }}
           onLayout={(event) => {
             const { width } = event.nativeEvent.layout;
-            setRevealablesWidth(width);
+            setActionsWidth(width);
           }}
         >
-          {revealables}
+          {actions}
         </View>
       </Animated.View>
-      {children}
+      <Animated.View
+        style={
+          actionsPos == 'end'
+            ? { paddingStart: translateXNeg }
+            : { paddingEnd: translateXNeg }
+        }
+      >
+        {children}
+      </Animated.View>
     </Animated.View>
   );
 }

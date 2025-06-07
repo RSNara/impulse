@@ -19,6 +19,7 @@ import {
 import assertNever from '@/utils/assertNever';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import {
+  Dimensions,
   FlatList,
   Pressable,
   ScrollView,
@@ -339,7 +340,9 @@ function AddExerciseModal({
         data={exerciseGroups}
         keyExtractor={(item) => item}
         scrollEnabled={false}
+        initialNumToRender={1}
         style={{
+          height: Dimensions.get('window').height - 500,
           marginTop: 5,
           marginBottom: 15,
           borderTopWidth: 1,
@@ -435,27 +438,36 @@ function ExerciseList({
         paddingBottom: 10,
         width: listWidth ? listWidth : undefined,
       }}
+      initialNumToRender={14}
       renderItem={(info) => {
         const exercise = info.item;
         const isSelected = selectedExercise == exercise;
 
+        if (listWidth == null) {
+          return null;
+        }
+
         return (
           <IUISwipeToReveal
-            revealables={
+            actionsPos="end"
+            actions={
               <Fragment>
+                <View style={{ marginRight: 5 }}>
+                  <IUIButton
+                    type="tertiary"
+                    feeling="neutral"
+                    onPress={() => onEdit(exercise)}
+                  >
+                    🛠️
+                  </IUIButton>
+                </View>
+
                 <IUIButton
                   type="tertiary"
-                  feeling="neutral"
-                  onPress={() => onEdit(exercise)}
-                >
-                  🛠️
-                </IUIButton>
-                <IUIButton
-                  type="primary"
                   feeling="negative"
                   onPress={() => onDelete(exercise)}
                 >
-                  🗑️
+                  ❌
                 </IUIButton>
               </Fragment>
             }
