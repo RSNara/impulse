@@ -340,8 +340,26 @@ function AddExerciseModal({
         setListWidth(width);
       }}
     >
-      <View style={{ alignItems: 'center', marginBottom: 15 }}>
-        <Text style={{ fontWeight: 'bold' }}>Add Exercise?</Text>
+      <View
+        style={{
+          alignItems: 'center',
+          marginBottom: 15,
+        }}
+      >
+        <IUIButton type="tertiary" feeling="neutral">
+          Add Exercise?
+        </IUIButton>
+        <View style={{ position: 'absolute', right: 0 }}>
+          <IUIButton
+            type="tertiary"
+            feeling="positive"
+            onPress={() => {
+              setShowCreateExerciseModal(true);
+            }}
+          >
+            New
+          </IUIButton>
+        </View>
       </View>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -415,18 +433,6 @@ function AddExerciseModal({
           }}
         >
           Add Exercise
-        </IUIButton>
-      </View>
-
-      <View style={{ marginBottom: 10 }}>
-        <IUIButton
-          type="secondary"
-          feeling="neutral"
-          onPress={() => {
-            setShowCreateExerciseModal(true);
-          }}
-        >
-          Create Exercise
         </IUIButton>
       </View>
 
