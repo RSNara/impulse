@@ -363,24 +363,25 @@ function AddExerciseModal({
       </View>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-        {exerciseGroups.map((group, i) => {
+        {exerciseGroups.map((group) => {
           return (
-            <View key={group} style={{ marginBottom: 10, marginEnd: 10 }}>
-              <View
-                style={{
-                  minWidth: 70,
+            <View
+              key={group}
+              style={{
+                minWidth: 70,
+                marginBottom: 10,
+                marginEnd: 10,
+              }}
+            >
+              <IUIButton
+                type={group == selectedGroup ? 'primary' : 'secondary'}
+                feeling="done"
+                onPress={() => {
+                  setSelectedGroup(group);
                 }}
               >
-                <IUIButton
-                  type={group == selectedGroup ? 'primary' : 'secondary'}
-                  feeling="done"
-                  onPress={() => {
-                    setSelectedGroup(group);
-                  }}
-                >
-                  {group}
-                </IUIButton>
-              </View>
+                {group}
+              </IUIButton>
             </View>
           );
         })}
@@ -710,22 +711,19 @@ function CreateExerciseModal({
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {(['weights', 'reps', 'time'] as ExerciseType[]).map((type) => {
             return (
-              <View key={type} style={{ marginBottom: 10, marginEnd: 10 }}>
-                <View
-                  style={{
-                    minWidth: 75,
+              <View
+                key={type}
+                style={{ marginBottom: 10, marginEnd: 10, minWidth: 75 }}
+              >
+                <IUIButton
+                  type={exerciseType == type ? 'primary' : 'secondary'}
+                  feeling="mild"
+                  onPress={() => {
+                    setExerciseType(type);
                   }}
                 >
-                  <IUIButton
-                    type={exerciseType == type ? 'primary' : 'secondary'}
-                    feeling="mild"
-                    onPress={() => {
-                      setExerciseType(type);
-                    }}
-                  >
-                    {type}
-                  </IUIButton>
-                </View>
+                  {type}
+                </IUIButton>
               </View>
             );
           })}
@@ -739,22 +737,19 @@ function CreateExerciseModal({
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {exerciseGroups.map((group) => {
             return (
-              <View key={group} style={{ marginBottom: 10, marginEnd: 10 }}>
-                <View
-                  style={{
-                    minWidth: 70,
+              <View
+                key={group}
+                style={{ marginBottom: 10, marginEnd: 10, minWidth: 70 }}
+              >
+                <IUIButton
+                  type={exerciseGroup == group ? 'primary' : 'secondary'}
+                  feeling="done"
+                  onPress={() => {
+                    setExerciseGroup(group);
                   }}
                 >
-                  <IUIButton
-                    type={exerciseGroup == group ? 'primary' : 'secondary'}
-                    feeling="done"
-                    onPress={() => {
-                      setExerciseGroup(group);
-                    }}
-                  >
-                    {group}
-                  </IUIButton>
-                </View>
+                  {group}
+                </IUIButton>
               </View>
             );
           })}
