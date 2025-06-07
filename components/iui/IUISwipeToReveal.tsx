@@ -34,13 +34,48 @@ export default function IUISwipeToReveal({
     }
   }, [actionsWidth]);
 
-  const hiddenRef = useRef(true);
+  const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
+
+  const statusRef = useRef(status);
+  const setStatusRef = useRef(setStatus);
+
+  useEffect(() => {
+    setStatusRef.current = setStatus;
+  }, [setStatus]);
+
+  const hideRef = useRef(() => {
+    Animated.spring(translateX, {
+      toValue: 0,
+      useNativeDriver: false,
+    }).start();
+  });
+
+  const revealRef = useRef(() => {
+    const toValue =
+      actionsPosRef.current == 'start'
+        ? actionsWidthRef.current
+        : -actionsWidthRef.current;
+
+    Animated.spring(translateX, {
+      toValue: toValue,
+      useNativeDriver: false,
+    }).start();
+  });
+
+  useEffect(() => {
+    statusRef.current = status;
+    if (status == 'hidden') {
+      hideRef.current();
+    } else {
+      revealRef.current();
+    }
+  }, [status]);
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
         const panDx = actionsWidthRef.current * 0.1;
-        if (hiddenRef.current) {
+        if (statusRef.current == 'hidden') {
           return actionsPosRef.current == 'start'
             ? gestureState.dx > panDx
             : gestureState.dx < -panDx;
@@ -50,7 +85,7 @@ export default function IUISwipeToReveal({
           : gestureState.dx > panDx;
       },
       onPanResponderMove: (_, gestureState) => {
-        if (hiddenRef.current) {
+        if (statusRef.current == 'hidden') {
           translateX.setValue(gestureState.dx);
         } else {
           if (actionsPosRef.current === 'start') {
@@ -62,17 +97,17 @@ export default function IUISwipeToReveal({
       },
       onPanResponderRelease: (_, gestureState) => {
         const revealDx = actionsWidthRef.current * 0.2;
-        if (hiddenRef.current) {
+        if (statusRef.current == 'hidden') {
           const shouldReveal =
             actionsPosRef.current == 'start'
               ? gestureState.dx > revealDx
               : gestureState.dx < -revealDx;
           if (shouldReveal) {
             // hidden and should reveal
-            reveal();
+            setStatusRef.current('revealed');
           } else {
             // hidden and !should reveal
-            hide();
+            setStatusRef.current('hidden');
           }
           return;
         }
@@ -84,57 +119,23 @@ export default function IUISwipeToReveal({
 
         if (shouldHide) {
           // not hidden && should hide
-          hide();
+          setStatusRef.current('hidden');
         } else {
           // not hidden && not hide
-          reveal();
-        }
-
-        function reveal() {
-          const toValue =
-            actionsPosRef.current == 'start'
-              ? actionsWidthRef.current
-              : -actionsWidthRef.current;
-
-          hiddenRef.current = false;
-          Animated.spring(translateX, {
-            toValue: toValue,
-            useNativeDriver: false,
-          }).start();
-        }
-
-        function hide() {
-          hiddenRef.current = true;
-          Animated.spring(translateX, {
-            toValue: 0,
-            useNativeDriver: false,
-          }).start();
+          setStatusRef.current('revealed');
         }
       },
       onPanResponderTerminate: (_, gestureState) => {
-        if (hiddenRef.current) {
-          Animated.spring(translateX, {
-            toValue: 0,
-            useNativeDriver: false,
-          }).start();
+        if (statusRef.current == 'hidden') {
+          hideRef.current();
         } else {
-          const toValue =
-            actionsPosRef.current == 'start'
-              ? actionsWidthRef.current
-              : -actionsWidthRef.current;
-
-          hiddenRef.current = false;
-          Animated.spring(translateX, {
-            toValue: toValue,
-            useNativeDriver: false,
-          }).start();
+          revealRef.current();
         }
       },
     })
   ).current;
 
   const [rowWidth, setRowWidth] = useState(-1);
-
   const actionStylesHidden = {
     top: 0,
     bottom: 0,
