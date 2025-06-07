@@ -12,11 +12,15 @@ export default function IUISwipeToReveal({
   style,
   actionsPos = 'start',
   actions,
+  status,
+  setStatus,
 }: {
   children: React.ReactNode;
   style?: ViewStyle;
   actionsPos?: 'end' | 'start';
   actions: React.ReactNode;
+  status: 'revealed' | 'hidden';
+  setStatus: (status: 'revealed' | 'hidden') => void;
 }) {
   const translateX = useAnimatedValue(0);
   const actionsPosRef = useRef(actionsPos);
@@ -33,8 +37,6 @@ export default function IUISwipeToReveal({
       actionsWidthRef.current = actionsWidth;
     }
   }, [actionsWidth]);
-
-  const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
 
   const statusRef = useRef(status);
   const setStatusRef = useRef(setStatus);
@@ -80,6 +82,7 @@ export default function IUISwipeToReveal({
             ? gestureState.dx > panDx
             : gestureState.dx < -panDx;
         }
+
         return actionsPosRef.current == 'start'
           ? gestureState.dx < -panDx
           : gestureState.dx > panDx;

@@ -349,11 +349,21 @@ function AddCreateExerciseModal({
         {exerciseGroups.map((group, i) => {
           return (
             <View key={group} style={{ marginBottom: 10, marginEnd: 10 }}>
-              <ExerciseGroup
-                group={group}
-                isSelected={group == selectedGroup}
-                onSelect={() => setSelectedGroup(group)}
-              />
+              <View
+                style={{
+                  minWidth: 70,
+                }}
+              >
+                <IUIButton
+                  type={group == selectedGroup ? 'primary' : 'secondary'}
+                  feeling="done"
+                  onPress={() => {
+                    setSelectedGroup(group);
+                  }}
+                >
+                  {group}
+                </IUIButton>
+              </View>
             </View>
           );
         })}
@@ -385,12 +395,10 @@ function AddCreateExerciseModal({
                   exercise.group == info.item
                 );
               })}
-              selectedExercise={selectedExercise}
-              setSelectedExercise={setSelectedExercise}
-              onEdit={(exercise) => {
-                setExerciseToEdit(exercise);
-              }}
-              onDelete={(exercise) => {
+              selected={selectedExercise}
+              onRequestSelect={setSelectedExercise}
+              onRequestEdit={setExerciseToEdit}
+              onRequestDelete={(exercise) => {
                 console.log('Deleting exercise', exercise);
               }}
             />
@@ -425,8 +433,6 @@ function AddCreateExerciseModal({
 
       <CreateExerciseModal
         visible={showCreateExerciseModal}
-        title="Create Exercise"
-        exercise={null}
         exercises={exercises}
         exerciseGroups={exerciseGroups}
         onRequestClose={(exercise: AnyExercise | null) => {
@@ -443,10 +449,10 @@ function AddCreateExerciseModal({
         visible={exerciseToEdit != null}
         exercise={exerciseToEdit}
         exercises={exercises}
-        onCancel={() => {
+        onRequestCancel={() => {
           setExerciseToEdit(null);
         }}
-        onEditExercise={(partial) => {
+        onRequestUpdate={(partial) => {
           if (exerciseToEdit != null) {
             updateExercise(exerciseToEdit, partial);
           }
@@ -460,17 +466,17 @@ function AddCreateExerciseModal({
 function ExerciseList({
   listWidth,
   exercises,
-  selectedExercise,
-  setSelectedExercise,
-  onEdit,
-  onDelete,
+  selected,
+  onRequestSelect,
+  onRequestEdit,
+  onRequestDelete,
 }: {
   listWidth: number | null;
   exercises: ReadonlyArray<AnyExercise>;
-  selectedExercise: AnyExercise | null;
-  setSelectedExercise: (exercise: AnyExercise) => void;
-  onEdit: (exercise: AnyExercise) => void;
-  onDelete: (exercise: AnyExercise) => void;
+  selected: AnyExercise | null;
+  onRequestSelect: (exercise: AnyExercise) => void;
+  onRequestEdit: (exercise: AnyExercise) => void;
+  onRequestDelete: (exercise: AnyExercise) => void;
 }) {
   return (
     <FlatList<AnyExercise>
@@ -483,36 +489,102 @@ function ExerciseList({
       initialNumToRender={14}
       renderItem={(info) => {
         const exercise = info.item;
-        const isSelected = selectedExercise == exercise;
-
         if (listWidth == null) {
           return null;
         }
-
         return (
-          <IUISwipeToReveal
-            actionsPos="end"
-            actions={
-              <IUIButton
-                type="tertiary"
-                feeling="neutral"
-                onPress={() => onEdit(exercise)}
-              >
-                🛠️
-              </IUIButton>
-            }
-          >
-            <ExerciseRow
-              exercise={exercise}
-              isSelected={isSelected}
-              onPress={() => {
-                setSelectedExercise(exercise);
-              }}
-            ></ExerciseRow>
-          </IUISwipeToReveal>
+          <ExerciseListRow
+            exercise={exercise}
+            isSelected={exercise == selected}
+            onRequestSelect={() => onRequestSelect(exercise)}
+            onRequestEdit={() => onRequestEdit(exercise)}
+          />
         );
       }}
     />
+  );
+}
+
+function ExerciseListRow({
+  exercise,
+  isSelected,
+  onRequestEdit,
+  onRequestSelect,
+}: {
+  exercise: AnyExercise;
+  isSelected: boolean;
+  onRequestEdit: () => void;
+  onRequestSelect: () => void;
+}) {
+  const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
+  const paddingHorizontal = 10;
+  return (
+    <IUISwipeToReveal
+      actionsPos="end"
+      status={status}
+      setStatus={setStatus}
+      actions={
+        <IUIButton
+          type="tertiary"
+          feeling="neutral"
+          onPress={() => {
+            onRequestEdit();
+            setStatus('hidden');
+          }}
+        >
+          🛠️
+        </IUIButton>
+      }
+    >
+      <Pressable
+        onPress={onRequestSelect}
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          paddingStart: paddingHorizontal,
+          paddingEnd: paddingHorizontal - 5,
+          paddingVertical: 5,
+          borderRadius: 5,
+          borderColor: 'rgba(0, 127, 255, 0.1)',
+          borderBottomWidth: 1,
+          ...(isSelected
+            ? {
+                backgroundColor: 'rgba(0, 127, 255, 0.05)',
+                borderStartWidth: 2,
+                borderEndWidth: 2,
+                paddingHorizontal: paddingHorizontal - 2,
+                borderColor: 'rgba(0, 127, 255, 0.05)',
+              }
+            : {}),
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            flex: 1,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
+            {exercise.name}
+          </Text>
+          <View
+            style={{
+              minWidth: 35,
+            }}
+          >
+            <IUIButton type="tertiary" feeling="mild">
+              {exercise.type === 'reps'
+                ? '🔁'
+                : exercise.type === 'weights'
+                ? '🏋'
+                : '⏳'}
+            </IUIButton>
+          </View>
+        </View>
+      </Pressable>
+    </IUISwipeToReveal>
   );
 }
 
@@ -520,14 +592,14 @@ function ExerciseDetailsModal({
   visible,
   exercise,
   exercises,
-  onCancel,
-  onEditExercise,
+  onRequestCancel,
+  onRequestUpdate,
 }: {
   visible: boolean;
   exercise: AnyExercise | null;
   exercises: ReadonlyArray<AnyExercise>;
-  onCancel: () => void;
-  onEditExercise: (exercise: Partial<AnyExercise>) => void;
+  onRequestCancel: () => void;
+  onRequestUpdate: (exercise: Partial<AnyExercise>) => void;
 }) {
   const [exerciseName, setExerciseName] = useState(exercise?.name ?? '');
 
@@ -545,7 +617,7 @@ function ExerciseDetailsModal({
     });
 
   return (
-    <IUIModal visible={visible} onRequestClose={() => onCancel()}>
+    <IUIModal visible={visible} onRequestClose={() => onRequestCancel()}>
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
         <View style={{ flexDirection: 'row' }}>
           <Text>✍️ </Text>
@@ -566,7 +638,7 @@ function ExerciseDetailsModal({
             if (exerciseName.trim() == '' || isExerciseNameTaken) {
               return;
             }
-            onEditExercise({
+            onRequestUpdate({
               name: exerciseName,
             });
           }}
@@ -580,34 +652,20 @@ function ExerciseDetailsModal({
 
 function CreateExerciseModal({
   visible,
-  title,
-  exercise,
   onRequestClose,
   exerciseGroups,
   exercises,
 }: {
   visible: boolean;
-  title: string;
-  exercise: AnyExercise | null;
   onRequestClose: (exercise: AnyExercise | null) => void;
   exerciseGroups: ReadonlyArray<ExerciseGroup>;
   exercises: ReadonlyArray<AnyExercise>;
 }) {
-  const [exerciseName, setExerciseName] = useState(exercise?.name ?? '');
-  const [exerciseType, setExerciseType] = useState<ExerciseType | null>(
-    exercise?.type ?? null
-  );
+  const [exerciseName, setExerciseName] = useState('');
+  const [exerciseType, setExerciseType] = useState<ExerciseType | null>(null);
   const [exerciseGroup, setExerciseGroup] = useState<ExerciseGroup | null>(
-    exercise?.group ?? null
+    null
   );
-
-  useEffect(() => {
-    if (exercise != null) {
-      setExerciseName(exercise.name);
-      setExerciseType(exercise.type);
-      setExerciseGroup(exercise.group);
-    }
-  }, [exercise]);
 
   function onClose(exercise: AnyExercise | null) {
     onRequestClose(exercise);
@@ -619,16 +677,15 @@ function CreateExerciseModal({
   }
 
   const isExerciseNameTaken =
-    exercise != null &&
     exerciseName != '' &&
     exercises.some((otherExercise) => {
-      return exercise != otherExercise && otherExercise.name == exerciseName;
+      return otherExercise.name == exerciseName;
     });
 
   return (
     <IUIModal visible={visible} onRequestClose={() => onClose(null)}>
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
-        <Text style={{ fontWeight: 'bold' }}>{title}</Text>
+        <Text style={{ fontWeight: 'bold' }}>Create Exercise?</Text>
       </View>
       <View style={{ marginBottom: 15 }}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
@@ -649,13 +706,21 @@ function CreateExerciseModal({
           {(['weights', 'reps', 'time'] as ExerciseType[]).map((type) => {
             return (
               <View key={type} style={{ marginBottom: 10, marginEnd: 10 }}>
-                <ExerciseType
-                  type={type}
-                  isSelected={exerciseType == type}
-                  onSelect={() => {
-                    setExerciseType(type);
+                <View
+                  style={{
+                    minWidth: 75,
                   }}
-                />
+                >
+                  <IUIButton
+                    type={exerciseType == type ? 'primary' : 'secondary'}
+                    feeling="mild"
+                    onPress={() => {
+                      setExerciseType(type);
+                    }}
+                  >
+                    {type}
+                  </IUIButton>
+                </View>
               </View>
             );
           })}
@@ -670,13 +735,21 @@ function CreateExerciseModal({
           {exerciseGroups.map((group) => {
             return (
               <View key={group} style={{ marginBottom: 10, marginEnd: 10 }}>
-                <ExerciseGroup
-                  group={group}
-                  isSelected={exerciseGroup == group}
-                  onSelect={() => {
-                    setExerciseGroup(group);
+                <View
+                  style={{
+                    minWidth: 70,
                   }}
-                />
+                >
+                  <IUIButton
+                    type={exerciseGroup == group ? 'primary' : 'secondary'}
+                    feeling="done"
+                    onPress={() => {
+                      setExerciseGroup(group);
+                    }}
+                  >
+                    {group}
+                  </IUIButton>
+                </View>
               </View>
             );
           })}
@@ -709,129 +782,10 @@ function CreateExerciseModal({
             });
           }}
         >
-          {title}
+          Create Exercise
         </IUIButton>
       </View>
     </IUIModal>
-  );
-}
-
-function ExerciseType({
-  type,
-  onSelect = () => {},
-  isSelected,
-  abbreviated = false,
-}: {
-  type: ExerciseType;
-  onSelect?: () => void;
-  isSelected: boolean;
-  abbreviated?: boolean;
-}) {
-  const text = abbreviated
-    ? type === 'reps'
-      ? '🔁'
-      : type === 'weights'
-      ? '🏋'
-      : '⏳'
-    : type;
-  return (
-    <View
-      style={{
-        minWidth: abbreviated ? 35 : 75,
-      }}
-    >
-      <IUIButton
-        type={abbreviated ? 'tertiary' : isSelected ? 'primary' : 'secondary'}
-        feeling="mild"
-        onPress={() => {
-          onSelect();
-        }}
-      >
-        {text}
-      </IUIButton>
-    </View>
-  );
-}
-
-function ExerciseGroup({
-  group,
-  onSelect,
-  isSelected,
-}: {
-  group: ExerciseGroup;
-  onSelect: () => void;
-  isSelected: boolean;
-}) {
-  return (
-    <View
-      style={{
-        minWidth: 70,
-      }}
-    >
-      <IUIButton
-        type={isSelected ? 'primary' : 'secondary'}
-        feeling="done"
-        onPress={() => {
-          onSelect();
-        }}
-      >
-        {group}
-      </IUIButton>
-    </View>
-  );
-}
-
-function ExerciseRow({
-  exercise,
-  isSelected,
-  onPress,
-}: {
-  exercise: AnyExercise;
-  isSelected: boolean;
-  onPress: () => void;
-}) {
-  const paddingHorizontal = 10;
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingStart: paddingHorizontal,
-        paddingEnd: paddingHorizontal - 5,
-        paddingVertical: 5,
-        borderRadius: 5,
-        borderColor: 'rgba(0, 127, 255, 0.1)',
-        borderBottomWidth: 1,
-        ...(isSelected
-          ? {
-              backgroundColor: 'rgba(0, 127, 255, 0.05)',
-              borderStartWidth: 2,
-              borderEndWidth: 2,
-              paddingHorizontal: paddingHorizontal - 2,
-              borderColor: 'rgba(0, 127, 255, 0.05)',
-            }
-          : {}),
-      }}
-    >
-      <View
-        style={{
-          flexDirection: 'row',
-          flex: 1,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Text style={{ fontWeight: 'bold', color: 'rgba(0, 127, 255, 1)' }}>
-          {exercise.name}
-        </Text>
-        <ExerciseType
-          type={exercise.type}
-          isSelected={isSelected}
-          abbreviated
-        />
-      </View>
-    </Pressable>
   );
 }
 
