@@ -16,7 +16,7 @@ import {
   useAnimatedValue,
 } from 'react-native';
 import IUIButton from '../iui/IUIButton';
-import IUIDismissable from '../iui/IUIDismissable';
+import IUISwipeToDismiss from '../iui/IUISwipeToDismiss';
 import { IUINumericTextInput } from '../iui/IUITextInput';
 
 export default function ExerciseLogTable<T extends ExerciseType>(
@@ -81,7 +81,7 @@ export default function ExerciseLogTable<T extends ExerciseType>(
   }
 
   return (
-    <IUIDismissable
+    <IUISwipeToDismiss
       style={{ marginBottom: 20 }}
       onDismiss={props.onRemove}
       towards="left"
@@ -122,7 +122,7 @@ export default function ExerciseLogTable<T extends ExerciseType>(
           + Add Set
         </IUIButton>
       </View>
-    </IUIDismissable>
+    </IUISwipeToDismiss>
   );
 }
 
@@ -361,7 +361,7 @@ function ExerciseLogTableRow<T extends ExerciseType>(
   const router = useRouter();
 
   return (
-    <IUIDismissable onDismiss={props.onDismiss} towards="right">
+    <IUISwipeToDismiss onDismiss={props.onDismiss} towards="right">
       <Animated.View
         style={{
           flex: 1,
@@ -453,7 +453,7 @@ function ExerciseLogTableRow<T extends ExerciseType>(
           </IUIButton>
         </View>
       </Animated.View>
-    </IUIDismissable>
+    </IUISwipeToDismiss>
   );
 }
 

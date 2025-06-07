@@ -1,6 +1,7 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
 import IUIModal from '@/components/iui/IUIModal';
+import IUISwipeToReveal from '@/components/iui/IUISwipeToReveal';
 import { IUIStringTextInput } from '@/components/iui/IUITextInput';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
 import {
@@ -16,7 +17,7 @@ import {
   type ExerciseType,
 } from '@/data/store';
 import assertNever from '@/utils/assertNever';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -358,6 +359,12 @@ function AddExerciseModal({
               })}
               selectedExercise={selectedExercise}
               setSelectedExercise={setSelectedExercise}
+              onEdit={(exercise) => {
+                console.log('Editing exercise', exercise);
+              }}
+              onDelete={(exercise) => {
+                console.log('Deleting exercise', exercise);
+              }}
             />
           );
         }}
@@ -410,11 +417,15 @@ function ExerciseList({
   exercises,
   selectedExercise,
   setSelectedExercise,
+  onEdit,
+  onDelete,
 }: {
   listWidth: number | null;
   exercises: ReadonlyArray<AnyExercise>;
   selectedExercise: AnyExercise | null;
   setSelectedExercise: (exercise: AnyExercise) => void;
+  onEdit: (exercise: AnyExercise) => void;
+  onDelete: (exercise: AnyExercise) => void;
 }) {
   return (
     <FlatList<AnyExercise>
@@ -429,13 +440,34 @@ function ExerciseList({
         const isSelected = selectedExercise == exercise;
 
         return (
-          <Exercise
-            exercise={exercise}
-            isSelected={isSelected}
-            onPress={() => {
-              setSelectedExercise(exercise);
-            }}
-          ></Exercise>
+          <IUISwipeToReveal
+            revealables={
+              <Fragment>
+                <IUIButton
+                  type="tertiary"
+                  feeling="neutral"
+                  onPress={() => onEdit(exercise)}
+                >
+                  🛠️
+                </IUIButton>
+                <IUIButton
+                  type="primary"
+                  feeling="negative"
+                  onPress={() => onDelete(exercise)}
+                >
+                  🗑️
+                </IUIButton>
+              </Fragment>
+            }
+          >
+            <Exercise
+              exercise={exercise}
+              isSelected={isSelected}
+              onPress={() => {
+                setSelectedExercise(exercise);
+              }}
+            ></Exercise>
+          </IUISwipeToReveal>
         );
       }}
     />
