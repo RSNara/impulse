@@ -201,22 +201,31 @@ export function usePastWorkouts() {
   return useContext(PastWorkoutsContext);
 }
 
-export type ExerciseGroup =
-  | 'legs'
-  | 'arms'
+export const AllMuscleGroups: ReadonlyArray<MuscleGroup> = [
+  'chest',
+  'shoulders',
+  'arms',
+  'core',
+  'back',
+  'lower',
+  'full',
+];
+
+export type MuscleGroup =
+  | 'chest'
   | 'shoulders'
+  | 'arms'
   | 'core'
   | 'back'
-  | 'chest'
-  | 'fullbody'
-  | 'aerial';
+  | 'lower'
+  | 'full';
 
 type WeightsExercise = Readonly<{
   id: string;
   archived: boolean;
   name: string;
   type: 'weights';
-  group: ExerciseGroup;
+  group: MuscleGroup;
 }>;
 
 type RepsExercise = Readonly<{
@@ -224,7 +233,7 @@ type RepsExercise = Readonly<{
   archived: boolean;
   name: string;
   type: 'reps';
-  group: ExerciseGroup;
+  group: MuscleGroup;
 }>;
 
 type TimeExercise = Readonly<{
@@ -232,7 +241,7 @@ type TimeExercise = Readonly<{
   archived: boolean;
   name: string;
   type: 'time';
-  group: ExerciseGroup;
+  group: MuscleGroup;
 }>;
 
 export type Exercise<T extends ExerciseType> = {
@@ -249,7 +258,7 @@ export type AnyExercise =
 export function createExercise(
   name: string,
   type: ExerciseType,
-  group: ExerciseGroup
+  group: MuscleGroup
 ) {
   return { name, type, group, id: uuid.v4(), archived: false };
 }
@@ -260,77 +269,77 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Barbell Back Squat',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Barbell Front Squat',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Goblet Squat',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Bulgarian Split Squat',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Hack Squat',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Barbell Romanian Deadlift',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Conventional Deadlift',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Sumo Deadlift',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Trap Bar Deadlift',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Deficit Deadlift',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Stiff-Leg Deadlift',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
@@ -456,42 +465,42 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Hip Thrust',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Barbell Lunge',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Dumbbell Lunge',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Leg Press',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Leg Extension',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Hamstring Curl',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
@@ -547,42 +556,42 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Power Clean',
       type: 'weights',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Hang Power Clean',
       type: 'weights',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Clean & Jerk',
       type: 'weights',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Snatch',
       type: 'weights',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Kettlebell Swing',
       type: 'weights',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Kettlebell Goblet Squat',
       type: 'weights',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
@@ -689,63 +698,63 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Bodyweight Squat',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Pistol Squat',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Walking Lunge',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Reverse Lunge',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Step-Up',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Box Jump',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Jump Squat',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Broad Jump',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Burpee',
       type: 'reps',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
@@ -822,7 +831,7 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Lying Hip Thrust',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
@@ -850,7 +859,7 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Jumping Lunge',
       type: 'reps',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
@@ -901,7 +910,7 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Wall Sit',
       type: 'time',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },
@@ -964,7 +973,7 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Human Flag Hold',
       type: 'time',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
@@ -999,35 +1008,35 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Jump Rope',
       type: 'time',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Running (Interval/Time)',
       type: 'time',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Rowing Machine (Time)',
       type: 'time',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Assault Bike',
       type: 'time',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
     {
       name: 'Battle Ropes',
       type: 'time',
-      group: 'fullbody',
+      group: 'full',
       id: uuid.v4(),
       archived: false,
     },
@@ -1048,7 +1057,7 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
     {
       name: 'Isometric Lunge Hold',
       type: 'time',
-      group: 'legs',
+      group: 'lower',
       id: uuid.v4(),
       archived: false,
     },

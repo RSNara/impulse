@@ -28,7 +28,7 @@ const storage = new Storage({
 export default function useSyncedState<State>(
   key: string,
   defaultValue: State,
-  overwrite: boolean = false
+  overwrite: boolean = true
 ): [State, React.Dispatch<State>] {
   const [shouldSync, setShouldSync] = useState(overwrite);
   const [state, setState] = useState<State>(defaultValue);
@@ -49,16 +49,18 @@ export default function useSyncedState<State>(
   }, [state, shouldSync]);
 
   useEffect(() => {
-    storage
-      .load<State>({ key })
-      .then((savedState) => {
-        setState(savedState);
-        setShouldSync(true);
-      })
-      .catch((ex) => {
-        console.warn(ex);
-      });
-  }, []);
+    if (!overwrite) {
+      storage
+        .load<State>({ key })
+        .then((savedState) => {
+          setState(savedState);
+          setShouldSync(true);
+        })
+        .catch((ex) => {
+          console.warn(ex);
+        });
+    }
+  }, [overwrite]);
 
   return [state, setState];
 }

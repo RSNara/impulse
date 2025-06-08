@@ -5,6 +5,7 @@ import IUISwipeToReveal from '@/components/iui/IUISwipeToReveal';
 import { IUIStringTextInput } from '@/components/iui/IUITextInput';
 import ExerciseLogTable from '@/components/workout/ExerciseLogTable';
 import {
+  AllMuscleGroups,
   createExercise,
   createExerciseLog,
   emptyWorkout,
@@ -13,9 +14,9 @@ import {
   usePastWorkouts,
   type AnyExercise,
   type AnyExerciseLog,
-  type ExerciseGroup,
   type ExerciseLog,
   type ExerciseType,
+  type MuscleGroup,
 } from '@/data/store';
 import assertNever from '@/utils/assertNever';
 import { useEffect, useRef, useState } from 'react';
@@ -312,11 +313,11 @@ function AddExerciseModal({
     );
   }
 
-  const exerciseGroups = dedupe(exercises.map((exercise) => exercise.group));
-  const [selectedGroup, setSelectedGroup] = useState<ExerciseGroup>(
-    exerciseGroups[0]
+  const muscleGroups = dedupe(exercises.map((exercise) => exercise.group));
+  const [selectedGroup, setSelectedGroup] = useState<MuscleGroup>(
+    muscleGroups[0]
   );
-  const page = exerciseGroups.indexOf(selectedGroup);
+  const page = muscleGroups.indexOf(selectedGroup);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -338,7 +339,7 @@ function AddExerciseModal({
     onRequestClose(exercise);
     setTimeout(() => {
       setSelectedExercise(null);
-      setSelectedGroup(exerciseGroups[0]);
+      setSelectedGroup(muscleGroups[0]);
     }, 1000);
   }
 
@@ -375,7 +376,7 @@ function AddExerciseModal({
       </View>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-        {exerciseGroups.map((group) => {
+        {muscleGroups.map((group) => {
           return (
             <View
               key={group}
@@ -402,7 +403,7 @@ function AddExerciseModal({
       <FlatList
         ref={flatListRef}
         horizontal={true}
-        data={exerciseGroups}
+        data={muscleGroups}
         keyExtractor={(item) => item}
         scrollEnabled={false}
         initialNumToRender={1}
@@ -447,14 +448,14 @@ function AddExerciseModal({
       <CreateExerciseModal
         visible={showCreateExerciseModal}
         exercises={exercises}
-        exerciseGroups={exerciseGroups}
+        muscleGroups={muscleGroups}
         onRequestCancel={() => {
           setShowCreateExerciseModal(false);
         }}
         onRequestCreate={(
           name: string,
           type: ExerciseType,
-          group: ExerciseGroup
+          group: MuscleGroup
         ) => {
           setShowCreateExerciseModal(false);
           const exercise = createExercise(name, type, group);
@@ -758,28 +759,31 @@ function CreateExerciseModal({
   visible,
   onRequestCreate,
   onRequestCancel,
-  exerciseGroups,
+  muscleGroups,
   exercises,
 }: {
   visible: boolean;
   onRequestCreate: (
     name: string,
     type: ExerciseType,
-    group: ExerciseGroup
+    group: MuscleGroup
   ) => void;
   onRequestCancel: () => void;
-  exerciseGroups: ReadonlyArray<ExerciseGroup>;
+  muscleGroups: ReadonlyArray<MuscleGroup>;
   exercises: ReadonlyArray<AnyExercise>;
 }) {
   const [exerciseName, setExerciseName] = useState('');
   const [exerciseType, setExerciseType] = useState<ExerciseType | null>(null);
-  const [exerciseGroup, setExerciseGroup] = useState<ExerciseGroup | null>(
-    null
-  );
+  const [muscleGroup, setMuscleGroup] = useState<MuscleGroup | null>(null);
+
+  const allMuscleGroups: ReadonlyArray<MuscleGroup> = dedupe([
+    ...muscleGroups,
+    ...AllMuscleGroups,
+  ]);
 
   function clearState() {
     setExerciseName('');
-    setExerciseGroup(null);
+    setMuscleGroup(null);
     setExerciseType(null);
   }
 
@@ -796,7 +800,7 @@ function CreateExerciseModal({
       </View>
       <View style={{ marginBottom: 15 }}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-          <Text style={{ fontWeight: 'bold' }}>Exercise Name </Text>
+          <Text style={{ fontWeight: 'bold' }}>Name </Text>
           <Text style={{ color: 'red' }}>
             {isExerciseNameTaken ? '(taken)' : ''}
           </Text>
@@ -806,9 +810,7 @@ function CreateExerciseModal({
       </View>
 
       <View style={{ marginBottom: 5 }}>
-        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
-          Exercise Type
-        </Text>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Type</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {(['weights', 'reps', 'time'] as ExerciseType[]).map((type) => {
             return (
@@ -832,21 +834,19 @@ function CreateExerciseModal({
       </View>
 
       <View style={{ marginBottom: 5 }}>
-        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
-          Exercise Group
-        </Text>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Muscles</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {exerciseGroups.map((group) => {
+          {allMuscleGroups.map((group) => {
             return (
               <View
                 key={group}
                 style={{ marginBottom: 10, marginEnd: 10, minWidth: 70 }}
               >
                 <IUIButton
-                  type={exerciseGroup == group ? 'primary' : 'secondary'}
+                  type={muscleGroup == group ? 'primary' : 'secondary'}
                   feeling="done"
                   onPress={() => {
-                    setExerciseGroup(group);
+                    setMuscleGroup(group);
                   }}
                 >
                   {group}
@@ -863,20 +863,20 @@ function CreateExerciseModal({
           feeling="positive"
           disabled={
             exerciseType == null ||
-            exerciseGroup == null ||
+            muscleGroup == null ||
             exerciseName.trim() == '' ||
             isExerciseNameTaken
           }
           onPress={() => {
             if (
               exerciseType == null ||
-              exerciseGroup == null ||
+              muscleGroup == null ||
               exerciseName.trim() == '' ||
               isExerciseNameTaken
             ) {
               return;
             }
-            onRequestCreate(exerciseName, exerciseType, exerciseGroup);
+            onRequestCreate(exerciseName, exerciseType, muscleGroup);
             clearState();
           }}
         >
