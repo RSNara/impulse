@@ -416,14 +416,15 @@ function AddExerciseModal({
           borderColor: 'rgba(0, 0, 0, 0.1)',
         }}
         renderItem={(info) => {
+          const exercises2 = exercises
+            .filter((exercise) => exercise.group == info.item)
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .sort((a, b) => Number(a.archived) - Number(b.archived));
+
           return (
             <ExerciseList
               listWidth={listWidth}
-              exercises={exercises.filter((exercise) => {
-                return (
-                  !alreadyPicked.has(exercise.id) && exercise.group == info.item
-                );
-              })}
+              exercises={exercises2}
               selected={selectedExercise}
               onRequestSelect={setSelectedExercise}
               onRequestEdit={setExerciseToEdit}
@@ -499,7 +500,7 @@ function ExerciseList({
   return (
     <FlatList<AnyExercise>
       data={exercises}
-      keyExtractor={(info) => info.name.replaceAll(' ', '-')}
+      keyExtractor={(info) => info.id}
       style={{
         paddingBottom: 10,
         width: listWidth ? listWidth : undefined,
@@ -541,11 +542,15 @@ function ExerciseListRow({
     }
     return `rgba(0, 127, 255, ${alpha})`;
   };
-  const paddingHorizontal = 5;
+  const paddingHorizontal = 0;
   const borderStartWidth = 5;
   const borderEndWidth = 1;
+  const rightButtonPadding = 5;
 
-  const paddingStart = paddingHorizontal + (borderStartWidth - borderEndWidth);
+  const paddingStart =
+    paddingHorizontal +
+    (borderStartWidth - borderEndWidth) +
+    rightButtonPadding;
   const paddingEnd = paddingHorizontal;
   return (
     <IUISwipeToReveal
@@ -733,7 +738,7 @@ function EditExerciseModal({
           disabled={exerciseName.trim() == '' || isExerciseNameTaken}
           onPress={() => {
             onRequestUpdate({
-              archived: isArchived,
+              archived: !isArchived,
             });
           }}
         >
