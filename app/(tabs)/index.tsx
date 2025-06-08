@@ -683,9 +683,7 @@ function EditExerciseModal({
 
       <View style={{ marginBottom: 15 }}>
         <View style={{ flexDirection: 'row' }}>
-          <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
-            Exercise Name
-          </Text>
+          <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Name</Text>
           <Text style={{ color: 'red' }}>
             {isExerciseNameTaken ? '(taken)' : ''}
           </Text>
@@ -695,9 +693,7 @@ function EditExerciseModal({
       </View>
 
       <View style={{ marginBottom: 5 }}>
-        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
-          Exercise Type
-        </Text>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Type</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           <View style={{ marginBottom: 10, marginEnd: 10, minWidth: 75 }}>
             <IUIButton type="primary" feeling="mild">
@@ -709,7 +705,7 @@ function EditExerciseModal({
 
       <View style={{ marginBottom: 5 }}>
         <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
-          Exercise Group
+          Muscle Group
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           <View style={{ marginBottom: 10, marginEnd: 10, minWidth: 70 }}>
