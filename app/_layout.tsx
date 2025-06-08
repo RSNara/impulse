@@ -13,7 +13,7 @@ import {
 import useInterval from '@/hooks/useInterval';
 import useSyncedState from '@/hooks/useSyncedState';
 
-import { Stack, useRouter } from 'expo-router';
+import { Stack, usePathname, useRouter } from 'expo-router';
 
 export default function RootLayout() {
   const [currentWorkout, setCurrentWorkout] = useSyncedState<Workout>(
@@ -29,6 +29,7 @@ export default function RootLayout() {
     defaultExercises()
   );
   const router = useRouter();
+  const pathName = usePathname();
 
   useInterval(
     () => {
@@ -39,7 +40,9 @@ export default function RootLayout() {
           elapsed: 0,
           ticking: false,
         });
-        router.navigate('/(tabs)');
+        if (pathName == '/timer') {
+          router.navigate('/');
+        }
       } else {
         updateTimer({
           elapsed: Math.min(timer.elapsed + 1000, timer.duration),
