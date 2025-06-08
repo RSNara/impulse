@@ -54,7 +54,7 @@ export default function WorkoutScreen() {
     );
   }
 
-  const [exercises] = useExercises();
+  const [exercises, setExercises] = useExercises();
   const exerciseMap: { [id: string]: AnyExercise } = exercises.reduce(
     (map, exercise) => {
       return {
@@ -194,6 +194,8 @@ export default function WorkoutScreen() {
       <AddExerciseModal
         visible={showAddExerciseModal}
         alreadyPicked={new Set(exerciseLogs.map((log) => log.exerciseId))}
+        exercises={exercises}
+        setExercises={setExercises}
         onRequestClose={(exercise) => {
           if (exercise) {
             addExercise(exercise);
@@ -281,25 +283,26 @@ function AddExerciseModal({
   visible,
   alreadyPicked,
   onRequestClose,
+  exercises,
+  setExercises,
 }: {
   visible: boolean;
   alreadyPicked: Set<string>;
   onRequestClose: (exercise?: AnyExercise | null) => void;
+  exercises: ReadonlyArray<AnyExercise>;
+  setExercises: (exercises: ReadonlyArray<AnyExercise>) => void;
 }) {
   const [selectedExercise, setSelectedExercise] = useState<AnyExercise | null>(
     null
   );
   const [listWidth, setListWidth] = useState<number | null>(null);
-  const [allExercises, setAllExercises] = useExercises();
-
-  const exercises = allExercises.filter((exercise) => !exercise.archived);
 
   function updateExercise(
     exercise: AnyExercise,
     partial: Partial<AnyExercise>
   ) {
-    setAllExercises(
-      allExercises.map((other) => {
+    setExercises(
+      exercises.map((other) => {
         if (other == exercise) {
           return { ...other, ...partial };
         }
@@ -456,7 +459,7 @@ function AddExerciseModal({
         ) => {
           setShowCreateExerciseModal(false);
           const exercise = createExercise(name, type, group);
-          setAllExercises([...exercises, exercise]);
+          setExercises([...exercises, exercise]);
           setSelectedGroup(exercise.group);
           setSelectedExercise(exercise);
         }}
