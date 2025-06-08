@@ -541,7 +541,7 @@ function ExerciseListRow({
   onRequestSelect: () => void;
 }) {
   const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
-  const paddingHorizontal = 10;
+  const paddingHorizontal = 8;
   return (
     <IUISwipeToReveal
       actionsPos="end"
@@ -565,21 +565,20 @@ function ExerciseListRow({
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          paddingStart: paddingHorizontal,
-          paddingEnd: paddingHorizontal - 5,
+          paddingHorizontal,
           paddingVertical: 5,
-          borderRadius: 5,
+          borderRadius: 1,
           borderColor: 'rgba(0, 127, 255, 0.1)',
           borderBottomWidth: 1,
+          borderStartWidth: 6,
+          borderEndWidth: 1,
           ...(isSelected
             ? {
-                backgroundColor: 'rgba(0, 127, 255, 0.05)',
-                borderStartWidth: 2,
-                borderEndWidth: 2,
-                paddingHorizontal: paddingHorizontal - 2,
-                borderColor: 'rgba(0, 127, 255, 0.05)',
+                borderStartColor: 'rgba(0, 127, 255, 0.5)',
               }
-            : {}),
+            : {
+                borderStartColor: 'rgba(0, 127, 255, 0.1)',
+              }),
         }}
       >
         <View
