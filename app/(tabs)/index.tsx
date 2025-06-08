@@ -576,7 +576,9 @@ function ExerciseListRow({
             alignItems: 'center',
           }}
         >
-          <Text style={{ fontWeight: 'bold' }}>{exercise.name}</Text>
+          <Text style={{ fontWeight: 'bold', flexShrink: 1 }} numberOfLines={1}>
+            {exercise.name}
+          </Text>
           <View
             style={{
               minWidth: 35,
