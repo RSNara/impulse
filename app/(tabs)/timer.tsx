@@ -50,7 +50,7 @@ export default function ExercisesScreen() {
               onPress={() => {
                 setTimer({
                   ...timer,
-                  duration: Math.max(timer.duration - 30 * 1000, 0),
+                  duration: Math.max(timer.duration - 30 * 1000, 30 * 1000),
                 });
               }}
             >
