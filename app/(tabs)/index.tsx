@@ -54,6 +54,17 @@ export default function WorkoutScreen() {
     );
   }
 
+  const [exercises] = useExercises();
+  const exerciseMap: { [id: string]: AnyExercise } = exercises.reduce(
+    (map, exercise) => {
+      return {
+        ...map,
+        [exercise.id]: exercise,
+      };
+    },
+    {}
+  );
+
   function updateExerciseLog<T extends ExerciseType>(
     exerciseLog: ExerciseLog<T>,
     update: Partial<ExerciseLog<T>>
@@ -85,10 +96,7 @@ export default function WorkoutScreen() {
   ): ExerciseLog<T> | null {
     for (const workout of pastWorkouts) {
       for (const pastExerciseLog of workout.exerciseLogs) {
-        if (
-          pastExerciseLog.name == exerciseLog.name &&
-          pastExerciseLog.type == exerciseLog.type
-        ) {
+        if (pastExerciseLog.exerciseId == exerciseLog.exerciseId) {
           return pastExerciseLog as ExerciseLog<T>;
         }
       }
@@ -113,12 +121,14 @@ export default function WorkoutScreen() {
       />
       <ScrollView>
         {exerciseLogs.map((exerciseLog) => {
+          const exercise = exerciseMap[exerciseLog.exerciseId];
           switch (exerciseLog.type) {
             case 'weights':
               return (
                 <ExerciseLogTable<'weights'>
                   type="weights"
-                  key={exerciseLog.name}
+                  key={exerciseLog.id}
+                  name={exercise.name}
                   log={exerciseLog}
                   pastLog={pastExerciseLog<'weights'>(exerciseLog)}
                   onRemove={() => removeExerciseLog(exerciseLog)}
@@ -131,7 +141,8 @@ export default function WorkoutScreen() {
               return (
                 <ExerciseLogTable<'reps'>
                   type="reps"
-                  key={exerciseLog.name}
+                  key={exerciseLog.id}
+                  name={exercise.name}
                   log={exerciseLog}
                   pastLog={pastExerciseLog<'reps'>(exerciseLog)}
                   onRemove={() => removeExerciseLog(exerciseLog)}
@@ -144,7 +155,8 @@ export default function WorkoutScreen() {
               return (
                 <ExerciseLogTable<'time'>
                   type="time"
-                  key={exerciseLog.name}
+                  key={exerciseLog.id}
+                  name={exercise.name}
                   log={exerciseLog}
                   pastLog={pastExerciseLog<'time'>(exerciseLog)}
                   onRemove={() => removeExerciseLog(exerciseLog)}
@@ -181,7 +193,7 @@ export default function WorkoutScreen() {
       />
       <AddExerciseModal
         visible={showAddExerciseModal}
-        alreadyPicked={new Set(exerciseLogs.map((log) => log.name))}
+        alreadyPicked={new Set(exerciseLogs.map((log) => log.exerciseId))}
         onRequestClose={(exercise) => {
           if (exercise) {
             addExercise(exercise);
@@ -406,8 +418,7 @@ function AddExerciseModal({
               listWidth={listWidth}
               exercises={exercises.filter((exercise) => {
                 return (
-                  !alreadyPicked.has(exercise.name) &&
-                  exercise.group == info.item
+                  !alreadyPicked.has(exercise.id) && exercise.group == info.item
                 );
               })}
               selected={selectedExercise}

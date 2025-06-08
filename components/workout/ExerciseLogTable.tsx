@@ -23,6 +23,7 @@ export default function ExerciseLogTable<T extends ExerciseType>(
   props: {
     weights: {
       type: 'weights';
+      name: string;
       log: ExerciseLog<'weights'>;
       pastLog: ExerciseLog<'weights'> | null;
       setSetLogs: (sets: ReadonlyArray<SetLog<'weights'>>) => void;
@@ -30,6 +31,7 @@ export default function ExerciseLogTable<T extends ExerciseType>(
     };
     reps: {
       type: 'reps';
+      name: string;
       log: ExerciseLog<'reps'>;
       pastLog: ExerciseLog<'reps'> | null;
       setSetLogs: (sets: ReadonlyArray<SetLog<'reps'>>) => void;
@@ -37,6 +39,7 @@ export default function ExerciseLogTable<T extends ExerciseType>(
     };
     time: {
       type: 'time';
+      name: string;
       log: ExerciseLog<'time'>;
       pastLog: ExerciseLog<'time'> | null;
       setSetLogs: (sets: ReadonlyArray<SetLog<'time'>>) => void;
@@ -88,7 +91,7 @@ export default function ExerciseLogTable<T extends ExerciseType>(
     >
       <View style={[styles.row, { justifyContent: 'space-between' }]}>
         <Text style={{ fontWeight: 'bold', color: 'rgba(0, 128, 255, 1)' }}>
-          {props.log.name}
+          {props.name}
         </Text>
       </View>
       <ExerciseLogTableHeader type={props.type} />

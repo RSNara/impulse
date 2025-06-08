@@ -102,21 +102,21 @@ export function createSetLog<T extends ExerciseType>(
 export type ExerciseType = 'weights' | 'reps' | 'time';
 
 type WeightsExerciseLog = Readonly<{
-  name: string;
+  exerciseId: string;
   type: 'weights';
   setLogs: ReadonlyArray<SetLog<'weights'>>;
   id: string;
 }>;
 
 type RepsExerciseLog = Readonly<{
-  name: string;
+  exerciseId: string;
   type: 'reps';
   setLogs: ReadonlyArray<SetLog<'reps'>>;
   id: string;
 }>;
 
 type TimeExerciseLog = Readonly<{
-  name: string;
+  exerciseId: string;
   type: 'time';
   setLogs: ReadonlyArray<SetLog<'time'>>;
   id: string;
@@ -139,21 +139,21 @@ export function createExerciseLog<T extends ExerciseType>(
   switch (exercise.type) {
     case 'weights':
       return {
-        name: exercise.name,
+        exerciseId: exercise.id,
         type: exercise.type,
         setLogs: [createSetLog<'weights'>('weights', false)],
         id: uuid.v4(),
       } as ExerciseLog<'weights'> as ExerciseLog<T>;
     case 'reps':
       return {
-        name: exercise.name,
+        exerciseId: exercise.id,
         type: exercise.type,
         setLogs: [createSetLog<'reps'>('reps', false)],
         id: uuid.v4(),
       } as ExerciseLog<'reps'> as ExerciseLog<T>;
     case 'time':
       return {
-        name: exercise.name,
+        exerciseId: exercise.id,
         type: exercise.type,
         setLogs: [createSetLog<'time'>('time', false)],
         id: uuid.v4(),
