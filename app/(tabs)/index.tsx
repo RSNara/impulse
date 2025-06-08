@@ -632,12 +632,46 @@ function EditExerciseModal({
     <IUIModal visible={visible} onRequestClose={() => onRequestCancel()}>
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
         <View style={{ flexDirection: 'row' }}>
-          <Text>✍️ </Text>
-          <TextInput
-            value={exerciseName}
-            onChangeText={setExerciseName}
-            style={{ fontWeight: 'bold' }}
-          />
+          <Text style={{ fontWeight: 'bold' }}>Edit Exercise</Text>
+        </View>
+      </View>
+
+      <View style={{ marginBottom: 15 }}>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
+            Exercise Name
+          </Text>
+          <Text style={{ color: 'red' }}>
+            {isExerciseNameTaken ? '(taken)' : ''}
+          </Text>
+        </View>
+
+        <IUIStringTextInput value={exerciseName} onChange={setExerciseName} />
+      </View>
+
+      <View style={{ marginBottom: 5 }}>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
+          Exercise Type
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          <View style={{ marginBottom: 10, marginEnd: 10, minWidth: 75 }}>
+            <IUIButton type="primary" feeling="mild">
+              {exercise?.type || ''}
+            </IUIButton>
+          </View>
+        </View>
+      </View>
+
+      <View style={{ marginBottom: 5 }}>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>
+          Exercise Group
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          <View style={{ marginBottom: 10, marginEnd: 10, minWidth: 70 }}>
+            <IUIButton type="primary" feeling="done">
+              {exercise?.group || ''}
+            </IUIButton>
+          </View>
         </View>
       </View>
 
