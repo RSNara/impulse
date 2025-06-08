@@ -413,7 +413,7 @@ function AddExerciseModal({
           borderTopWidth: 1,
           borderBottomWidth: 1,
           borderRadius: 5,
-          borderColor: 'rgba(0, 127, 255, 0.1)',
+          borderColor: 'rgba(0, 0, 0, 0.1)',
         }}
         renderItem={(info) => {
           return (
@@ -535,7 +535,18 @@ function ExerciseListRow({
   onRequestSelect: () => void;
 }) {
   const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
-  const paddingHorizontal = 8;
+  const borderHorizontalColor = (alpha: number) => {
+    if (exercise.archived) {
+      return `rgba(0, 0, 0, ${alpha})`;
+    }
+    return `rgba(0, 127, 255, ${alpha})`;
+  };
+  const paddingHorizontal = 5;
+  const borderStartWidth = 5;
+  const borderEndWidth = 1;
+
+  const paddingStart = paddingHorizontal + (borderStartWidth - borderEndWidth);
+  const paddingEnd = paddingHorizontal;
   return (
     <IUISwipeToReveal
       actionsPos="end"
@@ -566,19 +577,21 @@ function ExerciseListRow({
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          paddingHorizontal,
+          paddingStart,
+          paddingEnd,
           paddingVertical: 5,
           borderRadius: 1,
-          borderColor: 'rgba(0, 127, 255, 0.1)',
+          borderBottomColor: `rgba(0, 0, 0, 0.1)`,
+          borderEndColor: borderHorizontalColor(0.25),
           borderBottomWidth: 1,
-          borderStartWidth: 6,
-          borderEndWidth: 1,
+          borderStartWidth,
+          borderEndWidth,
           ...(isSelected
             ? {
-                borderStartColor: 'rgba(0, 127, 255, 0.5)',
+                borderStartColor: borderHorizontalColor(0.75),
               }
             : {
-                borderStartColor: 'rgba(0, 127, 255, 0.1)',
+                borderStartColor: borderHorizontalColor(0.25),
               }),
         }}
       >
@@ -588,10 +601,18 @@ function ExerciseListRow({
             flex: 1,
             justifyContent: 'space-between',
             alignItems: 'center',
+            ...(exercise.archived ? { opacity: 0.4 } : {}),
           }}
         >
-          <Text style={{ fontWeight: 'bold', flexShrink: 1 }} numberOfLines={1}>
+          <Text
+            style={{
+              fontWeight: 'bold',
+              flexShrink: 1,
+            }}
+            numberOfLines={1}
+          >
             {exercise.name}
+            {exercise.archived ? ' (archived)' : ''}
           </Text>
           <View
             style={{
