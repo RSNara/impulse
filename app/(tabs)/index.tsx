@@ -739,7 +739,7 @@ function EditExerciseModal({
       <View style={{ marginTop: 5, marginBottom: 10 }}>
         <IUIButton
           type="secondary"
-          feeling={isArchived ? 'positive' : 'negative'}
+          feeling={isArchived ? 'positive' : 'neutral'}
           disabled={exerciseName.trim() == '' || isExerciseNameTaken}
           onPress={() => {
             onRequestUpdate({

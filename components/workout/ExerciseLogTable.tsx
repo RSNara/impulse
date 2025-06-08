@@ -168,8 +168,8 @@ function ExerciseLogTableRows<T extends ExerciseType>(
             : acc.workingNum;
           const pastSetLogs = props.pastSetLogs || [];
           const pastSetLog: SetLog<'weights'> | null = setLog.warmup
-            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
-            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
+            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum - 1]
+            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum - 1];
           return {
             workingNum,
             warmupNum,
@@ -214,8 +214,8 @@ function ExerciseLogTableRows<T extends ExerciseType>(
             : acc.workingNum;
           const pastSetLogs = props.pastSetLogs || [];
           const pastSetLog: SetLog<'reps'> | null = setLog.warmup
-            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
-            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
+            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum - 1]
+            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum - 1];
           return {
             workingNum,
             warmupNum,
@@ -260,8 +260,8 @@ function ExerciseLogTableRows<T extends ExerciseType>(
             : acc.workingNum;
           const pastSetLogs = props.pastSetLogs || [];
           const pastSetLog: SetLog<'time'> | null = setLog.warmup
-            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum]
-            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum];
+            ? pastSetLogs.filter((setLog) => setLog.warmup)[warmupNum - 1]
+            : pastSetLogs.filter((setLog) => !setLog.warmup)[workingNum - 1];
           return {
             workingNum,
             warmupNum,
