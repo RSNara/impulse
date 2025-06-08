@@ -410,10 +410,7 @@ function AddExerciseModal({
           height: Dimensions.get('window').height - 500,
           marginTop: 5,
           marginBottom: 15,
-          borderTopWidth: 1,
-          borderBottomWidth: 1,
           borderRadius: 5,
-          borderColor: 'rgba(0, 0, 0, 0.1)',
         }}
         renderItem={(info) => {
           const exercises2 = exercises
@@ -425,6 +422,7 @@ function AddExerciseModal({
             <ExerciseList
               listWidth={listWidth}
               exercises={exercises2}
+              alreadyPicked={alreadyPicked}
               selected={selectedExercise}
               onRequestSelect={setSelectedExercise}
               onRequestEdit={setExerciseToEdit}
@@ -488,12 +486,14 @@ function ExerciseList({
   listWidth,
   exercises,
   selected,
+  alreadyPicked,
   onRequestSelect,
   onRequestEdit,
 }: {
   listWidth: number | null;
   exercises: ReadonlyArray<AnyExercise>;
   selected: AnyExercise | null;
+  alreadyPicked: Set<string>;
   onRequestSelect: (exercise: AnyExercise) => void;
   onRequestEdit: (exercise: AnyExercise) => void;
 }) {
@@ -515,6 +515,7 @@ function ExerciseList({
           <ExerciseListRow
             exercise={exercise}
             isSelected={exercise == selected}
+            isPicked={alreadyPicked.has(exercise.id)}
             onRequestSelect={() => onRequestSelect(exercise)}
             onRequestEdit={() => onRequestEdit(exercise)}
           />
@@ -527,22 +528,27 @@ function ExerciseList({
 function ExerciseListRow({
   exercise,
   isSelected,
+  isPicked,
   onRequestEdit,
   onRequestSelect,
 }: {
   exercise: AnyExercise;
   isSelected: boolean;
+  isPicked: boolean;
   onRequestEdit: () => void;
   onRequestSelect: () => void;
 }) {
   const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
-  const borderHorizontalColor = (alpha: number) => {
+  const borderColor = (alpha: number) => {
+    if (isPicked) {
+      return `rgba(150, 90, 253, ${alpha})`;
+    }
     if (exercise.archived) {
       return `rgba(0, 0, 0, ${alpha})`;
     }
     return `rgba(0, 127, 255, ${alpha})`;
   };
-  const paddingHorizontal = 0;
+  const paddingHorizontal = 1;
   const borderStartWidth = 5;
   const borderEndWidth = 1;
   const rightButtonPadding = 5;
@@ -572,8 +578,7 @@ function ExerciseListRow({
     >
       <Pressable
         onPress={() => {
-          if (exercise.archived) {
-            console.warn('Tried to select archived exercise');
+          if (exercise.archived || isPicked) {
             return;
           }
 
@@ -587,16 +592,16 @@ function ExerciseListRow({
           paddingVertical: 5,
           borderRadius: 1,
           borderBottomColor: `rgba(0, 0, 0, 0.1)`,
-          borderEndColor: borderHorizontalColor(0.25),
-          borderBottomWidth: 1,
+          borderColor: borderColor(0.25),
+          borderWidth: 1,
           borderStartWidth,
           borderEndWidth,
           ...(isSelected
             ? {
-                borderStartColor: borderHorizontalColor(0.75),
+                borderStartColor: borderColor(0.75),
               }
             : {
-                borderStartColor: borderHorizontalColor(0.25),
+                borderStartColor: borderColor(0.25),
               }),
         }}
       >
@@ -606,7 +611,7 @@ function ExerciseListRow({
             flex: 1,
             justifyContent: 'space-between',
             alignItems: 'center',
-            ...(exercise.archived ? { opacity: 0.4 } : {}),
+            ...(exercise.archived || isPicked ? { opacity: 0.4 } : {}),
           }}
         >
           <Text
@@ -616,8 +621,8 @@ function ExerciseListRow({
             }}
             numberOfLines={1}
           >
+            {exercise.archived ? '(archived) ' : ''}
             {exercise.name}
-            {exercise.archived ? ' (archived)' : ''}
           </Text>
           <View
             style={{
