@@ -2240,7 +2240,7 @@ export function defaultExercises(): ReadonlyArray<AnyExercise> {
       type: 'reps',
       group: 'lower',
     },
-  ].slice(0, 100);
+  ];
 }
 
 export const ExercisesContext = React.createContext<
