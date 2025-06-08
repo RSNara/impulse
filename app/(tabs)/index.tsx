@@ -478,12 +478,6 @@ function AddExerciseModal({
           }
           setExerciseToEdit(null);
         }}
-        onRequestArchive={() => {
-          if (exerciseToEdit != null) {
-            updateExercise(exerciseToEdit, { archived: true });
-          }
-          setExerciseToEdit(null);
-        }}
       />
     </IUIModal>
   );
@@ -561,7 +555,14 @@ function ExerciseListRow({
       }
     >
       <Pressable
-        onPress={onRequestSelect}
+        onPress={() => {
+          if (exercise.archived) {
+            console.warn('Tried to select archived exercise');
+            return;
+          }
+
+          onRequestSelect();
+        }}
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
@@ -617,16 +618,15 @@ function EditExerciseModal({
   exercises,
   onRequestCancel,
   onRequestUpdate,
-  onRequestArchive,
 }: {
   visible: boolean;
   exercise: AnyExercise | null;
   exercises: ReadonlyArray<AnyExercise>;
   onRequestCancel: () => void;
   onRequestUpdate: (exercise: Partial<AnyExercise>) => void;
-  onRequestArchive: () => void;
 }) {
   const [exerciseName, setExerciseName] = useState(exercise?.name ?? '');
+  const isArchived = exercise?.archived;
 
   useEffect(() => {
     if (exercise) {
@@ -708,11 +708,15 @@ function EditExerciseModal({
       <View style={{ marginTop: 5, marginBottom: 10 }}>
         <IUIButton
           type="secondary"
-          feeling="negative"
+          feeling={isArchived ? 'positive' : 'negative'}
           disabled={exerciseName.trim() == '' || isExerciseNameTaken}
-          onPress={onRequestArchive}
+          onPress={() => {
+            onRequestUpdate({
+              archived: isArchived,
+            });
+          }}
         >
-          Archive
+          {isArchived ? 'Unarchive' : 'Archive'}
         </IUIButton>
       </View>
     </IUIModal>
