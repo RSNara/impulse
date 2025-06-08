@@ -1,6 +1,6 @@
 import IUIContainer from '@/components/iui/IUIContainer';
-import type { AnySetLog, Workout } from '@/data/store';
-import { usePastWorkouts } from '@/data/store';
+import type { AnyExercise, AnySetLog, Workout } from '@/data/store';
+import { useExercises, usePastWorkouts } from '@/data/store';
 
 import { FlatList, Text, View } from 'react-native';
 
@@ -30,14 +30,26 @@ function stringifyDate(date: Date) {
 
 function WorkoutCard({ workout }: { workout: Workout }) {
   const exerciseLogs = workout.exerciseLogs;
+  const [exercises] = useExercises();
+  const exercisesMap: { [name: string]: AnyExercise } = exercises.reduce(
+    (map, exercise) => {
+      return {
+        ...map,
+        [exercise.id]: exercise,
+      };
+    },
+    {}
+  );
   return (
     <View
       style={{
         flex: 1,
         margin: 10,
-        borderRadius: 10,
+        borderRadius: 5,
         padding: 10,
-        backgroundColor: 'rgba(0, 128, 255, 0.1)',
+        borderStartWidth: 5,
+        borderWidth: 1,
+        borderColor: 'rgba(0, 128, 255, 0.25)',
       }}
     >
       <View
@@ -75,17 +87,15 @@ function WorkoutCard({ workout }: { workout: Workout }) {
           <View style={{ alignItems: 'flex-end' }}>
             {exerciseLogs.map((exerciseLog) => {
               return (
-                <Text key={exerciseLog.name}>
-                  {exerciseLog.setLogs.length} x
-                </Text>
+                <Text key={exerciseLog.id}>{exerciseLog.setLogs.length} x</Text>
               );
             })}
           </View>
           <View style={{ marginLeft: 5 }}>
             {exerciseLogs.map((exerciseLog) => {
               return (
-                <Text key={exerciseLog.name} numberOfLines={1}>
-                  {exerciseLog.name}
+                <Text key={exerciseLog.id} numberOfLines={1}>
+                  {exercisesMap[exerciseLog.exerciseId].name}
                 </Text>
               );
             })}

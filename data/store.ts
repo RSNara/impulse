@@ -164,9 +164,6 @@ export function createExerciseLog<T extends ExerciseType>(
 }
 
 function getWorkoutName(date: Date) {
-  const hours = date.getHours();
-  const ampm = hours < 12 ? 'AM' : 'PM';
-
   const weekdays = [
     'Sunday',
     'Monday',
@@ -177,31 +174,7 @@ function getWorkoutName(date: Date) {
     'Saturday',
   ];
   const dayName = weekdays[date.getDay()];
-
-  // Day of month (1-31)
-  const dayOfMonth = date.getDate();
-
-  // Week of month (1-based, each 7 days is a week)
-  const weekOfMonth = Math.floor((dayOfMonth - 1) / 7) + 1;
-
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
-  const monthName = months[date.getMonth()];
-
-  return `${dayName}, Week ${weekOfMonth} (${ampm}, ${monthName})`;
+  return `${dayName}`;
 }
 
 export function emptyWorkout(): Workout {
