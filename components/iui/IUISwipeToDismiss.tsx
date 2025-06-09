@@ -38,7 +38,7 @@ export default function IUIDismissable({
   const [rowWidth, setRowWidth] = useState(0);
   useEffect(() => {
     if (rowWidth > 0) {
-      triggerDismissDxRef.current = rowWidth * 0.4;
+      triggerDismissDxRef.current = rowWidth * 0.25;
       finalTranslateXRef.current = rowWidth;
     }
   }, [rowWidth]);

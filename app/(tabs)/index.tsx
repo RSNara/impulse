@@ -47,7 +47,7 @@ export default function WorkoutScreen() {
     });
   }
 
-  function addExercises(exercises: ReadonlyArray<AnyExercise>) {
+  function createExerciseLogs(exercises: ReadonlyArray<AnyExercise>) {
     setExerciseLogs([
       ...exerciseLogs,
       ...exercises.map((exercise) => {
@@ -245,7 +245,7 @@ export default function WorkoutScreen() {
         exercises={exercises}
         setExercises={setExercises}
         onRequestClose={(exercisesSelected) => {
-          addExercises(exercisesSelected);
+          createExerciseLogs(exercisesSelected);
           setShowAddExerciseModal(false);
         }}
       />
