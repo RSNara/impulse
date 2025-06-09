@@ -1,5 +1,6 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
+import IUIDelayedStubber from '@/components/iui/IUIDelayedStubber';
 import IUIModal from '@/components/iui/IUIModal';
 import IUISwipeToReveal from '@/components/iui/IUISwipeToReveal';
 import { IUIStringTextInput } from '@/components/iui/IUITextInput';
@@ -317,7 +318,6 @@ function AddExerciseModal({
   const [selectedGroup, setSelectedGroup] = useState<MuscleGroup>(
     muscleGroups[0]
   );
-  const page = muscleGroups.indexOf(selectedGroup);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -325,15 +325,6 @@ function AddExerciseModal({
   const [exerciseToEdit, setExerciseToEdit] = useState<AnyExercise | null>(
     null
   );
-
-  useEffect(() => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToIndex({
-        animated: true,
-        index: page,
-      });
-    }
-  }, [page]);
 
   function close(exercise?: AnyExercise | null) {
     onRequestClose(exercise);
@@ -391,6 +382,15 @@ function AddExerciseModal({
                 feeling="done"
                 onPress={() => {
                   setSelectedGroup(group);
+
+                  // Just scroll the list immediately
+                  // vs. setting state, and then scrolling in an effect
+                  if (flatListRef.current) {
+                    flatListRef.current.scrollToIndex({
+                      animated: true,
+                      index: muscleGroups.indexOf(group),
+                    });
+                  }
                 }}
               >
                 {group}
@@ -406,7 +406,7 @@ function AddExerciseModal({
         data={muscleGroups}
         keyExtractor={(item) => item}
         scrollEnabled={false}
-        initialNumToRender={1}
+        initialNumToRender={2}
         style={{
           height: Dimensions.get('window').height - 500,
           marginTop: 5,
@@ -421,6 +421,7 @@ function AddExerciseModal({
 
           return (
             <ExerciseList
+              isVisible={selectedGroup == info.item}
               listWidth={listWidth}
               exercises={exercises2}
               alreadyPicked={alreadyPicked}
@@ -485,6 +486,7 @@ function AddExerciseModal({
 
 function ExerciseList({
   listWidth,
+  isVisible,
   exercises,
   selected,
   alreadyPicked,
@@ -492,48 +494,68 @@ function ExerciseList({
   onRequestEdit,
 }: {
   listWidth: number | null;
+  isVisible: boolean;
   exercises: ReadonlyArray<AnyExercise>;
   selected: AnyExercise | null;
   alreadyPicked: Set<string>;
   onRequestSelect: (exercise: AnyExercise) => void;
   onRequestEdit: (exercise: AnyExercise) => void;
 }) {
+  const [viewableExercises, setViewableExercises] = useState(exercises);
+
   return (
-    <FlatList<AnyExercise>
-      data={exercises}
-      keyExtractor={(info) => info.id}
-      style={{
-        paddingBottom: 10,
-        width: listWidth ? listWidth : undefined,
-      }}
-      initialNumToRender={14}
-      renderItem={(info) => {
-        const exercise = info.item;
-        if (listWidth == null) {
-          return null;
-        }
-        return (
-          <ExerciseListRow
-            exercise={exercise}
-            isSelected={exercise == selected}
-            isPicked={alreadyPicked.has(exercise.id)}
-            onRequestSelect={() => onRequestSelect(exercise)}
-            onRequestEdit={() => onRequestEdit(exercise)}
-          />
-        );
-      }}
-    />
+    <IUIDelayedStubber
+      isVisible={isVisible}
+      stub={
+        <View
+          style={{
+            paddingBottom: 10,
+            width: listWidth ? listWidth : undefined,
+          }}
+        />
+      }
+    >
+      <FlatList<AnyExercise>
+        data={exercises}
+        keyExtractor={(info) => info.id}
+        style={{
+          paddingBottom: 10,
+          width: listWidth ? listWidth : undefined,
+        }}
+        onViewableItemsChanged={(info) => {
+          setViewableExercises(info.viewableItems.map(({ item }) => item));
+        }}
+        renderItem={(info) => {
+          const exercise = info.item;
+          if (listWidth == null) {
+            return null;
+          }
+          return (
+            <ExerciseListRow
+              exercise={exercise}
+              isVisible={isVisible && viewableExercises.includes(exercise)}
+              isSelected={exercise == selected}
+              isPicked={alreadyPicked.has(exercise.id)}
+              onRequestSelect={() => onRequestSelect(exercise)}
+              onRequestEdit={() => onRequestEdit(exercise)}
+            />
+          );
+        }}
+      />
+    </IUIDelayedStubber>
   );
 }
 
 function ExerciseListRow({
   exercise,
+  isVisible,
   isSelected,
   isPicked,
   onRequestEdit,
   onRequestSelect,
 }: {
   exercise: AnyExercise;
+  isVisible: boolean;
   isSelected: boolean;
   isPicked: boolean;
   onRequestEdit: () => void;
@@ -559,6 +581,77 @@ function ExerciseListRow({
     (borderStartWidth - borderEndWidth) +
     rightButtonPadding;
   const paddingEnd = paddingHorizontal;
+
+  const $content = (
+    <Pressable
+      onPress={() => {
+        if (exercise.archived || isPicked) {
+          return;
+        }
+
+        onRequestSelect();
+      }}
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingStart,
+        paddingEnd,
+        paddingVertical: 5,
+        borderRadius: 1,
+        borderBottomColor: `rgba(0, 0, 0, 0.1)`,
+        borderColor: borderColor(0.25),
+        borderWidth: 1,
+        borderStartWidth,
+        borderEndWidth,
+        ...(isSelected
+          ? {
+              borderStartColor: borderColor(0.75),
+            }
+          : {
+              borderStartColor: borderColor(0.25),
+            }),
+      }}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          ...(exercise.archived || isPicked ? { opacity: 0.4 } : {}),
+        }}
+      >
+        <Text
+          style={{
+            fontWeight: 'bold',
+            flexShrink: 1,
+          }}
+          numberOfLines={1}
+        >
+          {exercise.archived ? '(archived) ' : ''}
+          {exercise.name}
+        </Text>
+        <View
+          style={{
+            minWidth: 35,
+          }}
+        >
+          <IUIButton type="tertiary" feeling="mild">
+            {exercise.type === 'reps'
+              ? '🔁'
+              : exercise.type === 'weights'
+              ? '🏋'
+              : '⏳'}
+          </IUIButton>
+        </View>
+      </View>
+    </Pressable>
+  );
+
+  if (!isVisible) {
+    return $content;
+  }
+
   return (
     <IUISwipeToReveal
       actionsPos="end"
@@ -577,69 +670,7 @@ function ExerciseListRow({
         </IUIButton>
       }
     >
-      <Pressable
-        onPress={() => {
-          if (exercise.archived || isPicked) {
-            return;
-          }
-
-          onRequestSelect();
-        }}
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          paddingStart,
-          paddingEnd,
-          paddingVertical: 5,
-          borderRadius: 1,
-          borderBottomColor: `rgba(0, 0, 0, 0.1)`,
-          borderColor: borderColor(0.25),
-          borderWidth: 1,
-          borderStartWidth,
-          borderEndWidth,
-          ...(isSelected
-            ? {
-                borderStartColor: borderColor(0.75),
-              }
-            : {
-                borderStartColor: borderColor(0.25),
-              }),
-        }}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            flex: 1,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            ...(exercise.archived || isPicked ? { opacity: 0.4 } : {}),
-          }}
-        >
-          <Text
-            style={{
-              fontWeight: 'bold',
-              flexShrink: 1,
-            }}
-            numberOfLines={1}
-          >
-            {exercise.archived ? '(archived) ' : ''}
-            {exercise.name}
-          </Text>
-          <View
-            style={{
-              minWidth: 35,
-            }}
-          >
-            <IUIButton type="tertiary" feeling="mild">
-              {exercise.type === 'reps'
-                ? '🔁'
-                : exercise.type === 'weights'
-                ? '🏋'
-                : '⏳'}
-            </IUIButton>
-          </View>
-        </View>
-      </Pressable>
+      {$content}
     </IUISwipeToReveal>
   );
 }
