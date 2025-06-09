@@ -45,7 +45,7 @@ export function IUIStringTextInput({
         backgroundColor: 'rgba(0,0,0,0.1)',
         borderRadius: 5,
         padding: 5,
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
       }}
       value={value != null ? String(value) : ''}
       inputMode="text"

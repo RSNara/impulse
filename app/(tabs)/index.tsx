@@ -623,7 +623,7 @@ function ExerciseListRow({
       >
         <Text
           style={{
-            fontWeight: 'bold',
+            // fontWeight: 'bold',
             flexShrink: 1,
           }}
           numberOfLines={1}
