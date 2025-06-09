@@ -538,12 +538,16 @@ function ExerciseList({
               isSelected={exercisesSelected.includes(exercise)}
               isInWorkout={exercisesInWorkout.has(exercise.id)}
               onPress={() => {
-                if (exercisesSelected.includes(exercise)) {
-                  setSelectedExercises(
-                    exercisesSelected.filter((other) => other != exercise)
-                  );
-                } else {
+                if (exercisesSelected.length == 0) {
                   setSelectedExercises([...exercisesSelected, exercise]);
+                } else if (exercisesSelected.length == 1) {
+                  if (exercisesSelected.includes(exercise)) {
+                    setSelectedExercises(
+                      exercisesSelected.filter((other) => other != exercise)
+                    );
+                  } else {
+                    setSelectedExercises([exercise]);
+                  }
                 }
               }}
               onRequestEdit={() => onRequestEdit(exercise)}
