@@ -443,7 +443,7 @@ function AddExerciseModal({
             close(exercisesSelected);
           }}
         >
-          Add Exercise
+          {exercisesSelected.length > 1 ? 'Add Exercises' : 'Add Exercise'}
         </IUIButton>
       </View>
 
