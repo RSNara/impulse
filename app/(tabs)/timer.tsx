@@ -1,6 +1,6 @@
 import IUIButton from '@/components/iui/IUIButton';
 import IUIContainer from '@/components/iui/IUIContainer';
-import { emptyTimer, useTimer } from '@/data/store';
+import { useTimer } from '@/data/store';
 import { StyleSheet, Text, View } from 'react-native';
 import CircularProgress from 'react-native-circular-progress-indicator';
 
@@ -75,12 +75,15 @@ export default function ExercisesScreen() {
             ) : (
               <IUIButton
                 type="secondary"
-                feeling="negative"
+                feeling="done"
                 onPress={() => {
-                  setTimer(emptyTimer());
+                  setTimer({
+                    ...timer,
+                    elapsed: Math.max(timer.duration - 1000, timer.elapsed),
+                  });
                 }}
               >
-                Reset
+                Skip
               </IUIButton>
             )}
           </View>
