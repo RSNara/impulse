@@ -49,7 +49,11 @@ export default function WorkoutScreen() {
   function addExercises(exercises: ReadonlyArray<AnyExercise>) {
     setExerciseLogs([
       ...exerciseLogs,
-      ...exercises.map((exercise) => createExerciseLog(exercise)),
+      ...exercises.map((exercise) => {
+        const exerciseLog = createExerciseLog(exercise);
+        const oldLog = pastExerciseLog(exerciseLog);
+        return exerciseLog;
+      }),
     ]);
   }
 
