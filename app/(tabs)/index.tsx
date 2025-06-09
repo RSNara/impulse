@@ -9,6 +9,7 @@ import {
   AllMuscleGroups,
   createExercise,
   createExerciseLog,
+  createSetLog,
   emptyWorkout,
   useCurrentWorkout,
   useExercises,
@@ -51,7 +52,45 @@ export default function WorkoutScreen() {
       ...exerciseLogs,
       ...exercises.map((exercise) => {
         const exerciseLog = createExerciseLog(exercise);
-        const oldLog = pastExerciseLog(exerciseLog);
+        switch (exerciseLog.type) {
+          case 'reps': {
+            const oldLog = pastExerciseLog<'reps'>(exerciseLog);
+            if (oldLog != null) {
+              return {
+                ...exerciseLog,
+                setLogs: oldLog.setLogs.map((setLog) => {
+                  return createSetLog<'reps'>(setLog.type, setLog.warmup);
+                }),
+              };
+            }
+            break;
+          }
+
+          case 'time': {
+            const oldLog = pastExerciseLog<'time'>(exerciseLog);
+            if (oldLog != null) {
+              return {
+                ...exerciseLog,
+                setLogs: oldLog.setLogs.map((setLog) => {
+                  return createSetLog<'time'>(setLog.type, setLog.warmup);
+                }),
+              };
+            }
+            break;
+          }
+          case 'weights': {
+            const oldLog = pastExerciseLog<'weights'>(exerciseLog);
+            if (oldLog != null) {
+              return {
+                ...exerciseLog,
+                setLogs: oldLog.setLogs.map((setLog) => {
+                  return createSetLog<'weights'>(setLog.type, setLog.warmup);
+                }),
+              };
+            }
+            break;
+          }
+        }
         return exerciseLog;
       }),
     ]);

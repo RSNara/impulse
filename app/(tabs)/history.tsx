@@ -87,7 +87,13 @@ function WorkoutCard({ workout }: { workout: Workout }) {
           <View style={{ alignItems: 'flex-end' }}>
             {exerciseLogs.map((exerciseLog) => {
               return (
-                <Text key={exerciseLog.id}>{exerciseLog.setLogs.length} x</Text>
+                <Text key={exerciseLog.id}>
+                  {
+                    exerciseLog.setLogs.filter((setLog) => !setLog.warmup)
+                      .length
+                  }{' '}
+                  x
+                </Text>
               );
             })}
           </View>
@@ -116,7 +122,7 @@ function WorkoutCard({ workout }: { workout: Workout }) {
               const nonWarmupSets = exerciseLog.setLogs.filter(
                 (setLog) => !setLog.warmup
               );
-              const secondLog = nonWarmupSets[0];
+              const secondLog = nonWarmupSets[1];
               return secondLog ? <SetLog setLog={secondLog} key={i} /> : null;
             })}
           </View>
