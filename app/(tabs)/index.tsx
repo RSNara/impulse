@@ -46,8 +46,11 @@ export default function WorkoutScreen() {
     });
   }
 
-  function addExercise(exercise: AnyExercise) {
-    setExerciseLogs([...exerciseLogs, createExerciseLog(exercise)]);
+  function addExercises(exercises: ReadonlyArray<AnyExercise>) {
+    setExerciseLogs([
+      ...exerciseLogs,
+      ...exercises.map((exercise) => createExerciseLog(exercise)),
+    ]);
   }
 
   function removeExerciseLog(exerciseLog: AnyExerciseLog) {
@@ -195,13 +198,11 @@ export default function WorkoutScreen() {
       />
       <AddExerciseModal
         visible={showAddExerciseModal}
-        alreadyPicked={new Set(exerciseLogs.map((log) => log.exerciseId))}
+        exercisesInWorkout={new Set(exerciseLogs.map((log) => log.exerciseId))}
         exercises={exercises}
         setExercises={setExercises}
-        onRequestClose={(exercise) => {
-          if (exercise) {
-            addExercise(exercise);
-          }
+        onRequestClose={(exercisesSelected) => {
+          addExercises(exercisesSelected);
           setShowAddExerciseModal(false);
         }}
       />
@@ -283,20 +284,20 @@ function FinishWorkoutModal({
 
 function AddExerciseModal({
   visible,
-  alreadyPicked,
+  exercisesInWorkout,
   onRequestClose,
   exercises,
   setExercises,
 }: {
   visible: boolean;
-  alreadyPicked: Set<string>;
-  onRequestClose: (exercise?: AnyExercise | null) => void;
+  exercisesInWorkout: Set<string>;
+  onRequestClose: (exercises: ReadonlyArray<AnyExercise>) => void;
   exercises: ReadonlyArray<AnyExercise>;
   setExercises: (exercises: ReadonlyArray<AnyExercise>) => void;
 }) {
-  const [selectedExercise, setSelectedExercise] = useState<AnyExercise | null>(
-    null
-  );
+  const [exercisesSelected, setSelectedExercises] = useState<
+    ReadonlyArray<AnyExercise>
+  >([]);
   const [listWidth, setListWidth] = useState<number | null>(null);
 
   function updateExercise(
@@ -326,10 +327,10 @@ function AddExerciseModal({
     null
   );
 
-  function close(exercise?: AnyExercise | null) {
-    onRequestClose(exercise);
+  function close(exercises: ReadonlyArray<AnyExercise>) {
+    onRequestClose(exercises);
     setTimeout(() => {
-      setSelectedExercise(null);
+      setSelectedExercises([]);
       setSelectedGroup(muscleGroups[0]);
     }, 1000);
   }
@@ -338,7 +339,7 @@ function AddExerciseModal({
     <IUIModal
       visible={visible}
       onRequestClose={() => {
-        close(null);
+        close([]);
       }}
       onReceiveSize={({ width, height }) => {
         setListWidth(width);
@@ -424,9 +425,9 @@ function AddExerciseModal({
               isVisible={selectedGroup == info.item}
               listWidth={listWidth}
               exercises={exercises2}
-              alreadyPicked={alreadyPicked}
-              selected={selectedExercise}
-              onRequestSelect={setSelectedExercise}
+              exercisesInWorkout={exercisesInWorkout}
+              exercisesSelected={exercisesSelected}
+              setSelectedExercises={setSelectedExercises}
               onRequestEdit={setExerciseToEdit}
             />
           );
@@ -437,9 +438,9 @@ function AddExerciseModal({
         <IUIButton
           type="secondary"
           feeling="positive"
-          disabled={selectedExercise == null}
+          disabled={exercisesSelected.length == 0}
           onPress={() => {
-            close(selectedExercise);
+            close(exercisesSelected);
           }}
         >
           Add Exercise
@@ -462,7 +463,7 @@ function AddExerciseModal({
           const exercise = createExercise(name, type, group);
           setExercises([...exercises, exercise]);
           setSelectedGroup(exercise.group);
-          setSelectedExercise(exercise);
+          setSelectedExercises([...exercisesSelected, exercise]);
         }}
       />
 
@@ -488,17 +489,17 @@ function ExerciseList({
   listWidth,
   isVisible,
   exercises,
-  selected,
-  alreadyPicked,
-  onRequestSelect,
+  exercisesSelected,
+  exercisesInWorkout,
+  setSelectedExercises,
   onRequestEdit,
 }: {
   listWidth: number | null;
   isVisible: boolean;
   exercises: ReadonlyArray<AnyExercise>;
-  selected: AnyExercise | null;
-  alreadyPicked: Set<string>;
-  onRequestSelect: (exercise: AnyExercise) => void;
+  exercisesSelected: ReadonlyArray<AnyExercise>;
+  exercisesInWorkout: Set<string>;
+  setSelectedExercises: (exercises: ReadonlyArray<AnyExercise>) => void;
   onRequestEdit: (exercise: AnyExercise) => void;
 }) {
   const [viewableExercises, setViewableExercises] = useState(exercises);
@@ -534,9 +535,17 @@ function ExerciseList({
             <ExerciseListRow
               exercise={exercise}
               isVisible={isVisible && viewableExercises.includes(exercise)}
-              isSelected={exercise == selected}
-              isPicked={alreadyPicked.has(exercise.id)}
-              onRequestSelect={() => onRequestSelect(exercise)}
+              isSelected={exercisesSelected.includes(exercise)}
+              isInWorkout={exercisesInWorkout.has(exercise.id)}
+              onPress={() => {
+                if (exercisesSelected.includes(exercise)) {
+                  setSelectedExercises(
+                    exercisesSelected.filter((other) => other != exercise)
+                  );
+                } else {
+                  setSelectedExercises([...exercisesSelected, exercise]);
+                }
+              }}
               onRequestEdit={() => onRequestEdit(exercise)}
             />
           );
@@ -550,20 +559,20 @@ function ExerciseListRow({
   exercise,
   isVisible,
   isSelected,
-  isPicked,
+  isInWorkout,
   onRequestEdit,
-  onRequestSelect,
+  onPress,
 }: {
   exercise: AnyExercise;
   isVisible: boolean;
   isSelected: boolean;
-  isPicked: boolean;
+  isInWorkout: boolean;
   onRequestEdit: () => void;
-  onRequestSelect: () => void;
+  onPress: () => void;
 }) {
   const [status, setStatus] = useState<'revealed' | 'hidden'>('hidden');
   const borderColor = (alpha: number) => {
-    if (isPicked) {
+    if (isInWorkout) {
       return `rgba(150, 90, 253, ${alpha})`;
     }
     if (exercise.archived) {
@@ -585,11 +594,11 @@ function ExerciseListRow({
   const $content = (
     <Pressable
       onPress={() => {
-        if (exercise.archived || isPicked) {
+        if (exercise.archived || isInWorkout) {
           return;
         }
 
-        onRequestSelect();
+        onPress();
       }}
       style={{
         flexDirection: 'row',
@@ -618,7 +627,7 @@ function ExerciseListRow({
           flex: 1,
           justifyContent: 'space-between',
           alignItems: 'center',
-          ...(exercise.archived || isPicked ? { opacity: 0.4 } : {}),
+          ...(exercise.archived || isInWorkout ? { opacity: 0.4 } : {}),
         }}
       >
         <Text
